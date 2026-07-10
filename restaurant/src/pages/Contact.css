@@ -1,0 +1,93 @@
+.contact {
+  padding: 4rem 2rem;
+  background-color: #fff;
+}
+
+.contact-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #222;
+}
+
+.contact-subtitle {
+  text-align: center;
+  font-size: 1.2rem;
+  margin-bottom: 3rem;
+  color: #555;
+}
+
+.contact-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+.contact-form,
+.contact-map,
+.contact-phone {
+  background-color: #fafafa;
+  padding: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.contact-form h2,
+.contact-map h2,
+.contact-phone h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #c0392b; /* restaurant red accent */
+}
+
+.input-box {
+  margin-bottom: 1rem;
+}
+
+.input-box input,
+.input-box textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.sbtn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #c0392b;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.sbtn:hover {
+  background-color: #a93226;
+}
+
+.contact-phone p {
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.contact-phone a {
+  color: #c0392b;
+  text-decoration: none;
+}
+
+.contact-phone a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+  .contact-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

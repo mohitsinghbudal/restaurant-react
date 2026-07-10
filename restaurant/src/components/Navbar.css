@@ -1,0 +1,96 @@
+.navbar {
+  background-color: #fff;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  padding: 1.5rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.02);
+}
+
+.navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-logo {
+  font-family: 'Playfair Display', 'Georgia', serif;
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: #111;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+}
+
+.navbar-list {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.navbar-link {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: #555;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 6px 0;
+  position: relative;
+  transition: color 0.3s ease;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.navbar-link:hover {
+  color: #aa7c11;
+}
+
+.navbar-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: #d4af37;
+  transition: width 0.3s ease;
+}
+
+.navbar-link:hover::after {
+  width: 100%;
+}
+
+.navbar-link.active {
+  color: #aa7c11;
+}
+
+.navbar-link.active::after {
+  width: 100%;
+}
+
+.logout-btn {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+@media (max-width: 768px) {
+  .navbar-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .navbar-list {
+    gap: 1.5rem;
+  }
+}
