@@ -1,7 +1,11 @@
 import React from "react";
 import "./HeroSection.css";
+import {useNavigate} from 'react-router-dom';
 
 function HeroSection() {
+
+  const navigate = useNavigate();
+
   return (
     <section className="hero">
       <div className="hero-content">
@@ -13,7 +17,7 @@ function HeroSection() {
           From fine dining to cozy stays, we bring you authentic flavors 
           and warm experiences crafted with passion.
         </p>
-        <button className="hero-btn">Explore Menu</button>
+        <button className="hero-btn" onClick = {()=>navigate("/menu")}>Explore Menu</button>
       </div>
     </section>
   );

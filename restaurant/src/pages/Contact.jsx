@@ -1,16 +1,28 @@
-import React from "react";
+import React ,{useEffect}from "react";
+import { useNavigate } from "react-router-dom";
+import GetCurrUser from "../util/GetcurrUser";
 import "./Contact.css";
 
 function Contact() {
+const { token } = GetCurrUser();
+const navigate = useNavigate();
+console.log(GetCurrUser());
+
+  // useEffect(()=>{
+  //   if(token){
+  //     navigate('/dashboard');
+  //   }
+  // },[navigate])
+
   return (
     <section className="contact">
       <h1 className="contact-title">Get in Touch</h1>
       <p className="contact-subtitle">
         We’d love to hear from you! Whether it’s a reservation, feedback, or just a hello.
       </p>
-
+<div>
+</div>
       <div className="contact-container">
-        {/* Contact Form */}
         <div className="contact-form">
           <h2>Contact Form</h2>
           <form>
@@ -27,7 +39,6 @@ function Contact() {
           </form>
         </div>
 
-        {/* Location Map */}
         <div className="contact-map">
           <h2>Our Location</h2>
           <iframe
@@ -41,7 +52,6 @@ function Contact() {
           ></iframe>
         </div>
 
-        {/* Phone Number */}
         <div className="contact-phone">
           <h2>Call Us</h2>
           <p>📞 <a href="tel:+977123456789">+977 123456789</a></p>
