@@ -1,0 +1,198 @@
+.dashboard {
+  background: #fff;
+  min-height: 100vh;
+  color: #555;
+  font-family: "Montserrat", sans-serif;
+}
+
+.dashboard-hero {
+  max-width: 12000px;
+  margin: 0 auto;
+  padding: 5rem 2rem 4rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.hero-content h1 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 3rem;
+  font-weight: 400;
+  color: #111;
+  margin-bottom: 1rem;
+  letter-spacing: 1px;
+  width: max-content ;
+}
+
+.hero-content h1::after {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 2px;
+  background: #d4af37;
+  margin: 1rem auto 0;
+}
+
+.hero-content p {
+  max-width: 720px;
+  margin: 2rem auto;
+  color: #666;
+  font-size: 1rem;
+  line-height: 1.9;
+  font-weight: 300;
+}
+
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.hero-buttons button {
+  padding: 12px 28px;
+  border: 1px solid #d4af37;
+  background: transparent;
+  color: #111;
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.35s ease;
+}
+
+.hero-buttons button:hover {
+  background: #d4af37;
+  color: #fff;
+}
+
+.secondary-btn {
+  background: #111 !important;
+  color: #fff !important;
+  border: 1px solid #111 !important;
+}
+
+.secondary-btn:hover {
+  background: #d4af37 !important;
+  border-color: #d4af37 !important;
+}
+
+.dashboard-cards {
+  max-width: 1200px;
+  margin: 4rem auto;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
+}
+
+.dashboard-card {
+  background: #fff;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+  border-color: #d4af37;
+}
+
+.card-icon {
+  font-size: 2.8rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard-card h3 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #111;
+  margin-bottom: 1rem;
+}
+
+.dashboard-card p {
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  font-weight: 300;
+}
+
+.dashboard-info {
+  max-width: 1200px;
+  margin: 0 auto 5rem;
+  padding: 0 2rem;
+}
+
+.info-card {
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: #fcfbf7;
+  padding: 2.5rem;
+}
+
+.info-card h2 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #111;
+  margin-bottom: 1.5rem;
+}
+
+.info-card h2::after {
+  content: "";
+  display: block;
+  width: 45px;
+  height: 2px;
+  background: #d4af37;
+  margin-top: 0.8rem;
+}
+
+.info-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.info-card li {
+  padding: 0.9rem 0;
+  border-bottom: 1px solid #eee;
+  color: #555;
+  font-size: 0.95rem;
+  font-weight: 300;
+}
+
+.info-card li:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 768px) {
+  .dashboard-hero {
+    padding: 3rem 1.5rem;
+  }
+
+  .hero-content h1 {
+    font-size: 2.2rem;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+  }
+
+  .hero-buttons button {
+    width: 100%;
+  }
+
+  .dashboard-cards {
+    padding: 0 1rem;
+  }
+
+  .dashboard-info {
+    padding: 0 1rem;
+  }
+
+  .info-card {
+    padding: 2rem;
+  }
+}

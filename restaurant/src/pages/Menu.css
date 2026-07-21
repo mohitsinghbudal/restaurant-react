@@ -1,0 +1,130 @@
+.menu-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.menu-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.menu-header h1 {
+    color: #222;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.menu-header p {
+    color: #666;
+    font-size: 1rem;
+}
+
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
+}
+
+.menu-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 22px;
+    border: 1px solid #ececec;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    transition: .3s ease;
+}
+
+.menu-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+.menu-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.menu-card-top h3 {
+    color: #222;
+    font-size: 1.25rem;
+    margin: 0;
+}
+
+.price {
+    background: #ff6b00;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: .95rem;
+}
+
+.description {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    min-height: 70px;
+}
+
+.menu-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.status {
+    padding: 7px 16px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: .85rem;
+}
+
+.available {
+    background: #e8f9ef;
+    color: #1f8f4b;
+}
+
+.unavailable {
+    background: #fdeaea;
+    color: #d63031;
+}
+
+.menu-loading,
+.menu-error,
+.no-menu {
+    text-align: center;
+    margin-top: 80px;
+}
+
+.menu-loading h2,
+.menu-error h2,
+.no-menu h2 {
+    color: #555;
+}
+
+@media (max-width:768px) {
+
+    .menu-header h1 {
+        font-size: 2rem;
+    }
+
+    .menu-card {
+        padding: 18px;
+    }
+
+    .menu-card-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .price {
+        align-self: flex-start;
+    }
+
+    .description {
+        min-height: auto;
+    }
+}

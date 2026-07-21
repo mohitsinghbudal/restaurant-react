@@ -9,12 +9,13 @@ import Contact from "./pages/Contact";
 import Dashboard from "./pages/Dashboard";
 import GetCurrUser from "./util/GetcurrUser";
 import Menu from "./pages/Menu";
+import Table from "./pages/Tables";
 
 const AdminPanel = () => <h2>Admin Panel (Admins Only)</h2>;
 const Analytics = () => <h2>Analytics Page (Admins & Editors)</h2>;
 const Unauthorized = () => <h2>⚠️ Access Denied: You don't have permission.</h2>;
 const UserPanel = () => <h2>this is the user dashboard</h2>;
-
+console.log(GetCurrUser());
 const ProtectedRoute = ({ allowedRoles }) => {
   const { token, roleId } = GetCurrUser();
 
@@ -64,6 +65,7 @@ const router = createBrowserRouter([
         element: <ProtectedRoute allowedRoles={[1]} />,
         children: [
           { path: "/customer-dashboard", element: <UserPanel /> },
+          {path:"/table", element: <Table/>}
         ]
       },
     ]

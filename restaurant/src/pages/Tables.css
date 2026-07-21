@@ -1,0 +1,170 @@
+.tables-container {
+  max-width: 1200px;
+  margin: 50px auto;
+  padding: 0 2rem;
+}
+
+.tables-title {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 2.2rem;
+  font-weight: 400;
+  color: #111;
+  text-align: center;
+  margin-bottom: 2.5rem;
+  letter-spacing: 1px;
+}
+
+.scan-btn {
+  display: block;
+  margin: 0 auto;
+  padding: 14px 34px;
+  border: 1px solid #d4af37;
+  background: #fff;
+  color: #aa7c11;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.scan-btn:hover {
+  background: #d4af37;
+  color: #fff;
+}
+
+.scanner-container {
+  margin: 40px auto;
+  max-width: 420px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 10px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.04);
+}
+
+#reader {
+  width: 100%;
+}
+
+.table-list-container {
+  margin-top: 40px;
+}
+
+.table-heading {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.8rem;
+  font-weight: 400;
+  text-align: center;
+  color: #111;
+  margin-bottom: 2rem;
+}
+
+.table-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 25px;
+}
+
+.table-card {
+  background: #fff;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 10px;
+  padding: 24px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.03);
+}
+
+.table-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  border-color: #d4af37;
+}
+
+.table-number {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #111;
+  margin-bottom: 1rem;
+}
+
+.table-card p {
+  margin: 10px 0;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.6;
+}
+
+.table-card strong {
+  color: #222;
+}
+
+.table-status {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.table-status.available {
+  color: #2e7d32;
+  background: #edf7ed;
+}
+
+.table-status.booked {
+  color: #c62828;
+  background: #fdecec;
+}
+
+.table-status.occupied {
+  color: #ef6c00;
+  background: #fff4e5;
+}
+
+.table-status.cleaning {
+  color: #1565c0;
+  background: #eaf3ff;
+}
+
+.empty-message {
+  text-align: center;
+  font-family: "Montserrat", sans-serif;
+  color: #777;
+  font-size: 0.95rem;
+  margin-top: 40px;
+}
+
+@media (max-width: 768px) {
+  .tables-container {
+    padding: 0 1rem;
+  }
+
+  .tables-title {
+    font-size: 1.8rem;
+  }
+
+  .table-heading {
+    font-size: 1.5rem;
+  }
+
+  .scan-btn {
+    width: 100%;
+  }
+
+  .table-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .table-card {
+    padding: 20px;
+  }
+}

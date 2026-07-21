@@ -13,23 +13,15 @@ function Login() {
 
   const { token, roleId } = GetCurrUser();
 
-  const handleRoleRedirect = (id) => {
-    switch (id) {
-      case 1:
-        navigate('/admin-dashboard');
-        break;
-      case 2:
-        navigate('/user-dashboard');
-        break;
-      default:
+  const handleRoleRedirect = () => {
+    
         navigate('/dashboard');
-        break;
-    }
-  };
+    };
+
 
   useEffect(() => {
     if (token) {
-      handleRoleRedirect(roleId);
+      handleRoleRedirect();
     }
   }, [token, roleId, navigate]);
 
