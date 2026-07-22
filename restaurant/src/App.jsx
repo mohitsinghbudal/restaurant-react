@@ -10,12 +10,13 @@ import Dashboard from "./pages/Dashboard";
 import GetCurrUser from "./util/GetcurrUser";
 import Menu from "./pages/Menu";
 import Table from "./pages/Tables";
+import CustomerOrders from "./pages/customer/CustomerOrders";
+import CustomerMenu from "./pages/customer/CustomerMenu";
 
 const AdminPanel = () => <h2>Admin Panel (Admins Only)</h2>;
 const Analytics = () => <h2>Analytics Page (Admins & Editors)</h2>;
 const Unauthorized = () => <h2>⚠️ Access Denied: You don't have permission.</h2>;
 const UserPanel = () => <h2>this is the user dashboard</h2>;
-console.log(GetCurrUser());
 const ProtectedRoute = ({ allowedRoles }) => {
   const { token, roleId } = GetCurrUser();
 
@@ -54,6 +55,9 @@ const router = createBrowserRouter([
       {path:"/menu",element:<Menu/>},
       { path: "/unauthorized", element: <Unauthorized /> },
       { path: "/dashboard", element: <Dashboard />},
+      {path:"/table", element: <Table/>},
+      {path:"/customer-menu",element:<CustomerMenu/>},
+
       { 
         element: <ProtectedRoute allowedRoles={[5]} />,
         children: [
@@ -65,7 +69,10 @@ const router = createBrowserRouter([
         element: <ProtectedRoute allowedRoles={[1]} />,
         children: [
           { path: "/customer-dashboard", element: <UserPanel /> },
-          {path:"/table", element: <Table/>}
+          {path:"/orders",element:<CustomerOrders/>},
+          
+          {path:"/customer-orders",element:<CustomerMenu/>},
+          
         ]
       },
     ]

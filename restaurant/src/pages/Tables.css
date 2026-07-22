@@ -1,170 +1,501 @@
 .tables-container {
-  max-width: 1200px;
-  margin: 50px auto;
-  padding: 0 2rem;
+  max-width: 1280px;
+  margin: 70px auto;
+  padding: 0 2rem 5rem;
 }
 
 .tables-title {
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: 2.2rem;
+  font-family: "Playfair Display", serif;
+  font-size: 2.7rem;
   font-weight: 400;
   color: #111;
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 15px;
   letter-spacing: 1px;
 }
 
-.scan-btn {
+.tables-title::after {
+  content: "";
   display: block;
-  margin: 0 auto;
-  padding: 14px 34px;
+  width: 60px;
+  height: 2px;
+  background: #d4af37;
+  margin: 18px auto 0;
+}
+
+.tables-title-link {
+  margin-top: 90px;
+  text-align: center;
+  color: #d32f2f;
+  cursor: pointer;
+  font-family: "Montserrat", sans-serif;
+  transition: 0.3s;
+}
+
+.tables-title-link:hover {
+  color: #1565c0;
+}
+
+.tables-subtitle {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 40px;
+  color: #666;
+  line-height: 1.8;
+  font-family: "Montserrat", sans-serif;
+  font-size: 1rem;
+}
+
+.table-list-container {
+  margin-top: 60px;
+}
+
+.table-heading {
+  text-align: center;
+  font-family: "Playfair Display", serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #111;
+  margin-bottom: 40px;
+}
+
+.table-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 30px;
+}
+
+/* ==========================
+   Table Card
+========================== */
+
+.table-card {
+  background: #fff;
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  border-radius: 12px;
+  padding: 26px;
+  transition: all 0.35s ease;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.05);
+}
+
+.table-card:hover {
+  transform: translateY(-6px);
+  border-color: #d4af37;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+.table-number {
+  font-family: "Playfair Display", serif;
+  font-size: 1.7rem;
+  color: #111;
+  margin-bottom: 18px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.18);
+}
+
+.table-card p {
+  margin: 12px 0;
+  color: #555;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.table-card strong {
+  color: #111;
+}
+
+/* ==========================
+   Status Badges
+========================== */
+
+.status-available,
+.status-booked,
+.status-occupied,
+.status-cleaning,
+.status-reserved,
+.availability {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 30px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.status-available {
+  color: #2e7d32;
+  background: rgba(46, 125, 50, 0.08);
+}
+
+.status-booked {
+  color: #c62828;
+  background: rgba(198, 40, 40, 0.08);
+}
+
+.status-occupied {
+  color: #ef6c00;
+  background: rgba(239, 108, 0, 0.08);
+}
+
+.status-cleaning {
+  color: #1565c0;
+  background: rgba(21, 101, 192, 0.08);
+}
+
+.status-reserved {
+  color: #9a7408;
+  background: rgba(212, 175, 55, 0.12);
+}
+
+.available {
+  background: rgba(46, 125, 50, 0.08);
+  color: #2e7d32;
+}
+
+.unavailable {
+  background: rgba(198, 40, 40, 0.08);
+  color: #c62828;
+}
+
+/* ==========================
+   Buttons
+========================== */
+
+.book-btn,
+.scan-btn {
+  width: 100%;
+  margin-top: 22px;
+  padding: 14px;
+  border-radius: 6px;
   border: 1px solid #d4af37;
   background: #fff;
   color: #aa7c11;
   font-family: "Montserrat", sans-serif;
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: 0.82rem;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 2px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
+.book-btn:hover,
 .scan-btn:hover {
   background: #d4af37;
   color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(212, 175, 55, 0.25);
+}
+
+.book-btn:disabled,
+.book-btn.disabled {
+  background: #f5f5f5;
+  border-color: #ddd;
+  color: #999;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.book-btn:disabled:hover,
+.book-btn.disabled:hover {
+  background: #f5f5f5;
+  color: #999;
+}
+
+/* ==========================
+   Scanner Section
+========================== */
+
+.scanner-section {
+  margin-top: 80px;
+  padding-top: 60px;
+  border-top: 1px solid rgba(212, 175, 55, 0.18);
+  text-align: center;
 }
 
 .scanner-container {
-  margin: 40px auto;
   max-width: 420px;
+  margin: 35px auto;
   padding: 20px;
   background: #fff;
-  border: 1px solid rgba(212, 175, 55, 0.2);
-  border-radius: 10px;
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
 }
 
 #reader {
   width: 100%;
 }
 
-.table-list-container {
-  margin-top: 40px;
+/* ==========================
+   Booking Sections
+========================== */
+
+.booking-group {
+  margin-top: 70px;
+  padding: 35px;
+  background: #fcfcfc;
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  border-radius: 12px;
 }
 
-.table-heading {
-  font-family: "Playfair Display", Georgia, serif;
+.booking-group h2 {
+  text-align: center;
+  font-family: "Playfair Display", serif;
   font-size: 1.8rem;
   font-weight: 400;
-  text-align: center;
   color: #111;
-  margin-bottom: 2rem;
+  margin-bottom: 35px;
 }
 
-.table-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-  gap: 25px;
+.booking-group .table-grid {
+  margin-top: 10px;
 }
 
-.table-card {
-  background: #fff;
-  border: 1px solid rgba(212, 175, 55, 0.2);
-  border-radius: 10px;
-  padding: 24px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.03);
-}
-
-.table-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-  border-color: #d4af37;
-}
-
-.table-number {
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: 1.5rem;
-  font-weight: 400;
-  color: #111;
-  margin-bottom: 1rem;
-}
-
-.table-card p {
-  margin: 10px 0;
-  font-family: "Montserrat", sans-serif;
-  font-size: 0.9rem;
-  color: #555;
-  line-height: 1.6;
-}
-
-.table-card strong {
-  color: #222;
-}
-
-.table-status {
-  display: inline-block;
-  margin-top: 15px;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-family: "Montserrat", sans-serif;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.table-status.available {
-  color: #2e7d32;
-  background: #edf7ed;
-}
-
-.table-status.booked {
-  color: #c62828;
-  background: #fdecec;
-}
-
-.table-status.occupied {
-  color: #ef6c00;
-  background: #fff4e5;
-}
-
-.table-status.cleaning {
-  color: #1565c0;
-  background: #eaf3ff;
-}
+/* ==========================
+   Empty State
+========================== */
 
 .empty-message {
   text-align: center;
-  font-family: "Montserrat", sans-serif;
   color: #777;
-  font-size: 0.95rem;
   margin-top: 40px;
+  font-family: "Montserrat", sans-serif;
+}
+
+/* ==========================
+   QR Scanner Styling
+========================== */
+
+#reader video {
+  border-radius: 10px;
+}
+
+#reader__dashboard_section_csr button {
+  background: #d4af37 !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 10px 18px !important;
+  border-radius: 5px !important;
+  cursor: pointer;
+}
+
+#reader__dashboard_section_swaplink {
+  color: #aa7c11 !important;
+}
+
+#reader__status_span {
+  color: #2e7d32 !important;
+  font-weight: 600;
+}
+
+/* ==========================
+   Responsive
+========================== */
+
+@media (max-width: 992px) {
+  .table-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
   .tables-container {
-    padding: 0 1rem;
+    margin: 40px auto;
+    padding: 0 16px 50px;
   }
 
   .tables-title {
-    font-size: 1.8rem;
+    font-size: 2rem;
   }
 
   .table-heading {
-    font-size: 1.5rem;
-  }
-
-  .scan-btn {
-    width: 100%;
+    font-size: 1.6rem;
   }
 
   .table-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
 
   .table-card {
-    padding: 20px;
+    padding: 22px;
   }
+
+  .booking-group {
+    padding: 22px;
+  }
+
+  .booking-group h2 {
+    font-size: 1.5rem;
+  }
+
+  .book-btn,
+  .scan-btn {
+    width: 100%;
+  }
+
+  .scanner-container {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tables-title {
+    font-size: 1.8rem;
+  }
+
+  .table-number {
+    font-size: 1.4rem;
+  }
+
+  .tables-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .booking-group {
+    padding: 18px;
+  }
+}
+
+/* Scanner Card */
+
+.scanner-card {
+  max-width: 650px;
+  margin: 0 auto;
+  padding: 40px;
+  background: #fff;
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.05);
+}
+
+.scanner-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.scanner-icon {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 18px;
+  background: rgba(212,175,55,.12);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+}
+
+.scanner-header h3 {
+  font-family: "Playfair Display", serif;
+  font-size: 2rem;
+  color: #111;
+  margin-bottom: 12px;
+}
+
+.scanner-header p {
+  color: #666;
+  line-height: 1.8;
+  max-width: 480px;
+  margin: auto;
+  font-family: "Montserrat", sans-serif;
+}
+
+/* Scanner */
+
+.scanner-container {
+  margin-top: 30px;
+  padding: 20px;
+  background: #fafafa;
+  border: 1px solid rgba(212,175,55,.18);
+  border-radius: 12px;
+}
+
+#reader {
+  width: 100%;
+}
+
+/* Buttons */
+
+.scan-btn,
+.cancel-scan-btn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 20px;
+  border-radius: 6px;
+  border: 1px solid #d4af37;
+  background: white;
+  color: #aa7c11;
+  font-family: "Montserrat", sans-serif;
+  font-size: .9rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: .3s;
+}
+
+.scan-btn:hover {
+  background: #d4af37;
+  color: white;
+  box-shadow: 0 8px 20px rgba(212,175,55,.25);
+}
+
+.cancel-scan-btn {
+  margin-top: 25px;
+  border-color: #d32f2f;
+  color: #d32f2f;
+}
+
+.cancel-scan-btn:hover {
+  background: #d32f2f;
+  color: white;
+}
+.loading-state{
+    text-align:center;
+    padding:40px;
+    font-size:18px;
+    color:#777;
+}
+
+.booking-group{
+    margin-top:70px;
+}
+
+.booking-heading{
+    font-family:"Playfair Display",serif;
+    font-size:2rem;
+    font-weight:400;
+    color:#111;
+    text-align:center;
+    margin-bottom:35px;
+    position:relative;
+}
+
+.booking-heading::after{
+    content:"";
+    display:block;
+    width:60px;
+    height:2px;
+    background:#d4af37;
+    margin:15px auto 0;
+}
+.table-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin:14px 0;
+    border-bottom:1px solid rgba(212,175,55,.08);
+    padding-bottom:10px;
+}
+
+.table-row span:first-child{
+    color:#666;
+    font-weight:500;
+}
+
+.table-row span:last-child{
+    font-weight:600;
 }

@@ -1,0 +1,214 @@
+html {
+    scroll-behavior: smooth;
+}
+
+.home-section,
+.features-section,
+.special-section,
+.services-section,
+.cta-section {
+    min-height: 100vh;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.section-header {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 60px;
+    margin-bottom: 60px;
+}
+
+.section-header h2 {
+    font-family: "Playfair Display", serif;
+    font-size: 2.4rem;
+    color: #111;
+    font-weight: 400;
+}
+
+.section-divider {
+    width: 60px;
+    height: 2px;
+    background: #d4af37;
+    margin: 18px auto 30px;
+}
+
+.section-header p {
+    color: #666;
+    line-height: 1.8;
+    font-family: "Montserrat", sans-serif;
+}
+
+.feature-grid,
+.dish-grid,
+.service-grid {
+    margin-top: 50px;
+     flex: 1;
+    display: grid;
+    align-content: center;
+    gap: 30px;
+}
+
+.feature-grid {
+    grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+}
+
+.dish-grid {
+    grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
+}
+
+.service-grid {
+    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+}
+
+.feature-card,
+.dish-card,
+.service-item {
+    background: white;
+    border: 1px solid rgba(212,175,55,.2);
+    padding: 35px;
+    transition: .35s;
+}
+
+.feature-card:hover,
+.dish-card:hover,
+.service-item:hover {
+    transform: translateY(-8px);
+    border-color: #d4af37;
+    box-shadow: 0 15px 35px rgba(0,0,0,.08);
+}
+
+.feature-card h3,
+.dish-card h3 {
+    font-family: "Playfair Display", serif;
+    color: #111;
+    font-size: 1.5rem;
+    font-weight: 400;
+    margin-bottom: 15px;
+}
+
+.feature-card p,
+.dish-card p {
+    color: #666;
+    line-height: 1.8;
+    font-family: "Montserrat", sans-serif;
+}
+
+.service-item {
+    text-align: center;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 500;
+    color: #111;
+}
+
+.cta-section {
+    text-align: center;
+    background: #fcfbf7;
+    border: 1px solid rgba(212,175,55,.2);
+    padding: 80px 40px;
+    margin-bottom: 100px;
+    border-radius: 8px;
+}
+
+.cta-section h2 {
+    font-family: "Playfair Display", serif;
+    font-size: 2.5rem;
+    font-weight: 400;
+    color: #111;
+}
+
+.cta-section p {
+    margin: 20px auto 40px;
+    max-width: 600px;
+    color: #666;
+    font-family: "Montserrat", sans-serif;
+    line-height: 1.8;
+}
+
+.cta-section button {
+    padding: 14px 36px;    
+    border: 1px solid #d4af37;
+    font-family: "Montserrat", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: .35s;
+     background: transparent;
+    color: #aa7c11;
+    align-self: center;
+}
+
+.cta-section button:hover {
+   background: #d4af37;
+   color: white;
+}
+
+@media(max-width:768px){
+
+    .section-header h2{
+        font-size:2rem;
+    }
+
+    .feature-grid,
+    .dish-grid,
+    .service-grid{
+        grid-template-columns:1fr;
+    }
+
+    .cta-section{
+        padding:60px 25px;
+    }
+
+    .cta-section h2{
+        font-size:2rem;
+    }
+
+    .home-section,
+.features-section,
+.special-section,
+.services-section,
+.cta-section{
+    min-height:auto;
+    padding:80px 1.5rem;
+}
+}
+
+.about-highlights {
+    margin-top: 50px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 25px;
+}
+
+.highlight-item {
+    padding: 30px 20px;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    background: #fff;
+    transition: all 0.35s ease;
+}
+
+.highlight-item:hover {
+    transform: translateY(-6px);
+    border-color: #d4af37;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+.highlight-item h3 {
+    font-family: "Playfair Display", serif;
+    font-size: 2.2rem;
+    font-weight: 400;
+    color: #aa7c11;
+    margin-bottom: 12px;
+}
+
+.highlight-item span {
+    font-family: "Montserrat", sans-serif;
+    color: #555;
+    font-size: 0.95rem;
+}
+

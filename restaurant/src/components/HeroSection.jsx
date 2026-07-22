@@ -20,7 +20,7 @@ function HeroSection() {
         <button className="hero-btn" onClick = {()=>navigate("/menu")}>Explore Menu</button>
         <button
               className="hero-btn  hero-btn-primary"
-              onClick={() => navigate("/booktable")}
+              onClick={() => navigate("/table")}
             >
               Book a Table
             </button>

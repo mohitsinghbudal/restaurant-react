@@ -1,38 +1,131 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import GetCurrUser from "../util/GetcurrUser";
 import { Html5QrcodeScanner } from "html5-qrcode";
+import axios from "axios";
+
+import GetCurrUser from "../util/GetcurrUser";
 import { showToast } from "../components/showToast";
 import api from "../util/api";
-import axios from "axios";
 import "./Tables.css";
+
+const ROLE_NAMES = {
+  1: "Customer",
+  5: "Admin",
+};
+
+function TableCard({ table, onBook }) {
+  const isAvailable = table?.status?.toLowerCase() === "available" && table?.isActive;
+  const statusClass = table?.status?.toLowerCase().replace(/\s+/g, "-") || "";
+
+  return (
+    <div className="table-card">
+      <h3 className="table-number">Table #{table.tableNo}</h3>
+
+      <p>
+        <strong>Capacity:</strong> {table.capacity}
+      </p>
+
+      <p>
+        <div className="table-row">
+    <span>Status</span>
+    <span className={`status-${statusClass}`}>
+        {table.status}
+    </span>
+</div>
+
+<div className="table-row">
+    <span>Capacity</span>
+    <span>{table.capacity} Persons</span>
+</div>
+
+<div className="table-row">
+    <span>Availability</span>
+
+    <span
+        className={
+            table.isActive
+                ? "availability available"
+                : "availability unavailable"
+        }
+    >
+        {table.isActive ? "Available" : "Unavailable"}
+    </span>
+</div>{" "}
+        <span className={`status-${statusClass}`}>
+          {table.status}
+        </span>
+      </p>
+
+      <p>
+        <strong>Availability:</strong>{" "}
+        <span className={table.isActive ? "availability available" : "availability unavailable"}>
+          {table.isActive ? "Available" : "Unavailable"}
+        </span>
+      </p>
+
+      {isAvailable ? (
+        <button className="book-btn" onClick={() => onBook(table)}>
+          Book Now
+        </button>
+      ) : (
+        <button className="book-btn disabled" disabled>
+          {!table.isActive ? "Unavailable" : table.status}
+        </button>
+      )}
+    </div>
+  );
+}
 
 function Tables() {
   const [showScanner, setShowScanner] = useState(false);
-  const navigate = useNavigate();
-  const { token, roleId } = GetCurrUser();
   const [tables, setTables] = useState([]);
+  const [currBookings, setCurrBookings] = useState([]);
+  const [allBookings, setAllBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
+  const { token, roleId, userId } = GetCurrUser();
+  const baseUrl = api();
+
+
+  const fetchData = async () => {
+  const authHeader = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  try {
+    setLoading(true);
+
+    const [tablesRes, currentRes, historyRes] = await Promise.all([
+      axios.get(`${baseUrl}/Table/get-all-table`, authHeader),
+      axios.get(`${baseUrl}/Table/my-active-bookings`, authHeader),
+      axios.get(`${baseUrl}/Table/my-all-bookings`, authHeader),
+    ]);
+
+    setTables(tablesRes.data.alltables.result || []);
+    setCurrBookings(currentRes.data.bookings || []);
+    setAllBookings(historyRes.data.bookings || []);
+  } catch (err) {
+    console.error(err);
+    showToast("error", "Failed to load data.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+  if (token) {
+    fetchData();
+  }
+}, [token]);
 
   useEffect(() => {
-    if (!token ) {
-      return;
-    }
+    if (!token) return;
 
-    const fetchTables = async () => {
-      try {
-        const baseUrl = api();
-        const res = await axios.get(`${baseUrl}/Table/get-all-table`);
-        setTables(res.data.alltables.result);
-        console.log(res.data);
-      } catch (err) {
-        console.error(err);
-        showToast("error", "Failed to load tables.");
-      }
-    };
-
-    fetchTables();
-
-  }, [token, roleId]);
+    fetchData();
+  }, [token, baseUrl]);
 
   useEffect(() => {
     if (!showScanner) return;
@@ -48,7 +141,7 @@ function Tables() {
 
     scanner.render(
       (decodedText) => {
-        showToast("success", "QR Code Scanned!");
+        showToast("success", "QR Code Scanned");
         scanner.clear();
         setShowScanner(false);
 
@@ -64,84 +157,136 @@ function Tables() {
     );
 
     return () => {
-      scanner.clear().catch((err) => console.error("Failed to clear scanner", err));
+      scanner.clear().catch(() => {});
     };
   }, [showScanner, navigate]);
 
-  const OpenCamera = () => {
-    setShowScanner(true);
-  };
+  const handleBook = async (table) => {
+  if (
+    table.status.toLowerCase() !== "available" ||
+    !table.isActive
+  ) {
+    showToast("error", "This table is not available.");
+    return;
+  }
+
+  try {
+    const res = await axios.post(
+      `${baseUrl}/Table/book-table`,
+      table.tableNo,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    showToast("success", res.data.message);
+
+    await fetchData();
+
+    navigate("/orders");
+  } catch (err) {
+    console.error(err);
+
+    showToast(
+      "error",
+      err.response?.data?.message || "Failed to book table."
+    );
+  }
+};
 
   if (!token) {
     return (
-      <div>
-        <h1>Please Login to get here</h1>
+      <div className="tables-container">
+        <h1 className="tables-title">Please Login</h1>
+        <p className="tables-title-link" onClick={() => navigate("/login")}>
+          Click here to redirect to Login Page
+        </p>
       </div>
     );
   }
 
-  const roleNames = {
-    5: "Admin",
-    1: "Customer",
-  };
-  const roleName = roleNames[roleId] || "Guest";
-
-  if (roleId === 1) {
   return (
     <div className="tables-container">
-      <h1 className="tables-title">Welcome {roleName}</h1>
+      <h1 className="tables-title">
+        Welcome {ROLE_NAMES[roleId] || "Guest"}
+      </h1>
 
-      {!showScanner && (
-        <button className="scan-btn" onClick={OpenCamera}>
-          Scan Table QR
-        </button>
-      )}
+      <section className="table-list-container">
+        <h2 className="table-heading">Available Tables</h2>
+        {loading ? (
+          <div className="loading-state">
+  Loading tables...
+</div>
+        ) : (
+          <div className="table-grid">
+            {tables.map((table, index) => (
+              <TableCard
+                key={table.tableId || table._id || index}
+                table={table}
+                onBook={handleBook}
+              />
+            ))}
+          </div>
+        )}
+      </section>
 
-      {showScanner && (
-        <div className="scanner-container">
-          <div id="reader"></div>
-        </div>
-      )}
-    </div>
-  );
-}else if (roleId === 5) {
-  return (
-    <div className="tables-container">
-      <h1 className="tables-title">Welcome {roleName}</h1>
+      {Number(roleId) === 1 && (
+        <section className="scanner-section">
+          <p className="tables-subtitle">
+            Scan the QR code placed on your table to start ordering.
+          </p>
 
-      <div className="table-list-container">
-        <h2 className="table-heading">All Tables</h2>
-
-        <div className="table-grid">
-          {tables.map((table, index) => (
-            <div
-              className="table-card"
-              key={table.tableId || table._id || index}
-            >
-              <h3 className="table-number">
-                Table No : {table.tableNo || "N/A"}
-              </h3>
-
-              <p>
-                <strong>Capacity:</strong> {table.capacity || "N/A"}
-              </p>
-              
-              <p>
-                <strong>Status:</strong> {table.status || "N/A"}
-              </p>
+          {!showScanner ? (
+            <button className="scan-btn" onClick={() => setShowScanner(true)}>
+              Scan Table QR
+            </button>
+          ) : (
+            <div className="scanner-container">
+              <div id="reader"></div>
             </div>
-          ))}
-        </div>
-      </div>
+          )}
+
+          {currBookings.length > 0 && (
+            <div className="booking-group">
+              <h2 className="booking-heading">
+            Current Booking
+</h2>
+              <div className="table-grid">
+                {currBookings.map((table, index) => (
+                  <TableCard
+                    key={table.tableId || table._id || `curr-${index}`}
+                    table={table}
+                    onBook={handleBook}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {allBookings.length > 0 && (
+            <div className="booking-group">
+              <h2 className="booking-heading">
+    Booking History
+</h2>
+              <div className="table-grid">
+                {allBookings.map((table, index) => (
+                  <TableCard
+                    key={table.tableId || table._id || `all-${index}`}
+                    table={table}
+                    onBook={handleBook}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
-} else {
-   return (
-  <div className="tables-container">
-    <h1 className="tables-title">Please Login</h1>
-  </div>
-);
-  }
 }
 
 export default Tables;
+

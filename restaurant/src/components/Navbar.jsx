@@ -13,6 +13,8 @@ function Navbar() {
   useEffect(() => {
     const { token, roleId } = GetCurrUser();
 
+    console.log(roleId);
+
     setIsLoggedIn(!!token);
     setRoleId(Number(roleId));
   }, [location]);
@@ -43,16 +45,7 @@ function Navbar() {
             </NavLink>
           </li>
 
-          <li className="navbar-item">
-            <NavLink
-              to="/menu"
-              className={({ isActive }) =>
-                isActive ? "navbar-link active" : "navbar-link"
-              }
-            >
-              Menu
-            </NavLink>
-          </li>
+          
 
           <li className="navbar-item">
             <NavLink
@@ -78,7 +71,7 @@ function Navbar() {
             </li>
           )}
 
-          {isLoggedIn && roleId === 5 && (
+          {isLoggedIn && roleId === 1 && (
             <li className="navbar-item">
               <NavLink
                 to="/inventory"
@@ -89,9 +82,31 @@ function Navbar() {
                 Inventory
               </NavLink>
             </li>
+            
           )}
+          {(isLoggedIn && roleId === 1) ? ( 
+            <li className="navbar-item">
+              <NavLink
+                to="/customer-menu"
+                className={({ isActive }) =>
+                  isActive ? "navbar-link active" : "navbar-link"
+                }
+              >
+                Menu
+              </NavLink>
+            </li>
+          ):<li className="navbar-item">
+              <NavLink
+                to="/menu"
+                className={({ isActive }) =>
+                  isActive ? "navbar-link active" : "navbar-link"
+                }
+              >
+                Guest Menu
+              </NavLink>
+            </li>}
 
-          {isLoggedIn && roleId === 1 && (
+          {isLoggedIn && (
             <li className="navbar-item">
               <NavLink
                 to="/table"
@@ -99,7 +114,7 @@ function Navbar() {
                   isActive ? "navbar-link active" : "navbar-link"
                 }
               >
-                BookTable
+                Table
               </NavLink>
             </li>
           )}
