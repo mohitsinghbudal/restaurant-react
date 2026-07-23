@@ -1,359 +1,139 @@
-/* ===========================
-   CUSTOMER MENU
-=========================== */
-
-.menu-container {
-  padding: 70px 8%;
-  background: #ffffff;
-  min-height: 100vh;
-  font-family: "Playfair Display", Georgia, serif;
+.hero {
+  width: 100%;
+  min-height: 90vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 20px;
+  background: linear-gradient(
+      rgba(255, 255, 255, 0.82),
+      rgba(255, 255, 255, 0.82)
+    ),
+    url("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1800&q=80");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
-/* ===========================
-   HEADER
-=========================== */
-
-.menu-header {
+.hero-content {
+  max-width: 850px;
   text-align: center;
-  max-width: 750px;
-  margin: auto;
-  margin-bottom: 60px;
-  padding: 40px;
-  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: rgba(255, 255, 255, 0.92);
+  padding: 60px 50px;
+  border-radius: 20px;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.08);
 }
 
-.menu-header h1 {
-  font-size: 3rem;
-  font-weight: 400;
-  color: #111;
-  letter-spacing: 1px;
+.hero-tagline {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #b8860b;
   margin-bottom: 18px;
 }
 
-.menu-header p {
-  font-family: "Montserrat", sans-serif;
-  color: #555;
-  font-size: 1rem;
-  line-height: 1.8;
-}
-
-/* ===========================
-   TOOLBAR
-=========================== */
-
-.menu-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 25px;
-  flex-wrap: wrap;
-  margin-bottom: 45px;
-}
-
-.menu-toolbar input {
-  flex: 1;
-  min-width: 280px;
-  padding: 14px 18px;
-  border: 1px solid rgba(212, 175, 55, 0.4);
-  outline: none;
-  background: white;
-  font-size: 15px;
-  font-family: "Montserrat", sans-serif;
-  transition: 0.35s;
-}
-
-.menu-toolbar input:focus {
-  border-color: #aa7c11;
-}
-
-.available-filter {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: "Montserrat", sans-serif;
-  color: #444;
-  font-size: 14px;
-}
-
-.available-filter input {
-  width: 18px;
-  height: 18px;
-}
-
-.cart-summary {
-  padding: 14px 24px;
-  border: 1px solid rgba(212, 175, 55, 0.35);
-  display: flex;
-  gap: 25px;
-  font-family: "Montserrat", sans-serif;
-  color: #111;
-}
-
-/* ===========================
-   GRID
-=========================== */
-
-.menu-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 35px;
-}
-
-/* ===========================
-   CARD
-=========================== */
-
-.menu-card {
-  background: white;
-  border: 1px solid rgba(212, 175, 55, 0.25);
-  padding: 30px;
-  transition: all 0.35s ease;
-  display: flex;
-  flex-direction: column;
-}
-
-.menu-card:hover {
-  transform: translateY(-6px);
-  border-color: #aa7c11;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
-}
-
-.menu-disabled {
-  opacity: .45;
-}
-
-.menu-card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.menu-card-top h3 {
-  font-size: 28px;
-  font-weight: 400;
-  color: #111;
-}
-
-.price {
-  font-size: 22px;
-  color: #aa7c11;
-  font-weight: 600;
-  font-family: "Montserrat", sans-serif;
-}
-
-.description {
-  margin: 25px 0;
-  color: #666;
-  font-family: "Montserrat", sans-serif;
-  line-height: 1.8;
-  min-height: 80px;
-}
-
-/* ===========================
-   STATUS
-=========================== */
-
-.menu-footer {
-  margin-bottom: 25px;
-}
-
-.status {
-  display: inline-block;
-  padding: 7px 18px;
-  border: 1px solid;
-  font-size: 12px;
-  font-family: "Montserrat", sans-serif;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-.available {
-  color: #2e7d32;
-  border-color: #2e7d32;
-}
-
-.unavailable {
-  color: #c62828;
-  border-color: #c62828;
-}
-
-/* ===========================
-   QUANTITY
-=========================== */
-
-.quantity-box {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 18px;
-  margin-bottom: 25px;
-}
-
-.quantity-box button {
-  width: 42px;
-  height: 42px;
-  border: 1px solid #aa7c11;
-  background: white;
-  color: #aa7c11;
-  font-size: 20px;
-  cursor: pointer;
-  transition: .3s;
-}
-
-.quantity-box button:hover:not(:disabled) {
-  background: #aa7c11;
-  color: white;
-}
-
-.quantity-box button:disabled {
-  cursor: not-allowed;
-  opacity: .5;
-}
-
-.quantity-box span {
-  width: 40px;
-  text-align: center;
-  font-size: 18px;
-  font-family: "Montserrat", sans-serif;
-  font-weight: bold;
-}
-
-/* ===========================
-   BUTTON
-=========================== */
-
-.add-cart-btn {
-  margin-top: auto;
-  padding: 14px;
-  background: transparent;
-  border: 1px solid #aa7c11;
-  color: #aa7c11;
-  cursor: pointer;
-  font-family: "Montserrat", sans-serif;
-  font-size: .85rem;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  transition: all .35s ease;
-}
-
-.add-cart-btn:hover:not(:disabled) {
-  background: #aa7c11;
-  color: white;
-  transform: translateY(-2px);
-}
-
-.add-cart-btn:disabled {
-  opacity: .5;
-  cursor: not-allowed;
-}
-
-/* ===========================
-   FLOATING CART
-=========================== */
-
-.floating-cart {
-  position: fixed;
-  right: 35px;
-  bottom: 35px;
-  width: 240px;
-  background: white;
-  border: 1px solid rgba(212, 175, 55, 0.35);
-  padding: 25px;
-  box-shadow: 0 15px 35px rgba(0,0,0,.08);
-}
-
-.floating-cart h3 {
-  font-size: 24px;
-  font-weight: 400;
-  margin-bottom: 12px;
-}
-
-.floating-cart p {
-  font-family: "Montserrat", sans-serif;
-  color: #666;
-  margin-bottom: 8px;
-}
-
-.floating-cart strong {
-  font-size: 22px;
-  color: #111;
-}
-
-.floating-cart button {
-  width: 100%;
-  margin-top: 18px;
-  padding: 13px;
-  background: #111;
-  border: 1px solid #111;
-  color: white;
-  font-family: "Montserrat", sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  cursor: pointer;
-  transition: .35s;
-}
-
-.floating-cart button:hover {
-  background: #d4af37;
-  border-color: #d4af37;
-}
-
-/* ===========================
-   LOADING
-=========================== */
-
-.menu-loading,
-.menu-error,
-.no-menu {
-  min-height: 70vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 28px;
-  color: #111;
+.hero-title {
   font-family: "Playfair Display", serif;
+  font-size: 56px;
+  color: #222;
+  margin-bottom: 25px;
+  line-height: 1.2;
 }
 
-/* ===========================
-   RESPONSIVE
-=========================== */
+.hero-subtitle {
+  font-size: 18px;
+  line-height: 1.9;
+  color: #666;
+  max-width: 650px;
+  margin: 0 auto 40px;
+}
+
+/* Buttons Container */
+.hero-content button {
+  margin: 10px;
+}
+
+.hero-btn {
+  padding: 15px 34px;
+  border: 2px solid #d4af37;
+  border-radius: 50px;
+  background: transparent;
+  color: #b8860b;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.35s ease;
+  letter-spacing: 1px;
+}
+
+.hero-btn:hover {
+  background: #d4af37;
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 25px rgba(212, 175, 55, 0.35);
+}
+
+.hero-btn-primary {
+  background: #d4af37;
+  color: white;
+}
+
+.hero-btn-primary:hover {
+  background: #b8860b;
+  border-color: #b8860b;
+}
+
+/* Responsive */
 
 @media (max-width: 992px) {
-
-  .menu-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  .hero-title {
+    font-size: 44px;
   }
 
+  .hero-subtitle {
+    font-size: 17px;
+  }
 }
 
 @media (max-width: 768px) {
-
-  .menu-container {
-    padding: 40px 20px 120px;
+  .hero {
+    padding: 60px 15px;
+    min-height: auto;
   }
 
-  .menu-header {
-    padding: 25px;
+  .hero-content {
+    padding: 40px 25px;
   }
 
-  .menu-header h1 {
-    font-size: 2.2rem;
+  .hero-title {
+    font-size: 36px;
   }
 
-  .menu-toolbar {
-    flex-direction: column;
-    align-items: stretch;
+  .hero-subtitle {
+    font-size: 16px;
+    line-height: 1.7;
   }
 
-  .cart-summary {
-    justify-content: space-between;
+  .hero-btn {
+    width: 100%;
+    margin: 8px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 30px;
   }
 
-  .floating-cart {
-    left: 15px;
-    right: 15px;
-    width: auto;
-    bottom: 15px;
+  .hero-tagline {
+    font-size: 11px;
+    letter-spacing: 3px;
   }
 
+  .hero-subtitle {
+    font-size: 15px;
+  }
 }

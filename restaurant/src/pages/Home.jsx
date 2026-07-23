@@ -155,7 +155,7 @@ function Home() {
           Haven.
         </p>
 
-        <button onClick={() => navigate("/table")}>
+        <button onClick={() => navigate("/guest-table")}>
           Book a Table
         </button>
       </section>

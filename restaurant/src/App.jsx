@@ -8,10 +8,15 @@ import Home from "./pages/Home";
 import Contact from "./pages/Contact";
 import Dashboard from "./pages/Dashboard";
 import GetCurrUser from "./util/GetcurrUser";
-import Menu from "./pages/Menu";
-import Table from "./pages/Tables";
+import Menu from "./pages/guest/GuestMenu";
+import Table from "./pages/customer/CustomerTable";
 import CustomerOrders from "./pages/customer/CustomerOrders";
 import CustomerMenu from "./pages/customer/CustomerMenu";
+import Cart from "./pages/customer/Cart";
+import Inventory from "./pages/admin/Inventory";
+import AdminTable from "./pages/admin/AdminTable";
+import GuestTable from "./pages/guest/GuestTable";
+import CustomerBill from "./pages/customer/CustomerBill";
 
 const AdminPanel = () => <h2>Admin Panel (Admins Only)</h2>;
 const Analytics = () => <h2>Analytics Page (Admins & Editors)</h2>;
@@ -52,26 +57,31 @@ const router = createBrowserRouter([
       { path: "/login", element: <Login /> },
       { path: "/signup", element: <Signup /> },
       { path: "/contact", element: <Contact /> },
+      {path:"/guest-table",element:<GuestTable/>},
       {path:"/menu",element:<Menu/>},
       { path: "/unauthorized", element: <Unauthorized /> },
       { path: "/dashboard", element: <Dashboard />},
-      {path:"/table", element: <Table/>},
-      {path:"/customer-menu",element:<CustomerMenu/>},
+      
 
       { 
         element: <ProtectedRoute allowedRoles={[5]} />,
         children: [
           { path: "/admin-dashboard", element: <AdminPanel /> },
-          { path: "/analytics", element: <Analytics /> }
+          { path: "/analytics", element: <Analytics /> },
+          {path:"/inventory",element:<Inventory/>},
+          {path:"/admin-table",element:<AdminTable/>},
         ]
       },
       {
         element: <ProtectedRoute allowedRoles={[1]} />,
         children: [
           { path: "/customer-dashboard", element: <UserPanel /> },
-          {path:"/orders",element:<CustomerOrders/>},
-          
-          {path:"/customer-orders",element:<CustomerMenu/>},
+          {path:"/customer-orders",element:<CustomerOrders/>},
+          {path:"/customer-cart",element:<Cart/>},
+          {path:"/customer-table", element: <Table/>},
+          {path:"/customer-orders",element:<CustomerOrders/>},
+          {path:"/customer-menu",element:<CustomerMenu/>},
+          {path:"/customer-bill",element:<CustomerBill/>},
           
         ]
       },

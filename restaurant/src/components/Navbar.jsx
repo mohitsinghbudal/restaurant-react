@@ -57,8 +57,20 @@ function Navbar() {
               Contact
             </NavLink>
           </li>
+          {!isLoggedIn && (
+  <li className="navbar-item">
+    <NavLink
+      to="/menu"
+      className={({ isActive }) =>
+        isActive ? "navbar-link active" : "navbar-link"
+      }
+    >
+      Menu
+    </NavLink>
+  </li>
+)}
 
-          {isLoggedIn && (
+          {/* {isLoggedIn && (
             <li className="navbar-item">
               <NavLink
                 to="/dashboard"
@@ -69,10 +81,11 @@ function Navbar() {
                 Dashboard
               </NavLink>
             </li>
-          )}
+          )} */}
 
-          {isLoggedIn && roleId === 1 && (
-            <li className="navbar-item">
+          {isLoggedIn && roleId === 5 && (
+            <>
+              <li className="navbar-item">
               <NavLink
                 to="/inventory"
                 className={({ isActive }) =>
@@ -82,10 +95,31 @@ function Navbar() {
                 Inventory
               </NavLink>
             </li>
+            <li className="navbar-item">
+              <NavLink
+                to="/admin-table"
+                className={({ isActive }) =>
+                  isActive ? "navbar-link active" : "navbar-link"
+                }
+              >
+                Table
+              </NavLink>
+            </li>
+            <li className="navbar-item">
+              <NavLink
+                to="/inventory"
+                className={({ isActive }) =>
+                  isActive ? "navbar-link active" : "navbar-link"
+                }
+              >
+                Report
+              </NavLink>
+            </li>
+            </>
             
           )}
-          {(isLoggedIn && roleId === 1) ? ( 
-            <li className="navbar-item">
+          {(isLoggedIn && roleId === 1) && ( 
+            <><li className="navbar-item">
               <NavLink
                 to="/customer-menu"
                 className={({ isActive }) =>
@@ -95,21 +129,34 @@ function Navbar() {
                 Menu
               </NavLink>
             </li>
-          ):<li className="navbar-item">
+            <li className="navbar-item">
               <NavLink
-                to="/menu"
+                to="/customer-bill"
                 className={({ isActive }) =>
                   isActive ? "navbar-link active" : "navbar-link"
                 }
               >
-                Guest Menu
+                Bill
               </NavLink>
-            </li>}
+            </li>
+            <li className="navbar-item">
+              <NavLink
+                to="/customer-orders"
+                className={({ isActive }) =>
+                  isActive ? "navbar-link active" : "navbar-link"
+                }
+              >
+                Orders
+              </NavLink>
+            </li>
+            </>
+            
+          )}
 
           {isLoggedIn && (
             <li className="navbar-item">
               <NavLink
-                to="/table"
+                to="/customer-table"
                 className={({ isActive }) =>
                   isActive ? "navbar-link active" : "navbar-link"
                 }

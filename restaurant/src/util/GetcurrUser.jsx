@@ -3,6 +3,7 @@ const GetCurrUser = () => {
     token: sessionStorage.getItem("token"),
     roleId: Number(sessionStorage.getItem("roleId")),
     userId: Number(sessionStorage.getItem("userId")),
+    sessionId:Number(sessionStorage.getItem("sessionId")),
   };
 };
 

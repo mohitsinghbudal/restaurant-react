@@ -1,0 +1,258 @@
+/* Orders.css - Midnight Slate & Amber Theme */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+.orders-page {
+  min-height: 100vh;
+  padding: 56px 8%;
+  background-color: #f8fafc;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Header Section */
+.orders-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.orders-header h1 {
+  font-size: 32px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.8px;
+  margin-bottom: 8px;
+}
+
+.orders-header p {
+  color: #64748b;
+  font-size: 15px;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Loading & Empty States */
+.orders-loading,
+.no-orders {
+  min-height: 45vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.no-orders h2,
+.orders-loading h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+/* Orders List */
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Order Cards */
+.order-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px 28px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.order-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);
+}
+
+.order-left h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.4px;
+  margin: 0 0 8px 0;
+}
+
+.order-left p {
+  color: #64748b;
+  margin: 4px 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.order-right {
+  text-align: right;
+}
+
+.order-right h3 {
+  margin-top: 10px;
+  font-size: 22px;
+  font-weight: 800;
+  color: #d97706; /* Warm Amber */
+  letter-spacing: -0.5px;
+}
+
+/* Status Badges */
+.status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.preparing {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.served {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.cancelled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.completed {
+  background: #ccfbf1;
+  color: #115e59;
+}
+
+/* ===== ORDER SUMMARY ===== */
+
+.order-summary {
+  margin-top: 40px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 28px 32px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+}
+
+.summary-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.bill-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.bill-info h2 {
+  color: #64748b;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.bill-info h1 {
+  color: #0f172a;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  margin: 2px 0 0 0;
+}
+
+/* Get Bill Button */
+.getmybill {
+  background: #0f172a; /* Obsidian Dark Accent */
+  color: #ffffff;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.getmybill:hover {
+  background: #334155;
+}
+
+/* Responsiveness */
+@media (max-width: 900px) {
+  .orders-page {
+    padding: 36px 20px;
+  }
+
+  .order-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .order-right {
+    width: 100%;
+    text-align: left;
+  }
+
+  .order-summary {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .summary-top {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 20px;
+  }
+
+  .bill-info {
+    text-align: center;
+    align-items: center;
+  }
+
+  .getmybill {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .orders-header h1 {
+    font-size: 26px;
+  }
+
+  .order-left h3 {
+    font-size: 16px;
+  }
+
+  .order-right h3 {
+    font-size: 18px;
+  }
+
+  .bill-info h1 {
+    font-size: 26px;
+  }
+}

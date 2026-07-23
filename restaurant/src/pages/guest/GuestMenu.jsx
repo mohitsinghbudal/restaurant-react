@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import api from "../util/api";
-import "./Menu.css";
+import api from "../../util/api";
+import "./GuestMenu.css";
 
 function Menu() {
   const [menuData, setMenuData] = useState([]);

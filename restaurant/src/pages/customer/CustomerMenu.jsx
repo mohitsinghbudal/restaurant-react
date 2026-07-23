@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import api from "../../util/api";
 import "./CustomerMenu.css";
+import {useNavigate} from "react-router-dom";
 
 function Menu() {
   const [menuData, setMenuData] = useState([]);
@@ -13,6 +14,8 @@ function Menu() {
 
   const [cart, setCart] = useState([]);
   const [quantities, setQuantities] = useState({});
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -61,31 +64,27 @@ function Menu() {
   };
 
   const addToCart = (item) => {
-    const qty = quantities[item.menuId] || 1;
+  const qty = quantities[item.menuId] || 1;
 
-    const existing = cart.find((c) => c.menuId === item.menuId);
+  let updatedCart = [...cart];
 
-    if (existing) {
-      setCart((prev) =>
-        prev.map((c) =>
-          c.menuId === item.menuId
-            ? {
-                ...c,
-                quantity: c.quantity + qty,
-              }
-            : c
-        )
-      );
-    } else {
-      setCart((prev) => [
-        ...prev,
-        {
-          ...item,
-          quantity: qty,
-        },
-      ]);
-    }
-  };
+  const existingIndex = updatedCart.findIndex(
+    (c) => c.menuId === item.menuId
+  );
+
+  if (existingIndex !== -1) {
+    updatedCart[existingIndex].quantity += qty;
+  } else {
+    updatedCart.push({
+      ...item,
+      quantity: qty,
+    });
+  }
+
+  setCart(updatedCart);
+
+  sessionStorage.setItem("cart", JSON.stringify(updatedCart));
+};
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -152,14 +151,13 @@ function Menu() {
               <div className="menu-card-top">
                 <h3>{item.itemName}</h3>
 
-                <span className="price">
-                  Rs. {item.itemPrice}
-                </span>
+                
               </div>
 
               <p className="description">{item.itemDescription}</p>
 
               <div className="menu-footer">
+                
                 <span
                   className={
                     item.isAvailable
@@ -168,6 +166,9 @@ function Menu() {
                   }
                 >
                   {item.isAvailable ? "Available" : "Not Available"}
+                </span>
+                <span className="price">
+                  Rs. {item.itemPrice}
                 </span>
               </div>
 
@@ -213,7 +214,7 @@ function Menu() {
             <strong>Rs. {totalPrice}</strong>
           </div>
 
-          <button>View Cart</button>
+          <button onClick={()=>{navigate("/customer-cart")}}>View Cart</button>
         </div>
       )}
     </div>

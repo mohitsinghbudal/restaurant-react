@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import axios from "axios";
 
-import GetCurrUser from "../util/GetcurrUser";
-import { showToast } from "../components/showToast";
-import api from "../util/api";
-import "./Tables.css";
+import GetCurrUser from "../../util/GetcurrUser";
+import { showToast } from "../../components/showToast";
+import api from "../../util/api";
+import "./CustomerTables.css";
 
 const ROLE_NAMES = {
   1: "Customer",
@@ -183,10 +183,10 @@ useEffect(() => {
     );
 
     showToast("success", res.data.message);
-
+    sessionStorage.setItem("sessionId", res.data.sessionid);
     await fetchData();
 
-    navigate("/orders");
+    navigate("/customer-menu");
   } catch (err) {
     console.error(err);
 
