@@ -60,9 +60,7 @@ function Menu() {
               <div className="menu-card-top">
                 <h3>{item.itemName}</h3>
 
-                <span className="price">
-                  Rs. {item.itemPrice}
-                </span>
+                
               </div>
 
               <p className="description">
@@ -78,6 +76,9 @@ function Menu() {
                   }
                 >
                   {item.isAvailable ? "Available" : "Not Available"}
+                </span>
+                <span className="price">
+                  Rs. {item.itemPrice}
                 </span>
               </div>
             </div>

@@ -57,13 +57,11 @@ function CustomerBill() {
       0
     );
 
-    const serviceCharge = subtotal * 0.10; // 10% Service Charge
-    const vat = (subtotal + serviceCharge) * 0.13; // 13% VAT
-    const grandTotal = subtotal + serviceCharge + vat;
+    const vat = (subtotal ) * 0.13; // 13% VAT
+    const grandTotal = subtotal  + vat;
 
     return {
       subtotal,
-      serviceCharge,
       vat,
       grandTotal,
     };
@@ -89,6 +87,106 @@ function CustomerBill() {
       </div>
     );
   }
+
+    // Place this inside CustomerBill() or outside at the top of the file
+const postToEsewa = (url, params) => {
+  const form = document.createElement('form');
+  form.setAttribute('method', 'POST');
+  form.setAttribute('action', url);
+
+  Object.keys(params).forEach((key) => {
+    const hiddenField = document.createElement('input');
+    hiddenField.setAttribute('type', 'hidden');
+    hiddenField.setAttribute('name', key);
+    hiddenField.setAttribute('value', params[key]);
+    form.appendChild(hiddenField);
+  });
+
+  document.body.appendChild(form);
+  form.submit();
+};
+
+
+
+ const payEsewa = async () => {
+  try {
+    setError(null);
+    const activeToken =
+      token || sessionStorage.getItem("token") || localStorage.getItem("token");
+
+    if (!activeSessionId) {
+      setError("No active session found.");
+      return;
+    }
+
+    const response = await axios.post(
+      `${baseUrl}/Bill/pay/esewa?sessionId=${parseInt(activeSessionId, 10)}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${activeToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    // const response = await axios.post(
+    //   `${baseUrl}/Bill/pay/esewa`,
+    //   {
+    //     SessionId:parseInt(activeSessionId, 10)
+    //   },
+    //   {
+    //     headers: {
+    //       Authorization: `Bearer ${activeToken}`,
+    //       "Content-Type": "application/json",
+    //     },
+    //   }
+    // );
+    const data = response.data;
+
+    // Handle both PascalCase and camelCase property bindings safely
+    const paymentUrl = data.paymentUrl || data.PaymentUrl;
+    const amount = data.amount ?? data.Amount;                   // e.g. "100.00"
+    const taxAmount = data.taxAmount ?? data.TaxAmount;           // e.g. "13.00"
+    const totalAmount = data.totalAmount ?? data.TotalAmount;     // e.g. "113.00"
+    const transactionUuid = data.transactionUuid || data.TransactionUuid;
+    const productCode = data.productCode || data.ProductCode;
+    const signature = data.signature || data.Signature;
+
+    if (!paymentUrl) {
+      throw new Error("Backend response did not include a valid paymentUrl.");
+    }
+
+    // Build eSewa Form payload (total_amount MUST EQUAL amount + tax_amount)
+    const esewaFormData = {
+      amount: amount,
+      tax_amount: taxAmount,
+      total_amount: totalAmount,
+      transaction_uuid: transactionUuid,
+      product_code: productCode,
+      product_service_charge: "0",
+      product_delivery_charge: "0",
+      success_url: `${baseUrl}/Bill/pay/esewa/success`,
+      failure_url: `${baseUrl}/Bill/pay/esewa/failure`,
+      signed_field_names: "total_amount,transaction_uuid,product_code",
+      signature: signature,
+    };
+
+    console.log("Submitting form to eSewa:", paymentUrl, esewaFormData);
+
+    postToEsewa(paymentUrl, esewaFormData);
+  } catch (err) {
+    console.error("eSewa payment error:", err);
+    const errorMsg =
+      err.response?.data?.message ||
+      err.response?.data ||
+      err.message ||
+      "Failed to initiate eSewa payment.";
+
+    setError(typeof errorMsg === "string" ? errorMsg : JSON.stringify(errorMsg));
+  }
+};
+
+
 
   return (
     <div className="bill-container">
@@ -152,10 +250,7 @@ function CustomerBill() {
             <span>Rs. {billCalculations.subtotal.toFixed(2)}</span>
           </div>
 
-          <div className="summary-row">
-            <span>Service Charge (10%)</span>
-            <span>Rs. {billCalculations.serviceCharge.toFixed(2)}</span>
-          </div>
+          
 
           <div className="summary-row">
             <span>VAT (13%)</span>
@@ -187,6 +282,12 @@ function CustomerBill() {
           onClick={() => alert("Please request cash/eSewa payment from your waiter.")}
         >
           💳 Pay at Table
+        </button>
+        <button
+          className="btn-esewa"
+          onClick={payEsewa}
+        >
+          💳 Pay Via Esewa
         </button>
       </div>
 

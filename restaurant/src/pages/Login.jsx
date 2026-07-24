@@ -13,9 +13,19 @@ function Login() {
 
   const { token, roleId } = GetCurrUser();
 
-  const handleRoleRedirect = () => {
-    
-        navigate('/dashboard');
+  const handleRoleRedirect = (roleId) => {
+    switch(roleId)
+    {
+      case 1: 
+      navigate("/customer-table");
+
+      case 5:
+        navigate("/customer-table");
+
+      default:
+        navigate("/dashboard");
+    }
+        
     };
 
 

@@ -252,8 +252,8 @@ useEffect(() => {
           {currBookings.length > 0 && (
             <div className="booking-group">
               <h2 className="booking-heading">
-            Current Booking
-</h2>
+                Current Booking
+              </h2>
               <div className="table-grid">
                 {currBookings.map((table, index) => (
                   <TableCard

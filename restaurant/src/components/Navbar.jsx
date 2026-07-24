@@ -34,7 +34,7 @@ function Navbar() {
         </div>
 
         <ul className="navbar-list">
-          <li className="navbar-item">
+          {!isLoggedIn && (<li className="navbar-item">
             <NavLink
               to="/"
               className={({ isActive }) =>
@@ -44,19 +44,8 @@ function Navbar() {
               Home
             </NavLink>
           </li>
+          )}
 
-          
-
-          <li className="navbar-item">
-            <NavLink
-              to="/contact"
-              className={({ isActive }) =>
-                isActive ? "navbar-link active" : "navbar-link"
-              }
-            >
-              Contact
-            </NavLink>
-          </li>
           {!isLoggedIn && (
   <li className="navbar-item">
     <NavLink
@@ -165,6 +154,18 @@ function Navbar() {
               </NavLink>
             </li>
           )}
+
+            <li className="navbar-item">
+            <NavLink
+              to="/contact"
+              className={({ isActive }) =>
+                isActive ? "navbar-link active" : "navbar-link"
+              }
+            >
+              Contact
+            </NavLink>
+          </li>
+
 
           {isLoggedIn ? (
             <li className="navbar-item">
