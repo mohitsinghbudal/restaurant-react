@@ -6,7 +6,7 @@ import "./CustomerBill.css";
 
 function CustomerBill() {
   const baseUrl = api();
-  const { token, sessionId: userSessionId } = GetCurrUser();
+  const { token, sessionId} = GetCurrUser();
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +14,7 @@ function CustomerBill() {
   const [paymentStatus, setPaymentStatus] = useState("UNPAID"); // UNPAID | PAID
 
   // Fetch session ID if not in hook
-  const activeSessionId = userSessionId || sessionStorage.getItem("sessionId");
+  const activeSessionId = sessionId;
 
   const loadBillData = async () => {
     if (!activeSessionId) {
@@ -112,7 +112,7 @@ const postToEsewa = (url, params) => {
   try {
     setError(null);
     const activeToken =
-      token || sessionStorage.getItem("token") || localStorage.getItem("token");
+      token || sessionStorage.getItem("token");
 
     if (!activeSessionId) {
       setError("No active session found.");
@@ -120,7 +120,7 @@ const postToEsewa = (url, params) => {
     }
 
     const response = await axios.post(
-      `${baseUrl}/Bill/pay/esewa?sessionId=${parseInt(activeSessionId, 10)}`,
+      `${baseUrl}/Bill/pay/esewa?req=${parseInt(activeSessionId, 10)}`,
       {},
       {
         headers: {
@@ -151,6 +151,9 @@ const postToEsewa = (url, params) => {
     const transactionUuid = data.transactionUuid || data.TransactionUuid;
     const productCode = data.productCode || data.ProductCode;
     const signature = data.signature || data.Signature;
+    const success_url = data.success_url;
+    const failure_url = data.failure_url;
+
 
     if (!paymentUrl) {
       throw new Error("Backend response did not include a valid paymentUrl.");
@@ -161,10 +164,10 @@ const postToEsewa = (url, params) => {
       amount: amount,
       tax_amount: taxAmount,
       total_amount: totalAmount,
-      transaction_uuid: transactionUuid,
-      product_code: productCode,
       product_service_charge: "0",
       product_delivery_charge: "0",
+      transaction_uuid: transactionUuid,
+      product_code: productCode,
       success_url: `${baseUrl}/Bill/pay/esewa/success`,
       failure_url: `${baseUrl}/Bill/pay/esewa/failure`,
       signed_field_names: "total_amount,transaction_uuid,product_code",

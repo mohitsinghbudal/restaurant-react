@@ -17,6 +17,7 @@ import Inventory from "./pages/admin/Inventory";
 import AdminTable from "./pages/admin/AdminTable";
 import GuestTable from "./pages/guest/GuestTable";
 import CustomerBill from "./pages/customer/CustomerBill";
+import Verifyotp from "./pages/Verifyotp";
 
 const AdminPanel = () => <h2>Admin Panel (Admins Only)</h2>;
 const Analytics = () => <h2>Analytics Page (Admins & Editors)</h2>;
@@ -61,7 +62,7 @@ const router = createBrowserRouter([
       {path:"/menu",element:<Menu/>},
       { path: "/unauthorized", element: <Unauthorized /> },
       { path: "/dashboard", element: <Dashboard />},
-      
+      {path:"/Verifyotp", element : <Verifyotp/>},
 
       { 
         element: <ProtectedRoute allowedRoles={[5]} />,
