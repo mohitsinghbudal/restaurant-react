@@ -1,0 +1,403 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-heading: "Cormorant Garamond", serif;
+  --font-body: "Plus Jakarta Sans", sans-serif;
+
+  --bg-main: #f8f7f4;
+  --surface-card: #ffffff;
+  --text-primary: #1a1917;
+  --text-muted: #737067;
+
+  /* Gourmet Gold Theme */
+  --gold-primary: #c59b27;
+  --gold-gradient: linear-gradient(135deg, #e3c472 0%, #b88d29 100%);
+  --gold-shadow: rgba(184, 141, 41, 0.22);
+  --border-subtle: rgba(197, 155, 39, 0.15);
+
+  /* Payment Status Colors (Refined Soft Tones) */
+  --status-success-bg: #f0fdf4;
+  --status-success-text: #15803d;
+  --status-success-dot: #22c55e;
+
+  --status-pending-bg: #fffbeb;
+  --status-pending-text: #b45309;
+  --status-pending-dot: #f59e0b;
+
+  --status-failed-bg: #fdf2f2;
+  --status-failed-text: #9b1c1c;
+  --status-failed-dot: #ef4444;
+
+  /* Shadows */
+  --shadow-sm: 0 4px 12px rgba(15, 14, 12, 0.03);
+  --shadow-lg: 0 20px 40px -10px rgba(15, 14, 12, 0.07);
+}
+
+.payment-page {
+  padding: 48px;
+  background-color: var(--bg-main);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(227, 196, 114, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(184, 141, 41, 0.05) 0px, transparent 50%);
+  min-height: 100vh;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+}
+
+/* ===========================
+          HEADER
+=========================== */
+
+.payment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 40px;
+}
+
+.payment-header h1 {
+  margin: 0;
+  font-size: 42px;
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.payment-header p {
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.export-btn {
+  background: var(--gold-gradient);
+  color: #ffffff;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 10px 24px var(--gold-shadow);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.export-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 28px rgba(184, 141, 41, 0.32);
+  filter: brightness(1.05);
+}
+
+/* ===========================
+          CARDS
+=========================== */
+
+.payment-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.payment-card {
+  background: var(--surface-card);
+  padding: 28px;
+  border-radius: 20px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Modern top accent lines */
+.payment-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--gold-primary);
+}
+
+.payment-card.success-card::before {
+  background: var(--status-success-dot);
+}
+
+.payment-card.pending-card::before {
+  background: var(--status-pending-dot);
+}
+
+.payment-card.failed-card::before {
+  background: var(--status-failed-dot);
+}
+
+.payment-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(197, 155, 39, 0.3);
+}
+
+.payment-card h3 {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.payment-card span {
+  display: block;
+  margin-top: 12px;
+  font-size: 38px;
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ===========================
+          TOOLBAR
+=========================== */
+
+.payment-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.payment-toolbar input,
+.payment-toolbar select {
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  font-size: 14px;
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.25s ease;
+  font-family: var(--font-body);
+}
+
+.payment-toolbar input {
+  width: 360px;
+  box-shadow: var(--shadow-sm);
+}
+
+.payment-toolbar input::placeholder {
+  color: #a3a096;
+}
+
+.payment-toolbar input:focus,
+.payment-toolbar select:focus {
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 0 4px rgba(197, 155, 39, 0.12);
+}
+
+/* ===========================
+          TABLE
+=========================== */
+
+.payment-table {
+  background: var(--surface-card);
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-lg);
+}
+
+.payment-table table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.payment-table th {
+  background: #141311;
+  color: #f3e5be;
+  padding: 20px 24px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.payment-table td {
+  padding: 20px 24px;
+  text-align: center;
+  border-bottom: 1px solid #f1efe9;
+  color: #3b3935;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.payment-table tr {
+  transition: background-color 0.2s ease;
+}
+
+.payment-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.payment-table tr:hover {
+  background-color: #faf8f3;
+}
+
+/* ===========================
+       STATUS BADGES
+=========================== */
+
+.payment-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: capitalize;
+}
+
+/* Dot indicator before status text */
+.payment-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.payment-status.success {
+  background: var(--status-success-bg);
+  color: var(--status-success-text);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+.payment-status.success::before {
+  background-color: var(--status-success-dot);
+}
+
+.payment-status.pending {
+  background: var(--status-pending-bg);
+  color: var(--status-pending-text);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+.payment-status.pending::before {
+  background-color: var(--status-pending-dot);
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+
+.payment-status.failed {
+  background: var(--status-failed-bg);
+  color: var(--status-failed-text);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.payment-status.failed::before {
+  background-color: var(--status-failed-dot);
+}
+
+/* ===========================
+       ACTION BUTTONS
+=========================== */
+
+.view-btn,
+.refund-btn {
+  border: none;
+  padding: 8px 16px;
+  margin: 0 3px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.view-btn {
+  background: #f3f0e6;
+  color: #524f46;
+}
+
+.view-btn:hover {
+  background: #e7e2d3;
+  color: var(--text-primary);
+}
+
+.refund-btn {
+  background: #f3e8ff;
+  color: #6b21a8;
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+
+.refund-btn:hover {
+  background: #e9d5ff;
+}
+
+/* Empty State */
+
+.empty {
+  padding: 48px;
+  color: var(--text-muted);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* ===========================
+         RESPONSIVE
+=========================== */
+
+@media (max-width: 1000px) {
+  .payment-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .payment-page {
+    padding: 32px 24px;
+  }
+
+  .payment-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .payment-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+
+  .payment-toolbar input {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .payment-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-header h1 {
+    font-size: 32px;
+  }
+
+  .payment-table table {
+    min-width: 750px;
+  }
+}

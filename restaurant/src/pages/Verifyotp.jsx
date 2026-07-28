@@ -122,73 +122,180 @@ function Verifyotp() {
   );
 }
 
-// Inline CSS styles for quick preview / layout
 const styles = {
+
   container: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '80vh',
-    padding: '20px',
+
+    display: "flex",
+
+    justifyContent: "center",
+
+    alignItems: "center",
+
+    minHeight: "100vh",
+
+    padding: "30px",
+
+    background: "#f6f5f1",
+
+    fontFamily: "Montserrat, sans-serif"
+
   },
+
+
   card: {
-    width: '100%',
-    maxWidth: '400px',
-    padding: '30px',
-    borderRadius: '8px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-    backgroundColor: '#ffffff',
+
+    width: "100%",
+
+    maxWidth: "420px",
+
+    padding: "35px",
+
+    borderRadius: "18px",
+
+    backgroundColor: "#ffffff",
+
+    border: "1px solid rgba(176,139,62,.18)",
+
+    boxShadow: "0 15px 35px rgba(0,0,0,.08)"
+
   },
+
+
   heading: {
-    margin: '0 0 10px 0',
-    fontSize: '24px',
-    textAlign: 'center',
+
+    margin: "0 0 12px 0",
+
+    fontSize: "32px",
+
+    textAlign: "center",
+
+    fontFamily: "'Playfair Display', serif",
+
+    fontWeight: "600",
+
+    color: "#2b2b2b"
+
   },
+
+
   subheading: {
-    margin: '0 0 20px 0',
-    fontSize: '14px',
-    color: '#666',
-    textAlign: 'center',
+
+    margin: "0 0 25px 0",
+
+    fontSize: "14px",
+
+    textAlign: "center",
+
+    color: "#777",
+
+    lineHeight: "1.6"
+
   },
+
+
   alert: {
-    padding: '10px 15px',
-    borderRadius: '4px',
-    marginBottom: '15px',
-    fontSize: '14px',
-    border: '1px solid transparent',
+
+    padding: "12px 15px",
+
+    borderRadius: "10px",
+
+    marginBottom: "18px",
+
+    fontSize: "14px",
+
+    background: "#fae7e7",
+
+    color: "#a33a3a",
+
+    border: "1px solid rgba(163,58,58,.2)"
+
   },
+
+
   form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '15px',
+
+    display: "flex",
+
+    flexDirection: "column",
+
+    gap: "18px"
+
   },
+
+
   formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '5px',
+
+    display: "flex",
+
+    flexDirection: "column",
+
+    gap: "8px"
+
   },
+
+
   label: {
-    fontSize: '14px',
-    fontWeight: 'bold',
-    color: '#333',
+
+    fontSize: "14px",
+
+    fontWeight: "600",
+
+    color: "#444"
+
   },
+
+
   input: {
-    padding: '10px',
-    fontSize: '16px',
-    borderRadius: '4px',
-    border: '1px solid #ccc',
-    outline: 'none',
+
+    padding: "14px",
+
+    fontSize: "16px",
+
+    borderRadius: "10px",
+
+    border: "1px solid #ddd",
+
+    outline: "none",
+
+    textAlign: "center",
+
+    letterSpacing: "5px",
+
+    transition: ".3s",
+
+    color: "#333"
+
   },
+
+
   button: {
-    padding: '12px',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    color: '#fff',
-    backgroundColor: '#2b6cb0',
-    border: 'none',
-    borderRadius: '4px',
-    marginTop: '10px',
-  },
+
+    padding: "14px",
+
+    fontSize: "15px",
+
+    fontWeight: "600",
+
+    color: "#ffffff",
+
+    background: "#b08b3e",
+
+    border: "none",
+
+    borderRadius: "25px",
+
+    marginTop: "10px",
+
+    cursor: "pointer",
+
+    transition: ".3s",
+
+    boxShadow: "0 8px 18px rgba(176,139,62,.25)"
+
+  }
+
 };
+
 
 export default Verifyotp;

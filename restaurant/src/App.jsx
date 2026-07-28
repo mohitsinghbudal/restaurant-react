@@ -8,16 +8,26 @@ import Home from "./pages/Home";
 import Contact from "./pages/Contact";
 import Dashboard from "./pages/Dashboard";
 import GetCurrUser from "./util/GetcurrUser";
-import Menu from "./pages/guest/GuestMenu";
-import Table from "./pages/customer/CustomerTable";
-import CustomerOrders from "./pages/customer/CustomerOrders";
-import CustomerMenu from "./pages/customer/CustomerMenu";
-import Cart from "./pages/customer/Cart";
-import Inventory from "./pages/admin/Inventory";
+import Menu from "./pages/Guest/GuestMenu";
+import Table from "./pages/Customer/CustomerTable";
+import CustomerOrders from "./pages/Customer/CustomerOrders";
+import CustomerMenu from "./pages/Customer/CustomerMenu";
+import Cart from "./pages/Customer/Cart";
+// import Inventory from "./pages/admin/InventoryMgmt";
 import AdminTable from "./pages/admin/AdminTable";
-import GuestTable from "./pages/guest/GuestTable";
-import CustomerBill from "./pages/customer/CustomerBill";
+import GuestTable from "./pages/Guest/GuestTable";
+import CustomerBill from "./pages/Customer/CustomerBill";
 import Verifyotp from "./pages/Verifyotp";
+import InventoryMgmt from "./pages/admin/InventoryMgmt";
+import BillsMgmt from "./pages/admin/BillsMgmt";
+import DinningMgmt from "./pages/admin/DinningMgmt";
+import UserMgmt from "./pages/admin/UserMgmt";
+import MenuMgmt from "./pages/admin/MenuMgmt";
+import OrderMgmt from "./pages/admin/OrderMgmt";
+import PaymentMgmt from "./pages/admin/PaymentMgmt";
+import ReportMgmt from "./pages/admin/ReportMgmt";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+
 
 const AdminPanel = () => <h2>Admin Panel (Admins Only)</h2>;
 const Analytics = () => <h2>Analytics Page (Admins & Editors)</h2>;
@@ -62,15 +72,33 @@ const router = createBrowserRouter([
       {path:"/menu",element:<Menu/>},
       { path: "/unauthorized", element: <Unauthorized /> },
       { path: "/dashboard", element: <Dashboard />},
-      {path:"/Verifyotp", element : <Verifyotp/>},
+      {path:"/Verify-otp", element : <Verifyotp/>},
+      
+      
 
       { 
         element: <ProtectedRoute allowedRoles={[5]} />,
         children: [
-          { path: "/admin-dashboard", element: <AdminPanel /> },
+          { path: "/admin-dashboard", element: <AdminDashboard /> },
           { path: "/analytics", element: <Analytics /> },
-          {path:"/inventory",element:<Inventory/>},
-          {path:"/admin-table",element:<AdminTable/>},
+          // {path:"/inventory",element:<Inventory/>},
+
+      {path:"/admin-inventory", element:<InventoryMgmt/>},
+
+      {path:"/admin-table",element:<AdminTable/>},
+      {path:"/admin-bill",element:<BillsMgmt/>},
+      { path: "/admin-dining", element: <DinningMgmt /> },
+          { path: "/admin-users", element: <UserMgmt /> },
+
+{ path: "/admin-menu", element: <MenuMgmt /> },
+
+{ path: "/admin-orders", element: <OrderMgmt /> },
+
+{ path: "/admin-payment", element: <PaymentMgmt /> },
+
+{ path: "/admin-reports", element: <ReportMgmt /> },
+          
+          
         ]
       },
       {

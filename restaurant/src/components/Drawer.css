@@ -1,0 +1,158 @@
+.drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(3px);
+    z-index: 9998;
+}
+
+.drawer {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 290px;
+    height: 100vh;
+    background: #ffffff;
+    box-shadow: 10px 0 35px rgba(0, 0, 0, 0.15);
+    transition: left 0.35s ease;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+}
+
+.drawer.open {
+    left: 0;
+}
+
+/* Header */
+
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 24px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+    background: linear-gradient(to right, #fffdf8, #ffffff);
+}
+
+.drawer-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #b8860b;
+    letter-spacing: .5px;
+}
+
+/* Close Button */
+
+.drawer-close {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: #f8f6f1;
+    color: #6b7280;
+    cursor: pointer;
+    transition: .3s;
+    font-size: 18px;
+}
+
+.drawer-close:hover {
+    background: #d4af37;
+    color: white;
+}
+
+/* Navigation */
+
+.drawer-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 18px 0;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.drawer-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 15px 24px;
+    text-decoration: none;
+    color: #444;
+    font-size: 15px;
+    font-weight: 500;
+    transition: .25s;
+    border-left: 4px solid transparent;
+}
+
+.drawer-icon {
+    width: 28px;
+    font-size: 19px;
+    text-align: center;
+}
+
+/* Hover */
+
+.drawer-link:hover {
+    background: rgba(212, 175, 55, 0.10);
+    color: #b8860b;
+    border-left-color: #d4af37;
+}
+
+/* Active */
+
+.drawer-link.active {
+    background: rgba(212, 175, 55, 0.16);
+    color: #b8860b;
+    font-weight: 600;
+    border-left-color: #d4af37;
+}
+
+/* Logout */
+
+.drawer-logout {
+    margin: auto 20px 25px;
+    border: none;
+    background: linear-gradient(135deg, #c9a227, #d4af37);
+    color: white;
+    padding: 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: .3s;
+    box-shadow: 0 8px 20px rgba(212,175,55,.25);
+}
+
+.drawer-logout:hover {
+    background: linear-gradient(135deg, #b8860b, #c9a227);
+    transform: translateY(-2px);
+}
+
+/* Scrollbar */
+
+.drawer-nav::-webkit-scrollbar {
+    width: 6px;
+}
+
+.drawer-nav::-webkit-scrollbar-thumb {
+    background: rgba(212,175,55,.45);
+    border-radius: 20px;
+}
+
+.drawer-nav::-webkit-scrollbar-thumb:hover {
+    background: #d4af37;
+}
+
+.drawer-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+@media (max-width:768px) {
+
+    .drawer {
+        width: 270px;
+        left: -270px;
+    }
+
+}

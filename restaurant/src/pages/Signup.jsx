@@ -27,7 +27,7 @@ function Signup() {
       sessionStorage.setItem("roleId", res.data.roleId);
       
       showToast("success", "Account created successfully!");
-      navigate("/dashboard");
+      navigate("/verify-otp");
     } catch (error) {
       console.error("Signup error:", error);
       showToast("error", "Signup failed. Try again.");
