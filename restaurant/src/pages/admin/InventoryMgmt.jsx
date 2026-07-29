@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import axios from "axios";
 import api from "../../util/api";
 import GetCurrUser from "../../util/GetcurrUser";
@@ -8,13 +8,19 @@ function InventoryMgmt() {
   const baseUrl = api();
   const { token } = GetCurrUser();
 
+  const isFirstRender = useRef(true);
+
   const [inventoryItems, setInventoryItems] = useState([]);
   const [units, setUnits] = useState([]);
   const [unitMap, setUnitMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Search & Filter state (Added DELETED option)
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const pageSize = 10; // Can be converted to state if you want a dynamic dropdown
+
+  // Search & Filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("ALL"); // ALL | LOW_STOCK | IN_STOCK | DELETED
 
@@ -60,9 +66,12 @@ function InventoryMgmt() {
 
   const fetchInventory = useCallback(async () => {
     try {
-      // Changed endpoint to fetch ALL inventory (including soft-deleted if route supports it)
-      const res = await axios.get(`${baseUrl}/Inventory/admin`, authHeaders);
-      console.log(res.data);
+      // Pass the page parameter to backend
+      const res = await axios.get(
+        `${baseUrl}/Inventory/admin?page=${page}&pageSize=${pageSize}`,
+        authHeaders
+      );
+      
       if (res.data && Array.isArray(res.data.items)) {
         setInventoryItems(res.data.items);
       } else if (Array.isArray(res.data)) {
@@ -74,20 +83,50 @@ function InventoryMgmt() {
       console.error("Failed to load inventory:", err);
       setError("Unable to fetch inventory items. Please try again.");
     }
-  }, [baseUrl, authHeaders]);
+  }, [baseUrl, authHeaders, page, pageSize]);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    await Promise.all([fetchInventory(), fetchUnits()]);
-    setLoading(false);
-  }, [fetchInventory, fetchUnits]);
+  // const loadData = useCallback(async () => {
+  //   setLoading(true);
+  //   setError(null);
+  //   await Promise.all([fetchInventory(), fetchUnits()]);
+  //   setLoading(false);
+  // }, [fetchInventory, fetchUnits]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  // useEffect(() => {
+  //   loadData();
+  // }, [loadData]);
+  const initialLoad = useCallback(async () => {
+  setLoading(true);
+  setError(null);
+  await Promise.all([fetchUnits(), fetchInventory()]);
+  setLoading(false);
+}, [fetchUnits, fetchInventory]);
 
+
+  useEffect(()=>{
+    initialLoad();
+  },[]);
+
+  useEffect(()=>{
+    if(isFirstRender.current){
+      isFirstRender.current = false;
+      return;
+    }
+    fetchInventory();
+  },[page, fetchInventory]);
   // Handlers
+  const handleNextPage = () => {
+    if (inventoryItems.length === pageSize) {
+      setPage((prev) => prev + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage((prev) => prev - 1);
+    }
+  };
+
   const handleEditClick = (item) => {
     setEditingId(item.inventoryItemId);
     setEditFormData({ ...item });
@@ -140,7 +179,7 @@ function InventoryMgmt() {
     }
   };
 
-  // Metrics (Separating active items vs soft-deleted items)
+  // Metrics
   const stats = useMemo(() => {
     const activeItems = inventoryItems.filter((i) => !i.isDeleted);
     const deletedItems = inventoryItems.filter((i) => i.isDeleted);
@@ -160,7 +199,7 @@ function InventoryMgmt() {
     return { totalCount, lowStockCount, deletedCount, totalValuation };
   }, [inventoryItems]);
 
-  // Filtered Items Logic (Includes support for `DELETED` filter)
+  // Filtered Items Logic
   const filteredItems = useMemo(() => {
     return inventoryItems.filter((item) => {
       const matchesSearch = (item.itemName || "")
@@ -170,18 +209,16 @@ function InventoryMgmt() {
       const isDeletedItem = Boolean(item.isDeleted);
       const isLowStock = item.currentQuantity <= item.minimumQuantity;
 
-      // Handle DELETED filter explicitly
       if (filterType === "DELETED") {
         return matchesSearch && isDeletedItem;
       }
 
-      // Ignore deleted items for active filters
       if (isDeletedItem) return false;
 
       if (filterType === "LOW_STOCK") return matchesSearch && isLowStock;
       if (filterType === "IN_STOCK") return matchesSearch && !isLowStock;
 
-      return matchesSearch; // ALL (active)
+      return matchesSearch;
     });
   }, [inventoryItems, searchQuery, filterType]);
 
@@ -206,7 +243,7 @@ function InventoryMgmt() {
           <button className="btn-primary" onClick={() => setShowAddModal(true)}>
             + Add Item
           </button>
-          <button className="btn-secondary" onClick={loadData}>
+          <button className="btn-secondary" onClick={fetchInventory}>
             Refresh
           </button>
         </div>
@@ -215,7 +252,7 @@ function InventoryMgmt() {
       {/* Metrics */}
       <div className="metrics-grid">
         <div className="metric-card">
-          <span className="metric-label">Total Active Items</span>
+          <span className="metric-label">Page Active Items</span>
           <span className="metric-value">{stats.totalCount}</span>
         </div>
 
@@ -230,19 +267,19 @@ function InventoryMgmt() {
         </div>
 
         <div className="metric-card">
-          <span className="metric-label">Total Valuation</span>
+          <span className="metric-label">Page Valuation</span>
           <span className="metric-value">
             Rs. {stats.totalValuation.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
           </span>
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
+      {/* Toolbar */}
       <div className="inventory-toolbar">
         <input
           type="text"
           className="search-bar"
-          placeholder="Search items..."
+          placeholder="Search on this page..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -457,7 +494,30 @@ function InventoryMgmt() {
         </table>
       </div>
 
-      {/* Minimalist Modal */}
+      {/* Pagination Bar */}
+<div className="pagination-bar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1rem" }}>
+  <button
+    type="button"
+    className="btn-secondary-pagination"
+    disabled={page <= 1}
+    onClick={handlePrevPage}
+  >
+    &larr; Previous
+  </button>
+
+  <span>Page {page}</span>
+
+  <button
+    type="button"
+    className="btn-secondary-pagination"
+    disabled={inventoryItems.length < pageSize}
+    onClick={handleNextPage}
+  >
+    Next &rarr;
+  </button>
+</div>
+
+      {/* Add Modal */}
       {showAddModal && (
         <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
