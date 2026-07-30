@@ -1,149 +1,280 @@
-import React, { useState } from "react";
-// import "./AdminTable.css";
+import React, { useEffect, useState, useCallback } from "react";
+import axios from "axios";
+import api from "../../util/api";
+import GetCurrUser from "../../util/GetcurrUser";
+
+import "./AdminTable.css";
+import AddTableModal from "./AddTableModal";
+import EditTableModal from "./EditTableModal";
+import DeleteTableModal from "./DeleteTableModal";
+import QRModal from "./QRModal";
 
 function AdminTable() {
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("All");
+  const baseApi = api();
+  const { token } = GetCurrUser();
 
-  // Temporary Data (Replace with API later)
-  const tables = [
-    {
-      id: 1,
-      tableNumber: "T-01",
-      capacity: 2,
-      floor: "Ground Floor",
-      status: "Available",
-    },
-    {
-      id: 2,
-      tableNumber: "T-02",
-      capacity: 4,
-      floor: "Ground Floor",
-      status: "Occupied",
-    },
-    {
-      id: 3,
-      tableNumber: "T-03",
-      capacity: 6,
-      floor: "First Floor",
-      status: "Reserved",
-    },
-    {
-      id: 4,
-      tableNumber: "VIP-01",
-      capacity: 8,
-      floor: "VIP Lounge",
-      status: "Available",
-    },
-  ];
+  const [tables, setTables] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  const [selectedTable, setSelectedTable] = useState(null);
+
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
+
+  const fetchTables = useCallback(async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await axios.get(
+        `${baseApi}/Table/get-all-table`,
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        }
+      );
+
+      setTables(res.data.alltables.result || []);
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Unable to load tables."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [baseApi, token]);
+
+  useEffect(() => {
+    fetchTables();
+  }, [fetchTables]);
+
+  const filteredTables = tables.filter((table) => {
+    const matchesSearch = table.tableNo
+      ?.toString()
+      .includes(search);
+
+    const matchesStatus =
+      statusFilter === "All" ||
+      table.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="admin-table-page">
-
       <div className="table-header">
-        <h2>Restaurant Table Management</h2>
+        <div>
+          <h1>Restaurant Table Management</h1>
+          <p>Manage restaurant tables and QR codes.</p>
+        </div>
 
-        <button className="add-table-btn">
-          + Add New Table
-        </button>
+        <div className="header-buttons">
+          <button
+            className="refresh-btn"
+            onClick={fetchTables}
+          >
+            Refresh
+          </button>
+
+          <button
+            className="add-btn"
+            onClick={() => setShowAddModal(true)}
+          >
+            + Add Table
+          </button>
+        </div>
       </div>
 
-      <div className="table-controls">
+      {/* Cards */}
 
+      <div className="table-cards">
+        <div className="table-card">
+          <h3>Total Tables</h3>
+          <span>{tables.length}</span>
+        </div>
+
+        <div className="table-card available">
+          <h3>Available</h3>
+          <span>
+            {tables.filter(
+              (t) => t.status === "Available"
+            ).length}
+          </span>
+        </div>
+
+        <div className="table-card occupied">
+          <h3>Occupied</h3>
+          <span>
+            {tables.filter(
+              (t) => t.status === "Occupied"
+            ).length}
+          </span>
+        </div>
+
+        <div className="table-card reserved">
+          <h3>Booked</h3>
+          <span>
+            {tables.filter(
+              (t) => t.status === "Booked"
+            ).length}
+          </span>
+        </div>
+      </div>
+
+      {/* Toolbar */}
+
+      <div className="table-toolbar">
         <input
           type="text"
-          placeholder="Search table..."
+          placeholder="Search Table Number..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) =>
+            setSearch(e.target.value)
+          }
         />
 
         <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
+          value={statusFilter}
+          onChange={(e) =>
+            setStatusFilter(e.target.value)
+          }
         >
           <option>All</option>
           <option>Available</option>
           <option>Occupied</option>
-          <option>Reserved</option>
-          <option>Maintenance</option>
+          <option>Booked</option>
+          <option>Cleaning</option>
         </select>
-
       </div>
+
+      {/* Table */}
 
       <div className="table-wrapper">
-        <table className="table-management">
-
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Table No.</th>
-              <th>Capacity</th>
-              <th>Floor</th>
-              <th>Status</th>
-              <th>QR Code</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-
-            {tables.map((table) => (
-              <tr key={table.id}>
-                <td>{table.id}</td>
-
-                <td>{table.tableNumber}</td>
-
-                <td>{table.capacity} Persons</td>
-
-                <td>{table.floor}</td>
-
-                <td>
-                  <span
-                    className={`status ${table.status.toLowerCase()}`}
-                  >
-                    {table.status}
-                  </span>
-                </td>
-
-                <td>
-                  <button className="qr-btn">
-                    View QR
-                  </button>
-                </td>
-
-                <td className="actions">
-
-                  <button className="view-btn">
-                    View
-                  </button>
-
-                  <button className="edit-btn">
-                    Edit
-                  </button>
-
-                  <button className="delete-btn">
-                    Delete
-                  </button>
-
-                </td>
+        {loading ? (
+          <div className="no-data">
+            Loading...
+          </div>
+        ) : error ? (
+          <div className="no-data">
+            {error}
+          </div>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Table No</th>
+                <th>Capacity</th>
+                <th>Status</th>
+                <th>QR</th>
+                <th>Actions</th>
               </tr>
-            ))}
+            </thead>
 
-          </tbody>
+            <tbody>
+              {filteredTables.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="6"
+                    className="no-data"
+                  >
+                    No Tables Found
+                  </td>
+                </tr>
+              ) : (
+                filteredTables.map((table) => (
+                  <tr key={table.tableId}>
+                    <td>{table.tableId}</td>
 
-        </table>
+                    <td>T-{table.tableNo}</td>
+
+                    <td>
+                      {table.capacity} Person(s)
+                    </td>
+
+                    <td>
+                      <span
+                        className={`status ${table.status.toLowerCase()}`}
+                      >
+                        {table.status}
+                      </span>
+                    </td>
+
+                    <td>
+                      <button
+                        className="qr-btn"
+                        onClick={() => {
+                          setSelectedTable(table);
+                          setShowQRModal(true);
+                        }}
+                      >
+                        QR
+                      </button>
+                    </td>
+
+                    <td>
+                      <button
+                        className="edit-btn"
+                        onClick={() => {
+                          setSelectedTable(table);
+                          setShowEditModal(true);
+                        }}
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        className="delete-btn"
+                        onClick={() => {
+                          setSelectedTable(table);
+                          setShowDeleteModal(true);
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
 
-      {/* Modal Placeholder */}
+      <AddTableModal
+        open={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        refresh={fetchTables}
+      />
 
-      {/* Add Table */}
+      <EditTableModal
+        open={showEditModal}
+        table={selectedTable}
+        onClose={() => setShowEditModal(false)}
+        refresh={fetchTables}
+      />
 
-      {/* Update Table */}
+      <DeleteTableModal
+        open={showDeleteModal}
+        table={selectedTable}
+        onClose={() => setShowDeleteModal(false)}
+        refresh={fetchTables}
+      />
 
-      {/* Delete Confirmation */}
-
-      {/* View QR Code */}
-
+      <QRModal
+        open={showQRModal}
+        table={selectedTable}
+        onClose={() => setShowQRModal(false)}
+      />
     </div>
   );
 }

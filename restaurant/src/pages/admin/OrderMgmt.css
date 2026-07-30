@@ -332,3 +332,135 @@
     min-width: 620px;
   }
 }
+/* ===========================
+   MODALS
+=========================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 26, 26, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease;
+}
+
+.confirm-modal {
+  width: 100%;
+  max-width: 450px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 32px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
+  animation: modalPop 0.25s ease;
+}
+
+.confirm-modal h2 {
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.confirm-modal p {
+  margin: 0 0 24px;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.confirm-modal strong {
+  color: var(--gold-hover);
+}
+
+.quantity-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--bg-card);
+  font-size: 15px;
+  color: var(--text-main);
+  margin-bottom: 28px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.quantity-input:focus {
+  border-color: var(--gold-primary);
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.cancel-btn,
+.confirm-btn {
+  min-width: 110px;
+  height: 42px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn {
+  background: #f5f5f5;
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+}
+
+.cancel-btn:hover {
+  background: #eeeeee;
+}
+
+.confirm-btn {
+  background: var(--gold-primary);
+  color: #fff;
+}
+
+.confirm-btn:hover {
+  background: var(--gold-hover);
+}
+
+.confirm-btn.delete {
+  background: var(--danger);
+}
+
+.confirm-btn.delete:hover {
+  background: #b92f2f;
+}
+
+/* ===========================
+   Animations
+=========================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
