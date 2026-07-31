@@ -9,8 +9,8 @@ import api from "../../util/api";
 import "./CustomerTables.css";
 
 const ROLE_NAMES = {
-  1: "Customer",
-  5: "Admin",
+  "Customer": "Customer",
+  "Admin": "Admin",
 };
 
 function TableCard({ table, onBook }) {
@@ -83,8 +83,8 @@ function Tables() {
   const [allBookings, setAllBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const navigate = useNavigate();
-  const { token, roleId, userId } = GetCurrUser();
+const navigate = useNavigate();
+  const { token, roles, userId } = GetCurrUser();
   const baseUrl = api();
 
 
@@ -211,7 +211,7 @@ useEffect(() => {
   return (
     <div className="tables-container">
       <h1 className="tables-title">
-        Welcome {ROLE_NAMES[roleId] || "Guest"}
+        Welcome {roles.length > 0 ? roles[0] : "Guest"}
       </h1>
 
       <section className="table-list-container">
@@ -233,7 +233,7 @@ useEffect(() => {
         )}
       </section>
 
-      {Number(roleId) === 1 && (
+      {roles.includes("Customer") && (
         <section className="scanner-section">
           <p className="tables-subtitle">
             Scan the QR code placed on your table to start ordering.

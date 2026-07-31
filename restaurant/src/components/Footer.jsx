@@ -6,11 +6,24 @@ function Footer() {
   const location = useLocation();
   const navigate = useNavigate();
   const [loggedin, setLoggedin] = useState(false);
+  const [dashboardPath, setDashboardPath] = useState("/dashboard");
   const [serviceStatus, setServiceStatus] = useState({ meal: "Closed", open: false });
 
   useEffect(() => {
     const existingToken = sessionStorage.getItem("token");
     setLoggedin(!!existingToken);
+    if (existingToken) {
+      const existingRoles = JSON.parse(sessionStorage.getItem("roles") || "[]");
+      if (existingRoles.includes("Admin")) {
+        setDashboardPath("/admin-dashboard");
+      } else if (existingRoles.includes("Customer")) {
+        setDashboardPath("/customer-table");
+      } else {
+        setDashboardPath("/dashboard");
+      }
+    } else {
+      setDashboardPath("/dashboard");
+    }
   }, [location]);
 
   useEffect(() => {
@@ -54,7 +67,7 @@ function Footer() {
           <h4 className="footer-heading">Quick Links</h4>
           <ul className="footer-links">
             <li><Link to="/">Home</Link></li>
-            <li><Link to="/dashboard">Dashboard</Link></li>
+            <li><Link to={dashboardPath}>Dashboard</Link></li>
             {!loggedin ? (
               <li><Link to="/login">Login</Link></li>
             ) : (

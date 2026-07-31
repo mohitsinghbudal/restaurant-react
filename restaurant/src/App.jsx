@@ -34,13 +34,15 @@ const Analytics = () => <h2>Analytics Page (Admins & Editors)</h2>;
 const Unauthorized = () => <h2>⚠️ Access Denied: You don't have permission.</h2>;
 const UserPanel = () => <h2>this is the user dashboard</h2>;
 const ProtectedRoute = ({ allowedRoles }) => {
-  const { token, roleId } = GetCurrUser();
+  const { token, roles } = GetCurrUser();
 
   if (!token) {
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(Number(roleId))) {
+  const hasPermission = roles.some(role => allowedRoles.includes(role));
+
+  if (!hasPermission) {
     return <Navigate to="/unauthorized" replace />;
   }
 
@@ -77,7 +79,7 @@ const router = createBrowserRouter([
       
 
       { 
-        element: <ProtectedRoute allowedRoles={[5]} />,
+        element: <ProtectedRoute allowedRoles={["Admin"]} />,
         children: [
           { path: "/admin-dashboard", element: <AdminDashboard /> },
           { path: "/analytics", element: <Analytics /> },
@@ -102,7 +104,7 @@ const router = createBrowserRouter([
         ]
       },
       {
-        element: <ProtectedRoute allowedRoles={[1]} />,
+element: <ProtectedRoute allowedRoles={["Customer"]} />,
         children: [
           { path: "/customer-dashboard", element: <UserPanel /> },
           {path:"/customer-orders",element:<CustomerOrders/>},
