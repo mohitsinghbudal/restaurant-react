@@ -1,77 +1,95 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import "./BillsMgmt.css";
+import api from "../../util/api";
+import GetCurrUser from "../../util/GetCurrUser";
+import { showToast } from "../../components/showToast";
 
 function BillsMgmt() {
+  const baseApi = api();
+  const { token } = GetCurrUser();
+
+  const [bills, setBills] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
 
-  const bills = [
-    {
-      id: 1001,
-      customer: "John Smith",
-      table: "T-01",
-      amount: 1450,
-      payment: "Paid",
-      method: "eSewa",
-      date: "2026-07-26",
-    },
-    {
-      id: 1002,
-      customer: "Alice",
-      table: "T-02",
-      amount: 980,
-      payment: "Pending",
-      method: "-",
-      date: "2026-07-26",
-    },
-    {
-      id: 1003,
-      customer: "David",
-      table: "T-05",
-      amount: 2250,
-      payment: "Paid",
-      method: "Cash",
-      date: "2026-07-26",
-    },
-    {
-      id: 1004,
-      customer: "Emily",
-      table: "T-07",
-      amount: 670,
-      payment: "Cancelled",
-      method: "-",
-      date: "2026-07-26",
-    },
-  ];
+  const [selectedBill, setSelectedBill] = useState(null);
 
-  const filteredBills = bills.filter((bill) => {
+  useEffect(() => {
+    fetchBills();
+  }, []);
 
-    const matchesSearch =
-      bill.customer.toLowerCase().includes(search.toLowerCase()) ||
-      bill.table.toLowerCase().includes(search.toLowerCase());
+  const fetchBills = async () => {
+    try {
+      setLoading(true);
 
-    const matchesFilter =
-      filter === "All" || bill.payment === filter;
+      const res = await axios.get(`${baseApi}/Bill/all-bills`, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
 
-    return matchesSearch && matchesFilter;
+      console.log(res.data);
 
-  });
+      setBills(res.data.allbills ?? []);
+    } catch (err) {
+      console.error(err);
+      showToast("error", "Failed to load bills.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredBills = useMemo(() => {
+    return bills.filter((bill) => {
+      const query = search.toLowerCase();
+
+      const status = bill.isPaid ? "paid" : "pending";
+
+      const matchesSearch =
+        String(bill.billId).includes(query) ||
+        String(bill.billNo).includes(query);
+
+      const matchesFilter =
+        filter === "All" ||
+        status === filter.toLowerCase();
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [bills, search, filter]);
+
+  const paidBills = bills.filter((bill) => bill.isPaid);
+
+  const pendingBills = bills.filter((bill) => !bill.isPaid);
+
+  const totalRevenue = paidBills.reduce((sum, bill) => {
+    const amount =
+      Number(
+        bill.grandTotal > 0
+          ? bill.grandTotal
+          : bill.totalAmount
+      ) || 0;
+
+    return sum + amount;
+  }, []);
 
   return (
     <div className="bill-page">
 
       <div className="bill-header">
-
         <div>
           <h1>Bills Management</h1>
           <p>Manage restaurant bills and payments.</p>
         </div>
 
-        <button className="create-bill-btn">
-          Generate Bill
+        <button
+          className="create-bill-btn"
+          onClick={fetchBills}
+        >
+          Refresh
         </button>
-
       </div>
 
       <div className="bill-cards">
@@ -83,22 +101,17 @@ function BillsMgmt() {
 
         <div className="bill-card green">
           <h3>Paid Bills</h3>
-          <span>{bills.filter(x=>x.payment==="Paid").length}</span>
+          <span>{paidBills.length}</span>
         </div>
 
         <div className="bill-card orange">
           <h3>Pending Bills</h3>
-          <span>{bills.filter(x=>x.payment==="Pending").length}</span>
+          <span>{pendingBills.length}</span>
         </div>
 
         <div className="bill-card blue">
           <h3>Total Revenue</h3>
-          <span>
-            Rs.
-            {bills
-              .filter(x=>x.payment==="Paid")
-              .reduce((a,b)=>a+b.amount,0)}
-          </span>
+          <span>Rs. {totalRevenue.toLocaleString()}</span>
         </div>
 
       </div>
@@ -107,103 +120,259 @@ function BillsMgmt() {
 
         <input
           type="text"
-          placeholder="Search customer or table..."
+          placeholder="Search Bill ID or Bill No..."
           value={search}
-          onChange={(e)=>setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
         />
 
         <select
           value={filter}
-          onChange={(e)=>setFilter(e.target.value)}
+          onChange={(e) => setFilter(e.target.value)}
         >
-          <option>All</option>
-          <option>Paid</option>
-          <option>Pending</option>
-          <option>Cancelled</option>
+          <option value="All">All</option>
+          <option value="Paid">Paid</option>
+          <option value="Pending">Pending</option>
         </select>
 
       </div>
 
       <div className="bill-table">
-
         <table>
 
           <thead>
-
-          <tr>
-            <th>Bill ID</th>
-            <th>Customer</th>
-            <th>Table</th>
-            <th>Amount</th>
-            <th>Method</th>
-            <th>Status</th>
-            <th>Date</th>
-            <th>Action</th>
-          </tr>
-
+            <tr>
+              <th>Bill ID</th>
+              <th>Bill Amount</th>
+              <th>Status</th>
+              <th>Bill Date</th>
+              <th>Action</th>
+            </tr>
           </thead>
 
           <tbody>
 
-          {filteredBills.length===0?
+            {loading ? (
+              <tr>
+                <td
+                  colSpan="5"
+                  className="empty"
+                >
+                  Loading Bills...
+                </td>
+              </tr>
+            ) : filteredBills.length === 0 ? (
+              <tr>
+                <td
+                  colSpan="5"
+                  className="empty"
+                >
+                  No Bills Found
+                </td>
+              </tr>
+            ) : (
+              filteredBills.map((bill) => {
 
-          <tr>
-            <td colSpan="8" className="empty">
-              No Bills Found
-            </td>
-          </tr>
+                const amount =
+                  bill.grandTotal > 0
+                    ? bill.grandTotal
+                    : bill.totalAmount;
 
-          :
+                return (
+                  <tr key={bill.billId}>
 
-          filteredBills.map((bill)=>(
+                    <td>
+                      #{bill.billId}
+                    </td>
 
-            <tr key={bill.id}>
+                    <td>
+                      Rs. {amount}
+                    </td>
 
-              <td>#{bill.id}</td>
+                    <td>
+                      <span
+                        className={`payment ${
+                          bill.isPaid
+                            ? "paid"
+                            : "pending"
+                        }`}
+                      >
+                        {bill.isPaid
+                          ? "Paid"
+                          : "Pending"}
+                      </span>
+                    </td>
 
-              <td>{bill.customer}</td>
+                    <td>
+                      {new Date(
+                        bill.createdDate
+                      ).toLocaleDateString()}
+                    </td>
 
-              <td>{bill.table}</td>
+                    <td>
 
-              <td>Rs. {bill.amount}</td>
+                      <button
+                        className="view-btn"
+                        onClick={() =>
+                          setSelectedBill(bill)
+                        }
+                      >
+                        View All Details
+                      </button>
 
-              <td>{bill.method}</td>
+                      
 
-              <td>
+                    </td>
 
-                <span className={`payment ${bill.payment.toLowerCase()}`}>
-                  {bill.payment}
-                </span>
-
-              </td>
-
-              <td>{bill.date}</td>
-
-              <td>
-
-                <button className="view-btn">
-                  View
-                </button>
-
-                <button className="print-btn">
-                  Print
-                </button>
-
-                <button className="pay-btn">
-                  Paid
-                </button>
-
-              </td>
-
-            </tr>
-
-          ))}
+                  </tr>
+                );
+              })
+            )}
 
           </tbody>
 
         </table>
-
       </div>
+            {selectedBill && (
+        <div
+          className="bill-modal-overlay"
+          onClick={() => setSelectedBill(null)}
+        >
+          <div
+            className="bill-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <h2>Bill Details</h2>
+
+              <button
+                className="close-btn"
+                onClick={() => setSelectedBill(null)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="bill-details">
+
+              <div className="detail-row">
+                <span>Bill ID</span>
+                <strong>{selectedBill.billId}</strong>
+              </div>
+
+              <div className="detail-row">
+                <span>Bill Number</span>
+                <strong>{selectedBill.billNo}</strong>
+              </div>
+
+              <div className="detail-row">
+                <span>Session ID</span>
+                <strong>{selectedBill.sessionId}</strong>
+              </div>
+
+              <div className="detail-row">
+                <span>Total Amount</span>
+                <strong>
+                  Rs. {selectedBill.totalAmount}
+                </strong>
+              </div>
+
+              <div className="detail-row">
+                <span>Tax Amount</span>
+                <strong>
+                  Rs. {selectedBill.taxAmount}
+                </strong>
+              </div>
+
+              <div className="detail-row">
+                <span>Discount</span>
+                <strong>
+                  Rs. {selectedBill.discountAmount}
+                </strong>
+              </div>
+
+              <div className="detail-row">
+                <span>Grand Total</span>
+                <strong>
+                  Rs. {selectedBill.grandTotal}
+                </strong>
+              </div>
+
+              <div className="detail-row">
+                <span>Payment Method</span>
+                <strong>
+                  {selectedBill.paymentMethod}
+                </strong>
+              </div>
+
+              <div className="detail-row">
+                <span>Status</span>
+
+                <strong
+                  className={
+                    selectedBill.isPaid
+                      ? "paid-text"
+                      : "pending-text"
+                  }
+                >
+                  {selectedBill.isPaid
+                    ? "Paid"
+                    : "Pending"}
+                </strong>
+              </div>
+
+              <div className="detail-row">
+                <span>Created Date</span>
+
+                <strong>
+                  {new Date(
+                    selectedBill.createdDate
+                  ).toLocaleString()}
+                </strong>
+              </div>
+
+              <div className="detail-row">
+                <span>Paid At</span>
+
+                <strong>
+                  {selectedBill.paidAt
+                    ? new Date(
+                        selectedBill.paidAt
+                      ).toLocaleString()
+                    : "-"}
+                </strong>
+              </div>
+
+              <div className="detail-row">
+                <span>Paid By</span>
+
+                <strong>
+                  {selectedBill.paidBy || "-"}
+                </strong>
+              </div>
+
+            </div>
+
+            <div className="modal-footer">
+
+              <button
+                className="close-modal-btn"
+                onClick={() => setSelectedBill(null)}
+              >
+                Close
+              </button>
+
+              <button
+                className="print-btn"
+                onClick={() => window.print()}
+              >
+                Print Bill
+              </button>
+
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );

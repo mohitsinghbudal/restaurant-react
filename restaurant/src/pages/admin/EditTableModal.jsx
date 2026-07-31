@@ -7,22 +7,21 @@ import { showToast } from "../../components/showToast";
 function EditTableModal({ open, table, onClose, refresh }) {
   const baseApi = api();
   const { token } = GetCurrUser();
-
+console.log(table);
   const [form, setForm] = useState({
     tableNo: "",
     capacity: "",
-    status: "Available",
+    status: "",
   });
 
   const [loading, setLoading] = useState(false);
 
-  // Sync form state when table changes or modal opens
   useEffect(() => {
     if (open && table) {
       setForm({
         tableNo: table.tableNo ?? "",
         capacity: table.capacity ?? "",
-        status: table.status ?? "Available",
+        status: table.status ?? "",
       });
     }
   }, [open, table]);

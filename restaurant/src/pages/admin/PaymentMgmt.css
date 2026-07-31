@@ -87,6 +87,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  font-family: var(--font-body);
 }
 
 .export-btn:hover {
@@ -117,7 +118,7 @@
   overflow: hidden;
 }
 
-/* Modern top accent lines */
+/* Top accent lines */
 .payment-card::before {
   content: "";
   position: absolute;
@@ -191,7 +192,7 @@
 }
 
 .payment-toolbar input {
-  width: 360px;
+  width: 400px;
   box-shadow: var(--shadow-sm);
 }
 
@@ -203,6 +204,24 @@
 .payment-toolbar select:focus {
   border-color: var(--gold-primary);
   box-shadow: 0 0 0 4px rgba(197, 155, 39, 0.12);
+}
+
+/* ===========================
+       ERROR BANNER
+=========================== */
+
+.payment-error-msg {
+  margin-bottom: 24px;
+  padding: 14px 20px;
+  background: var(--status-failed-bg);
+  color: var(--status-failed-text);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 /* ===========================
@@ -273,7 +292,6 @@
   text-transform: capitalize;
 }
 
-/* Dot indicator before status text */
 .payment-status::before {
   content: "";
   width: 6px;
@@ -282,11 +300,13 @@
   display: inline-block;
 }
 
+.payment-status.completed,
 .payment-status.success {
   background: var(--status-success-bg);
   color: var(--status-success-text);
   border: 1px solid rgba(34, 197, 94, 0.2);
 }
+.payment-status.completed::before,
 .payment-status.success::before {
   background-color: var(--status-success-dot);
 }
@@ -314,37 +334,23 @@
        ACTION BUTTONS
 =========================== */
 
-.view-btn,
-.refund-btn {
+.view-btn {
   border: none;
-  padding: 8px 16px;
-  margin: 0 3px;
+  padding: 8px 18px;
   border-radius: 8px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
   transition: all 0.2s ease;
   font-family: var(--font-body);
-}
-
-.view-btn {
   background: #f3f0e6;
   color: #524f46;
 }
 
 .view-btn:hover {
-  background: #e7e2d3;
-  color: var(--text-primary);
-}
-
-.refund-btn {
-  background: #f3e8ff;
-  color: #6b21a8;
-  border: 1px solid rgba(168, 85, 247, 0.2);
-}
-
-.refund-btn:hover {
-  background: #e9d5ff;
+  background: var(--gold-primary);
+  color: #ffffff;
+  box-shadow: 0 4px 12px var(--gold-shadow);
 }
 
 /* Empty State */
@@ -352,8 +358,156 @@
 .empty {
   padding: 48px;
   color: var(--text-muted);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
+}
+
+/* ===========================
+       PAGINATION
+=========================== */
+
+.payment-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  margin-top: 28px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.payment-pagination button {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.25s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.payment-pagination button:hover:not(:disabled) {
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  transform: translateY(-1px);
+}
+
+.payment-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.payment-pagination span {
+  font-weight: 500;
+}
+
+/* ===========================
+          MODAL
+=========================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 19, 17, 0.65);
+  backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: var(--surface-card);
+  border-radius: 24px;
+  border: 1px solid var(--border-subtle);
+  padding: 36px;
+  width: 520px;
+  max-width: 100%;
+  box-shadow: var(--shadow-lg);
+  animation: modalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-content h2 {
+  margin: 0 0 16px 0;
+  font-family: var(--font-heading);
+  font-size: 32px;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.modal-content hr {
+  border: none;
+  border-top: 1px solid #f1efe9;
+  margin-bottom: 20px;
+}
+
+.modal-details {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 28px;
+  max-height: 55vh;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.modal-details p {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: var(--text-primary);
+  border-bottom: 1px dashed #f1efe9;
+  padding-bottom: 10px;
+}
+
+.modal-details p:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.modal-details strong {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.close-btn {
+  width: 100%;
+  background: #141311;
+  color: #f3e5be;
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-body);
+  letter-spacing: 0.5px;
+}
+
+.close-btn:hover {
+  background: var(--gold-primary);
+  color: #ffffff;
+  box-shadow: 0 8px 20px var(--gold-shadow);
 }
 
 /* ===========================
@@ -386,6 +540,10 @@
   .payment-toolbar input {
     width: 100%;
   }
+
+  .payment-pagination {
+    justify-content: center;
+  }
 }
 
 @media (max-width: 600px) {
@@ -398,6 +556,10 @@
   }
 
   .payment-table table {
-    min-width: 750px;
+    min-width: 800px;
+  }
+
+  .modal-content {
+    padding: 24px;
   }
 }

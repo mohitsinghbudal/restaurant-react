@@ -153,10 +153,9 @@ function AdminTable() {
           <option>Occupied</option>
           <option>Booked</option>
           <option>Cleaning</option>
+          <option>Deleted</option>
         </select>
       </div>
-
-      {/* Table */}
 
       <div className="table-wrapper">
         {loading ? (
