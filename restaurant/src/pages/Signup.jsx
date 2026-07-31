@@ -24,7 +24,7 @@ function Signup() {
       // Fixed: changed 'response' to 'res' to match your variable declaration
       sessionStorage.setItem("token", res.data.token);
       sessionStorage.setItem("userId", res.data.userId);
-      sessionStorage.setItem("roleId", res.data.roleId);
+      sessionStorage.setItem("roles", JSON.stringify(res.data.roles || []));
       
       showToast("success", "Account created successfully!");
       navigate("/verify-otp");

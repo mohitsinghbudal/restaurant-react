@@ -1,9 +1,8 @@
 const GetCurrUser = () => {
   return {
     token: sessionStorage.getItem("token"),
-    roleId: Number(sessionStorage.getItem("roleId")),
+    roles: JSON.parse(sessionStorage.getItem("roles") || "[]"),
     userId: Number(sessionStorage.getItem("userId")),
-    sessionId:Number(sessionStorage.getItem("sessionId")),
   };
 };
 

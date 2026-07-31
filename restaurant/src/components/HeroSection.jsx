@@ -5,7 +5,7 @@ import GetCurrUser from "../util/GetcurrUser";
 
 function HeroSection() {
   const navigate = useNavigate();
-  const [userData, setUserData] = useState({ token: null, roleId: null });
+  const [userData, setUserData] = useState({ token: null, roles: [] });
 
   useEffect(() => {
     // Read current user session data on component mount
@@ -13,12 +13,12 @@ function HeroSection() {
     if (user) {
       setUserData({
         token: user.token,
-        roleId: Number(user.roleId),
+        roles: user.roles || [],
       });
     }
   }, []);
 
-  const { token, roleId } = userData;
+  const { token, roles } = userData;
 
   return (
     <section className="hero">
@@ -37,7 +37,7 @@ function HeroSection() {
             Explore Menu
           </button>
 
-          {token && roleId === 1 && (
+{token && roles.includes("Customer") && (
             <button
               className="hero-btn hero-btn-primary"
               onClick={() => navigate("/customer-table")}
@@ -55,10 +55,10 @@ function HeroSection() {
             </button>
           )}
 
-          {token && roleId === 5 && (
+          {token && roles.includes("Admin") && (
             <button
               className="hero-btn"
-              onClick={() => navigate("/inventory")}
+              onClick={() => navigate("/admin-inventory")}
             >
               Inventory
             </button>

@@ -6,8 +6,18 @@ import Footer from "../components/Footer";
 import HeroSection from "../components/HeroSection";
 
 function Dashboard() {
-  const { token, roleId } = GetCurrUser();
+  const { token, roles } = GetCurrUser();
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (token) {
+      if (roles.includes("Admin")) {
+        navigate("/admin-dashboard", { replace: true });
+      } else if (roles.includes("Customer")) {
+        navigate("/customer-table", { replace: true });
+      }
+    }
+  }, [token, roles, navigate]);
 
   if (!token) {
     return <h1>Unauthorized</h1>;

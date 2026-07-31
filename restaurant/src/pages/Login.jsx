@@ -11,29 +11,23 @@ function Login() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const { token, roleId } = GetCurrUser();
+  const { token, roles } = GetCurrUser();
 
-  const handleRoleRedirect = (roleId) => {
-    switch(roleId)
-    {
-      case 1: 
+  const handleRoleRedirect = (roles) => {
+    if (roles.includes("Admin")) {
+      navigate("/admin-dashboard");
+    } else if (roles.includes("Customer")) {
       navigate("/customer-table");
-
-      case 5:
-        navigate("/customer-table");
-
-      default:
-        navigate("/dashboard");
+    } else {
+      navigate("/dashboard");
     }
-        
-    };
-
+  };
 
   useEffect(() => {
     if (token) {
-      handleRoleRedirect();
+      handleRoleRedirect(roles);
     }
-  }, [token, roleId, navigate]);
+  }, [token, roles, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,12 +43,12 @@ function Login() {
       
       sessionStorage.setItem("token", res.data.login_token);
       sessionStorage.setItem("userId", res.data.userId);
-      sessionStorage.setItem("roleId", res.data.roleId);
+      sessionStorage.setItem("roles", JSON.stringify(res.data.roles || []));
 
       showToast("success", "Login Successful!");
       
       
-      handleRoleRedirect(res.data.roleId);
+      handleRoleRedirect(res.data.roles || []);
     } catch (error) {
       console.error("Login error:", error);
       const errorMessage = error.response?.data?.message || "Login Failed. Please try again.";

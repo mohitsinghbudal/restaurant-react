@@ -6,41 +6,47 @@ import "./Navbar.css";
 
 function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [roleId, setRoleId] = useState(null);
+  const [roles, setRoles] = useState([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const { token, roleId } = GetCurrUser();
+    const { token, roles } = GetCurrUser();
+    console.log(roles);
     setIsLoggedIn(!!token);
-    setRoleId(Number(roleId));
+    setRoles(roles);
   }, [location]);
 
   const handleLogout = () => {
     sessionStorage.clear();
     localStorage.clear();
     setIsLoggedIn(false);
-    setRoleId(null);
+    setRoles([]);
     navigate("/login");
   };
 
-  // Original links only
   const guestLinks = [
     { name: "Home", path: "/" },
     { name: "Menu", path: "/menu" },
   ];
 
   const adminLinks = [
-    { name: "Dashboard", path: "/dashboard" },
+    { name: "Dashboard", path: "/admin-dashboard" },
     { name: "Menu", path: "/admin-menu" },
     { name: "Tables", path: "/admin-table" },
     { name: "Reports", path: "/admin-reports" },
   ];
 
-  // Select link set based on user status
-  const navLinks = isLoggedIn && roleId === 5 ? adminLinks : !isLoggedIn ? guestLinks : [];
+  // Show admin links if the user has the Admin role
+  const isAdmin = roles.includes("Admin");
+
+  const navLinks = isLoggedIn
+    ? isAdmin
+      ? adminLinks
+      : []
+    : guestLinks;
 
   return (
     <>

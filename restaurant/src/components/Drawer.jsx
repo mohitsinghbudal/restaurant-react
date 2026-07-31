@@ -5,7 +5,7 @@ import "./Drawer.css";
 
 function Drawer({ isOpen, setIsOpen }) {
   const navigate = useNavigate();
-  const { token, roleId } = GetCurrUser();
+  const { token, roles } = GetCurrUser();
 
   const closeDrawer = () => {
     setIsOpen(false);
@@ -19,7 +19,7 @@ function Drawer({ isOpen, setIsOpen }) {
   };
 
   const adminLinks = [
-    { name: "Dashboard", path: "/dashboard", icon: "🏠" },
+    { name: "Dashboard", path: "/admin-dashboard", icon: "🏠" },
     { name: "Inventory", path: "/admin-inventory", icon: "📦" },
     { name: "Menu", path: "/admin-menu", icon: "🍽️" },
     { name: "Orders", path: "/admin-orders", icon: "📋" },
@@ -48,14 +48,13 @@ function Drawer({ isOpen, setIsOpen }) {
     { name: "Signup", path: "/signup", icon: "📝" }
   ];
 
-  let links = guestLinks;
+let links = guestLinks;
 
-  if (token && Number(roleId) === 5) {
+  if (token && roles.includes("Admin")) {
     links = adminLinks;
-  } else if (token && Number(roleId) === 1) {
+  } else if (token && roles.includes("Customer")) {
     links = customerLinks;
   }
-
   return (
     <>
       {isOpen && (
