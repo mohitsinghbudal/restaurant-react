@@ -1,10 +1,26 @@
+/* ==========================================================================
+   GLOBAL & CONTAINER
+   ========================================================================== */
+
 .menu-container {
   max-width: 1250px;
   margin: 0 auto;
   padding: 70px 30px;
-  background: #fcfbf8;
-  font-family: "Montserrat", sans-serif;
+  background-color: #fcfbf8;
+  font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #222222;
+  box-sizing: border-box;
 }
+
+.menu-container *, 
+.menu-container *::before, 
+.menu-container *::after {
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   HEADER & TOOLBAR
+   ========================================================================== */
 
 .menu-header {
   text-align: center;
@@ -12,18 +28,19 @@
 }
 
 .menu-header h1 {
-  font-family: "Playfair Display", serif;
+  font-family: "Playfair Display", Georgia, serif;
   font-size: 46px;
   font-weight: 400;
   color: #1f1f1f;
   letter-spacing: 1px;
-  margin-bottom: 15px;
+  margin: 0 0 15px 0;
 }
 
 .menu-header p {
-  color: #777;
+  color: #777777;
   font-size: 15px;
   letter-spacing: 1px;
+  margin: 0;
 }
 
 .menu-toolbar {
@@ -35,31 +52,44 @@
   flex-wrap: wrap;
 }
 
-.menu-toolbar input {
+.menu-toolbar input[type="text"],
+.menu-toolbar input[type="search"] {
   flex: 1;
   min-width: 300px;
   padding: 15px 18px;
   border: 1px solid #e5dfd2;
-  background: white;
+  border-radius: 4px;
+  background: #ffffff;
   outline: none;
   font-size: 15px;
-  transition: .3s;
+  color: #222222;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .menu-toolbar input:focus {
   border-color: #b5964b;
+  box-shadow: 0 0 0 3px rgba(181, 150, 75, 0.15);
 }
 
 .available-filter {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  color: #666;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid #e5dfd2;
+  border-radius: 4px;
+  background: #ffffff;
+  cursor: pointer;
+  user-select: none;
   font-size: 14px;
+  color: #555555;
 }
 
-.available-filter input {
+.available-filter input[type="checkbox"] {
   accent-color: #b5964b;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
 }
 
 .cart-summary {
@@ -69,9 +99,14 @@
 }
 
 .cart-summary span {
-  color: #555;
+  color: #555555;
+  font-size: 14px;
   margin: 2px 0;
 }
+
+/* ==========================================================================
+   MENU GRID & CARDS
+   ========================================================================== */
 
 .menu-grid {
   display: grid;
@@ -80,47 +115,62 @@
 }
 
 .menu-card {
-  background: white;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
   border: 1px solid #ece6d7;
+  border-radius: 6px;
   padding: 28px;
-  transition: .35s ease;
-  box-shadow: 0 6px 18px rgba(0,0,0,.04);
+  transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
 }
 
 .menu-card:hover {
   transform: translateY(-4px);
   border-color: #d7c7a0;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.07);
 }
 
-.menu-disabled {
-  opacity: .55;
+.menu-card.menu-disabled {
+  opacity: 0.55;
+  pointer-events: none;
 }
 
-.menu-card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 18px;
+/* Card Image */
+.menu-card-image {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #f5f5f5;
+  margin-bottom: 20px;
 }
 
-.menu-card-top h3 {
-  font-family: "Playfair Display", serif;
-  font-size: 28px;
-  font-weight: 400;
-  color: #222;
+.menu-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
 }
 
+.menu-card:hover .menu-card-image img {
+  transform: scale(1.03);
+}
+
+/* Card Header & Title Leader */
 .menu-card-top {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .menu-card-top h3 {
-  font-family: "Playfair Display", serif;
-  font-size: 28px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 26px;
   font-weight: 400;
-  color: #222;
+  color: #222222;
+  margin: 0;
   white-space: nowrap;
 }
 
@@ -128,35 +178,36 @@
   content: "";
   flex: 1;
   border-bottom: 1px dashed #d8cdb6;
-  margin-top: 5px;
+  margin-top: 6px;
+  min-width: 20px;
 }
 
+/* Price Badge */
 .price {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 85px;
+  min-width: 80px;
   height: 38px;
-  padding: 0 18px;
-
+  padding: 0 16px;
   border: 1px solid #c6ae75;
+  border-radius: 4px;
   background: #faf8f2;
-
   color: #8f6d1f;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 600;
-  letter-spacing: .5px;
-
-  transition: .3s;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
-
-
+/* Description & Footer Details */
 .description {
   color: #707070;
-  line-height: 1.8;
-  margin-bottom: 22px;
-  min-height: 70px;
+  font-size: 14px;
+  line-height: 1.7;
+  margin-bottom: 20px;
+  min-height: 65px;
+  flex-grow: 1;
 }
 
 .menu-footer {
@@ -164,54 +215,54 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin: 10px 0;
-  margin-bottom: 25px;
-}
-.menu-footer .status {
-  text-align: left;
-}
-
-.menu-footer .price {
-  text-align: right;
-  font-weight: bold;
+  margin-bottom: 20px;
+  padding-top: 10px;
 }
 
 .status {
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
-.available {
+.status.available {
   color: #4d7b4f;
 }
 
-.unavailable {
+.status.unavailable {
   color: #b45d5d;
 }
 
-/* Rectangle Quantity Selector */
+/* ==========================================================================
+   QUANTITY SELECTOR & BUTTONS
+   ========================================================================== */
 
 .quantity-box {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 145px;
-  height: 46px;
-  margin: 0 auto 25px;
+  height: 44px;
+  margin: 0 auto 20px;
   border: 1px solid #e6dfd2;
-  background: white;
+  border-radius: 4px;
+  background: #ffffff;
+  overflow: hidden;
 }
 
 .quantity-box button {
-  width: 45px;
-  height: 44px;
+  width: 44px;
+  height: 100%;
   border: none;
-  background: white;
-  color: #555;
-  font-size: 22px;
+  background: transparent;
+  color: #555555;
+  font-size: 20px;
   cursor: pointer;
-  transition: .25s;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .quantity-box button:hover:not(:disabled) {
@@ -221,14 +272,15 @@
 
 .quantity-box button:disabled {
   cursor: not-allowed;
-  opacity: .5;
+  opacity: 0.4;
 }
 
 .quantity-box span {
-  width: 55px;
+  flex: 1;
   text-align: center;
-  font-size: 17px;
-  color: #222;
+  font-size: 16px;
+  font-weight: 600;
+  color: #222222;
   border-left: 1px solid #ece6d7;
   border-right: 1px solid #ece6d7;
   line-height: 44px;
@@ -237,60 +289,65 @@
 .add-cart-btn {
   width: 100%;
   padding: 14px;
-  background: white;
+  background: #ffffff;
   border: 1px solid #b5964b;
+  border-radius: 4px;
   color: #6f5520;
   cursor: pointer;
   text-transform: uppercase;
   letter-spacing: 2px;
-  font-size: 13px;
-  transition: .3s;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 .add-cart-btn:hover:not(:disabled) {
   background: #b5964b;
-  color: white;
+  color: #ffffff;
 }
 
 .add-cart-btn:disabled {
-  opacity: .5;
+  opacity: 0.5;
   cursor: not-allowed;
+  border-color: #dcd6c8;
+  color: #999999;
 }
 
-/* ===========================
+/* ==========================================================================
    FLOATING CART
-=========================== */
+   ========================================================================== */
 
 .floating-cart {
   position: fixed;
   bottom: 30px;
   right: 30px;
-  width: 280px;
+  width: 290px;
   background: #ffffff;
   border: 1px solid #ece6d7;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
   padding: 22px;
-  z-index: 100;
+  z-index: 1000;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .floating-cart h3 {
-  font-family: "Playfair Display", serif;
-  font-size: 24px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 22px;
   font-weight: 400;
-  color: #222;
-  margin-bottom: 12px;
+  color: #222222;
+  margin: 0 0 12px 0;
 }
 
 .floating-cart p {
-  color: #666;
-  font-size: 15px;
-  margin-bottom: 6px;
+  color: #666666;
+  font-size: 14px;
+  margin: 0 0 6px 0;
 }
 
 .floating-cart strong {
   display: block;
-  margin-top: 10px;
-  margin-bottom: 18px;
+  margin: 10px 0 18px 0;
   color: #b5964b;
   font-size: 22px;
   font-weight: 600;
@@ -298,47 +355,52 @@
 
 .floating-cart button {
   width: 100%;
-  padding: 14px;
-  background: white;
+  padding: 12px;
+  background: #ffffff;
   border: 1px solid #b5964b;
+  border-radius: 4px;
   color: #6f5520;
   cursor: pointer;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  font-size: 13px;
-  transition: 0.3s;
+  letter-spacing: 1.5px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .floating-cart button:hover {
   background: #b5964b;
-  color: white;
+  color: #ffffff;
 }
 
-/* ===========================
-   LOADING / ERROR / EMPTY
-=========================== */
+/* ==========================================================================
+   STATE MANAGERS (LOADING / ERROR / EMPTY)
+   ========================================================================== */
 
 .menu-loading,
 .menu-error,
 .no-menu {
-  min-height: 60vh;
+  min-height: 50vh;
   display: flex;
   justify-content: center;
   align-items: center;
+  text-align: center;
+  padding: 40px;
 }
 
 .menu-loading h2,
 .menu-error h2,
 .no-menu h2 {
-  font-family: "Playfair Display", serif;
-  font-size: 34px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 32px;
   font-weight: 400;
-  color: #444;
+  color: #444444;
+  margin: 0;
 }
 
-/* ===========================
-   SCROLLBAR
-=========================== */
+/* ==========================================================================
+   CUSTOM SCROLLBAR
+   ========================================================================== */
 
 ::-webkit-scrollbar {
   width: 8px;
@@ -350,54 +412,58 @@
 
 ::-webkit-scrollbar-thumb {
   background: #c8b07a;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #b5964b;
 }
 
-/* ===========================
-   RESPONSIVE
-=========================== */
+/* ==========================================================================
+   RESPONSIVE DESIGN
+   ========================================================================== */
 
 @media (max-width: 992px) {
-
   .menu-container {
-    padding: 60px 25px;
+    padding: 50px 25px;
   }
 
   .menu-grid {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
   }
-
 }
 
 @media (max-width: 768px) {
-
   .menu-container {
-    padding: 45px 20px;
+    padding: 40px 20px;
   }
 
   .menu-header {
-    margin-bottom: 40px;
+    margin-bottom: 35px;
   }
 
   .menu-header h1 {
-    font-size: 38px;
+    font-size: 36px;
   }
 
   .menu-toolbar {
     flex-direction: column;
     align-items: stretch;
+    gap: 15px;
   }
 
-  .menu-toolbar input {
-    min-width: auto;
-    width: 100%;
+  .menu-toolbar input[type="text"],
+  .menu-toolbar input[type="search"] {
+    min-width: 100%;
+  }
+
+  .available-filter {
+    justify-content: center;
   }
 
   .cart-summary {
-    align-items: flex-start;
+    align-items: center;
   }
 
   .menu-grid {
@@ -410,30 +476,33 @@
     bottom: 20px;
     width: auto;
   }
-
 }
 
 @media (max-width: 480px) {
-
   .menu-header h1 {
-    font-size: 32px;
+    font-size: 30px;
   }
 
   .menu-card {
-    padding: 22px;
+    padding: 20px;
   }
 
+  /* Handle long item names gracefully on tiny screens */
   .menu-card-top {
-    flex-direction: column;
-    gap: 8px;
+    flex-wrap: wrap;
   }
 
   .menu-card-top h3 {
-    font-size: 24px;
+    font-size: 22px;
+    white-space: normal;
+  }
+
+  .menu-card-top::after {
+    display: none; /* Hide dashed line on mobile to prevent layout breakage */
   }
 
   .price {
-    font-size: 20px;
+    font-size: 15px;
   }
 
   .description {
@@ -442,34 +511,19 @@
 
   .quantity-box {
     width: 135px;
-    height: 44px;
+    height: 40px;
   }
 
   .quantity-box button {
-    width: 42px;
-    height: 42px;
+    width: 40px;
   }
 
   .quantity-box span {
-    width: 50px;
-    line-height: 42px;
+    line-height: 40px;
   }
 
   .add-cart-btn {
-    font-size: 12px;
-    letter-spacing: 1.5px;
+    font-size: 11px;
+    padding: 12px;
   }
-
-  .floating-cart {
-    padding: 18px;
-  }
-
-  .floating-cart h3 {
-    font-size: 22px;
-  }
-
-  .floating-cart strong {
-    font-size: 20px;
-  }
-
 }

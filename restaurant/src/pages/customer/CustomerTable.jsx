@@ -22,46 +22,27 @@ function TableCard({ table, onBook }) {
       <h3 className="table-number">Table #{table.tableNo}</h3>
 
       <p>
-        <strong>Capacity:</strong> {table.capacity}
-      </p>
-
-      <p>
         <div className="table-row">
-    <span>Status</span>
+    <span>Status : </span>
     <span className={`status-${statusClass}`}>
         {table.status}
     </span>
 </div>
 
 <div className="table-row">
-    <span>Capacity</span>
+    <span>Capacity : </span>
     <span>{table.capacity} Persons</span>
 </div>
 
 <div className="table-row">
-    <span>Availability</span>
+    
 
-    <span
-        className={
-            table.isActive
-                ? "availability available"
-                : "availability unavailable"
-        }
-    >
-        {table.isActive ? "Available" : "Unavailable"}
-    </span>
+    
 </div>{" "}
-        <span className={`status-${statusClass}`}>
-          {table.status}
-        </span>
+        
       </p>
 
-      <p>
-        <strong>Availability:</strong>{" "}
-        <span className={table.isActive ? "availability available" : "availability unavailable"}>
-          {table.isActive ? "Available" : "Unavailable"}
-        </span>
-      </p>
+      
 
       {isAvailable ? (
         <button className="book-btn" onClick={() => onBook(table)}>

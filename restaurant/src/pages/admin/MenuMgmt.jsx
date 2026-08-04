@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import api from "../../util/api";
 import GetCurrUser from "../../util/GetcurrUser";
+import { showToast } from "../../components/showToast";
 import "./MenuMgmt.css";
 
 function MenuMgmt() {
@@ -23,12 +24,13 @@ function MenuMgmt() {
   const { token, userId } = GetCurrUser();
 
   // --- MODAL STATES ---
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
+  const [isEditingMenu, setIsEditingMenu] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isSubCategoryModalOpen, setIsSubCategoryModalOpen] = useState(false);
 
-  // Form state for Menu Edit
-  const [editFormData, setEditFormData] = useState({
+  // Form state for Menu (Create + Edit)
+  const initialMenuForm = {
     menuId: 0,
     itemName: "",
     itemDescription: "",
@@ -36,14 +38,15 @@ function MenuMgmt() {
     subCategoryId: 0,
     itemImage: "",
     itemPrice: 0,
-    unitId: 0,
+    unitId: 1,
     isAvailable: true,
     lastUpdatedBy: 0,
     lastUpdatedOn: new Date().toISOString(),
-  });
+  };
+  const [menuFormData, setMenuFormData] = useState(initialMenuForm);
 
   // Category Form State (Create + Edit)
-  const [categoryForm, setCategoryForm] = useState({
+  const initialCategoryForm = {
     categoryId: 0,
     categoryName: "",
     description: "",
@@ -54,11 +57,12 @@ function MenuMgmt() {
     createdOn: new Date().toISOString(),
     updatedBy: 0,
     updatedOn: new Date().toISOString(),
-  });
+  };
+  const [categoryForm, setCategoryForm] = useState(initialCategoryForm);
   const [editingCategory, setEditingCategory] = useState(false);
 
   // SubCategory Form State (Create + Edit)
-  const [subCategoryForm, setSubCategoryForm] = useState({
+  const initialSubCategoryForm = {
     subCategoryId: 0,
     categoryId: 0,
     subCategoryName: "",
@@ -70,7 +74,8 @@ function MenuMgmt() {
     createdOn: new Date().toISOString(),
     updatedBy: 0,
     updatedOn: new Date().toISOString(),
-  });
+  };
+  const [subCategoryForm, setSubCategoryForm] = useState(initialSubCategoryForm);
   const [editingSubCategory, setEditingSubCategory] = useState(false);
 
   useEffect(() => {
@@ -83,7 +88,7 @@ function MenuMgmt() {
     },
   });
 
-  // 1. Fetch Categories, SubCategories, and Menu Items
+  // --- FETCH DATA ---
   const fetchInitialData = async () => {
     try {
       setLoading(true);
@@ -119,7 +124,7 @@ function MenuMgmt() {
     }
   };
 
-  // Helper functions
+  // Helpers
   const getCategoryName = (id) => {
     const cat = categories.find((c) => (c.categoryId || c.id) === parseInt(id, 10));
     return cat ? cat.categoryName || cat.name : `Cat #${id}`;
@@ -128,6 +133,109 @@ function MenuMgmt() {
   const getSubCategoryName = (id) => {
     const subCat = subCategories.find((sc) => (sc.subCategoryId || sc.id) === parseInt(id, 10));
     return subCat ? subCat.subCategoryName || subCat.name : `SubCat #${id}`;
+  };
+
+  // --- MENU ACTIONS ---
+  const handleOpenAddMenuModal = () => {
+    setIsEditingMenu(false);
+    setMenuFormData({ ...initialMenuForm, lastUpdatedBy: userId || 0 });
+    setIsMenuModalOpen(true);
+  };
+
+  const handleEditMenuClick = (item) => {
+    setIsEditingMenu(true);
+    setMenuFormData({
+      menuId: item.menuId || 0,
+      itemName: item.itemName || "",
+      itemDescription: item.itemDescription || "",
+      categoryId: item.categoryId || 0,
+      subCategoryId: item.subCategoryId || 0,
+      itemImage: item.itemImage || "",
+      itemPrice: item.itemPrice || 0,
+      unitId: item.unitId || 1,
+      isAvailable: item.isAvailable ?? true,
+      lastUpdatedBy: userId || item.lastUpdatedBy || 0,
+      lastUpdatedOn: new Date().toISOString(),
+    });
+    setIsMenuModalOpen(true);
+  };
+
+  const handleMenuInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setMenuFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleMenuSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const payload = {
+        menuId: parseInt(menuFormData.menuId, 10),
+        itemName: menuFormData.itemName,
+        itemDescription: menuFormData.itemDescription,
+        categoryId: parseInt(menuFormData.categoryId, 10),
+        subCategoryId: parseInt(menuFormData.subCategoryId, 10),
+        itemImage: menuFormData.itemImage,
+        itemPrice: parseFloat(menuFormData.itemPrice),
+        unitId: parseInt(menuFormData.unitId, 10),
+        isAvailable: Boolean(menuFormData.isAvailable),
+        lastUpdatedBy: parseInt(userId || menuFormData.lastUpdatedBy || 0, 10),
+        lastUpdatedOn: new Date().toISOString(),
+      };
+
+      if (isEditingMenu) {
+        // Standard Web API route format for PUT
+        await axios.put(`${baseUrl}/Menu`, payload, getAuthHeaders());
+      } else {
+        await axios.post(`${baseUrl}/Menu`, payload, getAuthHeaders());
+      }
+
+      setIsMenuModalOpen(false);
+      await fetchMenuData(currentPage);
+    } catch (err) {
+      showToast("error", err.response?.data?.message || err.message || "Menu operation failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteMenu = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this Menu Item?")) return;
+    try {
+      setLoading(true);
+      await axios.delete(`${baseUrl}/Menu/${id}`, getAuthHeaders());
+      await fetchMenuData(currentPage);
+    } catch (err) {
+      showToast("error", err.response?.data?.message || err.message || "Failed to delete menu item.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleAvailability = async (item) => {
+    const payload = {
+      menuId: parseInt(item.menuId, 10),
+      itemName: item.itemName || "",
+      itemDescription: item.itemDescription || "",
+      categoryId: parseInt(item.categoryId || 0, 10),
+      subCategoryId: parseInt(item.subCategoryId || 0, 10),
+      itemImage: item.itemImage || "",
+      itemPrice: parseFloat(item.itemPrice || 0),
+      unitId: parseInt(item.unitId || 0, 10),
+      isAvailable: !item.isAvailable,
+      lastUpdatedBy: parseInt(userId || item.lastUpdatedBy || 0, 10),
+      lastUpdatedOn: new Date().toISOString(),
+    };
+
+    try {
+      await axios.put(`${baseUrl}/Menu`, payload, getAuthHeaders());
+      await fetchMenuData(currentPage);
+    } catch (err) {
+      showToast("error", err.response?.data?.message || err.message || "Failed to toggle menu item availability.");
+    }
   };
 
   // --- CATEGORY ACTIONS ---
@@ -151,17 +259,18 @@ function MenuMgmt() {
       };
 
       if (editingCategory) {
-        // PUT or POST to /Category/Update
+        // Direct PUT to /Category endpoint instead of /Category/Update
         await axios.put(`${baseUrl}/Category/Update`, payload, getAuthHeaders());
       } else {
-        // Create endpoint
-        await axios.post(`${baseUrl}/Category`, payload, getAuthHeaders());
+        await axios.post(`${baseUrl}/Category/Create`, payload, getAuthHeaders());
       }
 
       resetCategoryForm();
+      setIsCategoryModalOpen(false);
+      showToast("success", `Category ${editingCategory ? "updated" : "created"} successfully.`);
       await fetchInitialData();
     } catch (err) {
-      alert(`Category Operation Failed: ${err.response?.data?.message || err.message}`);
+      showToast("error", err.response?.data?.message || err.message || "Category operation failed.");
     } finally {
       setLoading(false);
     }
@@ -187,10 +296,12 @@ function MenuMgmt() {
     if (!window.confirm("Are you sure you want to delete this Category?")) return;
     try {
       setLoading(true);
-      await axios.delete(`${baseUrl}/Category/${id}`, getAuthHeaders());
+      const {userId} = GetCurrUser();
+      await axios.delete(`${baseUrl}/Category/${id}/${userId}`, getAuthHeaders());
       await fetchInitialData();
+      showToast("success", "Category deleted successfully.");
     } catch (err) {
-      alert(`Failed to delete category: ${err.response?.data?.message || err.message}`);
+      showToast("error", err.response?.data?.message || err.message || "Failed to delete category.");
     } finally {
       setLoading(false);
     }
@@ -199,16 +310,9 @@ function MenuMgmt() {
   const resetCategoryForm = () => {
     setEditingCategory(false);
     setCategoryForm({
-      categoryId: 0,
-      categoryName: "",
-      description: "",
-      isAvailable: true,
-      isActive: true,
-      displayOrder: 0,
+      ...initialCategoryForm,
       createdBy: userId || 0,
-      createdOn: new Date().toISOString(),
       updatedBy: userId || 0,
-      updatedOn: new Date().toISOString(),
     });
   };
 
@@ -234,19 +338,20 @@ function MenuMgmt() {
       };
 
       if (editingSubCategory) {
-        // PUT or POST to /SubCategory/Update
+        // Direct PUT to /SubCategory/Update endpoint
         await axios.put(`${baseUrl}/SubCategory/Update`, payload, getAuthHeaders());
       } else {
-        // Create endpoint
-        await axios.post(`${baseUrl}/SubCategory`, payload, getAuthHeaders());
+        await axios.post(`${baseUrl}/SubCategory/Create`, payload, getAuthHeaders());
       }
 
       resetSubCategoryForm();
       await fetchInitialData();
+      
     } catch (err) {
       alert(`SubCategory Operation Failed: ${err.response?.data?.message || err.message}`);
     } finally {
       setLoading(false);
+      setIsSubCategoryModalOpen(false);
     }
   };
 
@@ -267,120 +372,37 @@ function MenuMgmt() {
     });
   };
 
-  const handleDeleteSubCategory = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this Sub-Category?")) return;
-    try {
-      setLoading(true);
-      await axios.delete(`${baseUrl}/SubCategory/${id}`, getAuthHeaders());
-      await fetchInitialData();
-    } catch (err) {
-      alert(`Failed to delete sub-category: ${err.response?.data?.message || err.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const handleDeleteSubCategory = async (id) => {
+  if (!window.confirm("Are you sure you want to delete this Sub-Category?")) return;
+  try {
+    setLoading(true);
+    await axios.delete(`${baseUrl}/SubCategory/Delete/${id}`, getAuthHeaders());
+    showToast("success", "Sub-category deleted successfully.");
+    await fetchInitialData();
+    setIsSubCategoryModalOpen(false);
+    
+  } catch (err) {
+    setIsSubCategoryModalOpen(false);
+    showToast(
+
+      "error", 
+      err.response?.data?.message || err.message || "Failed to delete sub-category."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   const resetSubCategoryForm = () => {
     setEditingSubCategory(false);
     setSubCategoryForm({
-      subCategoryId: 0,
-      categoryId: 0,
-      subCategoryName: "",
-      description: "",
-      isAvailable: true,
-      isActive: true,
-      displayOrder: 0,
+      ...initialSubCategoryForm,
       createdBy: userId || 0,
-      createdOn: new Date().toISOString(),
       updatedBy: userId || 0,
-      updatedOn: new Date().toISOString(),
     });
   };
 
-  // --- MENU ITEM ACTIONS ---
-  const handleEditClick = (item) => {
-    setEditFormData({
-      menuId: item.menuId || 0,
-      itemName: item.itemName || "",
-      itemDescription: item.itemDescription || "",
-      categoryId: item.categoryId || 0,
-      subCategoryId: item.subCategoryId || 0,
-      itemImage: item.itemImage || "",
-      itemPrice: item.itemPrice || 0,
-      unitId: item.unitId || 0,
-      isAvailable: item.isAvailable ?? true,
-      lastUpdatedBy: userId || item.lastUpdatedBy || 0,
-      lastUpdatedOn: new Date().toISOString(),
-    });
-    setIsEditModalOpen(true);
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setEditFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      setLoading(true);
-      const payload = {
-        menuId: parseInt(editFormData.menuId, 10),
-        itemName: editFormData.itemName,
-        itemDescription: editFormData.itemDescription,
-        categoryId: parseInt(editFormData.categoryId, 10),
-        subCategoryId: parseInt(editFormData.subCategoryId, 10),
-        itemImage: editFormData.itemImage,
-        itemPrice: parseFloat(editFormData.itemPrice),
-        unitId: parseInt(editFormData.unitId, 10),
-        isAvailable: Boolean(editFormData.isAvailable),
-        lastUpdatedBy: parseInt(userId || editFormData.lastUpdatedBy || 0, 10),
-        lastUpdatedOn: new Date().toISOString(),
-      };
-
-      const response = await axios.put(
-        `${baseUrl}/Menu/${payload.menuId}`,
-        payload,
-        getAuthHeaders()
-      );
-
-      if (response.status === 200 || response.status === 204) {
-        setIsEditModalOpen(false);
-        await fetchMenuData(currentPage);
-      }
-    } catch (err) {
-      alert(`Update failed: ${err.response?.data?.message || err.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleToggleAvailability = async (item) => {
-    const payload = {
-      menuId: parseInt(item.menuId, 10),
-      itemName: item.itemName || "",
-      itemDescription: item.itemDescription || "",
-      categoryId: parseInt(item.categoryId || 0, 10),
-      subCategoryId: parseInt(item.subCategoryId || 0, 10),
-      itemImage: item.itemImage || "",
-      itemPrice: parseFloat(item.itemPrice || 0),
-      unitId: parseInt(item.unitId || 0, 10),
-      isAvailable: !item.isAvailable,
-      lastUpdatedBy: parseInt(userId || item.lastUpdatedBy || 0, 10),
-      lastUpdatedOn: new Date().toISOString(),
-    };
-
-    try {
-      await axios.put(`${baseUrl}/Menu/${item.menuId}`, payload, getAuthHeaders());
-      await fetchMenuData(currentPage);
-    } catch (err) {
-      alert(`Toggle failed: ${err.response?.data?.message || err.message}`);
-    }
-  };
-
+  // Filter items based on active parameters
   const filteredItems = menuItems.filter((item) => {
     const matchesSearch = item.itemName
       ? item.itemName.toLowerCase().includes(search.toLowerCase())
@@ -391,7 +413,7 @@ function MenuMgmt() {
     return matchesSearch && matchesCategory;
   });
 
-  if (loading && !isEditModalOpen && menuItems.length === 0) {
+  if (loading && !isMenuModalOpen && menuItems.length === 0) {
     return (
       <div className="inventory-container">
         <div className="inventory-loading">
@@ -417,7 +439,9 @@ function MenuMgmt() {
           <button className="btn-secondary" onClick={() => setIsSubCategoryModalOpen(true)}>
             + Manage Sub-Categories
           </button>
-          <button className="btn-primary">+ Add Menu Item</button>
+          <button className="btn-primary" onClick={handleOpenAddMenuModal}>
+            + Add Menu Item
+          </button>
         </div>
       </div>
 
@@ -524,16 +548,21 @@ function MenuMgmt() {
                         </span>
                       </td>
                       <td className="action-cell text-right">
-  <div style={{ display: "flex", justifyContent: "space-between", gap: "10px",marginRight:"20px", paddingRight:"20px"}}>
-    <button
-      className="btn-text-primary"
-      onClick={() => handleEditClick(item)}
-    >
-      Edit
-    </button>
-    <button className="btn-text-danger">Delete</button>
-  </div>
-</td>
+                        <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", paddingRight: "10px" }}>
+                          <button
+                            className="btn-text-primary"
+                            onClick={() => handleEditMenuClick(item)}
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            className="btn-text-danger" 
+                            onClick={() => handleDeleteMenu(item.menuId)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))
                 ) : (
@@ -550,7 +579,7 @@ function MenuMgmt() {
             <div
               style={{
                 display: "flex",
-                justifyContent: "space-between",
+                justify: "space-between",
                 alignItems: "center",
                 padding: "16px 20px",
                 borderTop: "1px solid var(--border-subtle)",
@@ -588,29 +617,29 @@ function MenuMgmt() {
         )}
       </div>
 
-      {/* --- MENU EDIT MODAL --- */}
-      {isEditModalOpen && (
+      {/* --- MENU EDIT / CREATE MODAL --- */}
+      {isMenuModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-header">
-              <h2>Edit Menu Item #{editFormData.menuId}</h2>
+              <h2>{isEditingMenu ? `Edit Menu Item #${menuFormData.menuId}` : "Add Menu Item"}</h2>
               <button
                 className="modal-close"
-                onClick={() => setIsEditModalOpen(false)}
+                onClick={() => setIsMenuModalOpen(false)}
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleEditSubmit}>
+            <form onSubmit={handleMenuSubmit}>
               <div className="form-group">
                 <label>Item Name</label>
                 <input
                   type="text"
                   className="modal-input"
                   name="itemName"
-                  value={editFormData.itemName}
-                  onChange={handleInputChange}
+                  value={menuFormData.itemName}
+                  onChange={handleMenuInputChange}
                   required
                 />
               </div>
@@ -621,8 +650,8 @@ function MenuMgmt() {
                   type="text"
                   className="modal-input"
                   name="itemDescription"
-                  value={editFormData.itemDescription}
-                  onChange={handleInputChange}
+                  value={menuFormData.itemDescription}
+                  onChange={handleMenuInputChange}
                 />
               </div>
 
@@ -632,8 +661,8 @@ function MenuMgmt() {
                   <select
                     className="modal-input"
                     name="categoryId"
-                    value={editFormData.categoryId}
-                    onChange={handleInputChange}
+                    value={menuFormData.categoryId}
+                    onChange={handleMenuInputChange}
                     required
                   >
                     <option value={0}>Select Category</option>
@@ -653,18 +682,23 @@ function MenuMgmt() {
                   <select
                     className="modal-input"
                     name="subCategoryId"
-                    value={editFormData.subCategoryId}
-                    onChange={handleInputChange}
+                    value={menuFormData.subCategoryId}
+                    onChange={handleMenuInputChange}
                   >
                     <option value={0}>Select Sub-Category</option>
-                    {subCategories.map((sc) => {
-                      const id = sc.subCategoryId || sc.id;
-                      return (
-                        <option key={id} value={id}>
-                          {sc.subCategoryName || sc.name}
-                        </option>
-                      );
-                    })}
+                    {subCategories
+                      .filter((sc) => 
+                        !parseInt(menuFormData.categoryId, 10) || 
+                        parseInt(sc.categoryId, 10) === parseInt(menuFormData.categoryId, 10)
+                      )
+                      .map((sc) => {
+                        const id = sc.subCategoryId || sc.id;
+                        return (
+                          <option key={id} value={id}>
+                            {sc.subCategoryName || sc.name}
+                          </option>
+                        );
+                      })}
                   </select>
                 </div>
               </div>
@@ -677,8 +711,8 @@ function MenuMgmt() {
                     step="0.01"
                     className="modal-input"
                     name="itemPrice"
-                    value={editFormData.itemPrice}
-                    onChange={handleInputChange}
+                    value={menuFormData.itemPrice}
+                    onChange={handleMenuInputChange}
                     required
                   />
                 </div>
@@ -689,8 +723,8 @@ function MenuMgmt() {
                     type="number"
                     className="modal-input"
                     name="unitId"
-                    value={editFormData.unitId}
-                    onChange={handleInputChange}
+                    value={menuFormData.unitId}
+                    onChange={handleMenuInputChange}
                     required
                   />
                 </div>
@@ -702,8 +736,8 @@ function MenuMgmt() {
                   type="text"
                   className="modal-input"
                   name="itemImage"
-                  value={editFormData.itemImage}
-                  onChange={handleInputChange}
+                  value={menuFormData.itemImage}
+                  onChange={handleMenuInputChange}
                 />
               </div>
 
@@ -715,8 +749,8 @@ function MenuMgmt() {
                   type="checkbox"
                   id="isAvailable"
                   name="isAvailable"
-                  checked={editFormData.isAvailable}
-                  onChange={handleInputChange}
+                  checked={menuFormData.isAvailable}
+                  onChange={handleMenuInputChange}
                 />
                 <label htmlFor="isAvailable" style={{ cursor: "pointer", margin: 0 }}>
                   Is Available
@@ -727,7 +761,7 @@ function MenuMgmt() {
                 <button
                   type="button"
                   className="btn-secondary"
-                  onClick={() => setIsEditModalOpen(false)}
+                  onClick={() => setIsMenuModalOpen(false)}
                 >
                   Cancel
                 </button>
@@ -858,7 +892,7 @@ function MenuMgmt() {
                     key={id}
                     style={{
                       display: "flex",
-                      justifyContent: "space-between",
+                      justify: "space-between",
                       alignItems: "center",
                       padding: "8px 0",
                       borderBottom: "1px solid var(--border-subtle)",
@@ -974,25 +1008,25 @@ function MenuMgmt() {
                 >
                   <input
                     type="checkbox"
-                    id="subIsAvailable"
+                    id="subCatIsAvailable"
                     checked={subCategoryForm.isAvailable}
                     onChange={(e) =>
                       setSubCategoryForm((p) => ({ ...p, isAvailable: e.target.checked }))
                     }
                   />
-                  <label htmlFor="subIsAvailable" style={{ cursor: "pointer", margin: 0 }}>
+                  <label htmlFor="subCatIsAvailable" style={{ cursor: "pointer", margin: 0 }}>
                     Available
                   </label>
 
                   <input
                     type="checkbox"
-                    id="subIsActive"
+                    id="subCatIsActive"
                     checked={subCategoryForm.isActive}
                     onChange={(e) =>
                       setSubCategoryForm((p) => ({ ...p, isActive: e.target.checked }))
                     }
                   />
-                  <label htmlFor="subIsActive" style={{ cursor: "pointer", margin: 0 }}>
+                  <label htmlFor="subCatIsActive" style={{ cursor: "pointer", margin: 0 }}>
                     Active
                   </label>
                 </div>
@@ -1025,16 +1059,16 @@ function MenuMgmt() {
                     key={id}
                     style={{
                       display: "flex",
-                      justifyContent: "space-between",
+                      justify: "space-between",
                       alignItems: "center",
                       padding: "8px 0",
                       borderBottom: "1px solid var(--border-subtle)",
                     }}
                   >
                     <div>
-                      <div>{sc.subCategoryName || sc.name}</div>
-                      <small className="muted-text">
-                        Belongs to: {getCategoryName(sc.categoryId)}
+                      <span>{sc.subCategoryName || sc.name}</span>
+                      <small className="muted-text" style={{ marginLeft: "8px" }}>
+                        ({getCategoryName(sc.categoryId)})
                       </small>
                     </div>
                     <div>

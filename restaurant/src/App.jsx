@@ -34,17 +34,21 @@ const Analytics = () => <h2>Analytics Page (Admins & Editors)</h2>;
 const Unauthorized = () => <h2>⚠️ Access Denied: You don't have permission.</h2>;
 const UserPanel = () => <h2>this is the user dashboard</h2>;
 const ProtectedRoute = ({ allowedRoles }) => {
-  const { token, roleId } = GetCurrUser();
+    const { token, roles } = GetCurrUser();
 
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
+    if (!token) {
+        return <Navigate to="/login" replace />;
+    }
 
-  if (allowedRoles && !allowedRoles.includes(Number(roleId))) {
-    return <Navigate to="/unauthorized" replace />;
-  }
+    const hasAccess = roles?.some(role =>
+        allowedRoles.includes(Number(role))
+    );
 
-  return <Outlet />;
+    if (!hasAccess) {
+        return <Navigate to="/unauthorized" replace />;
+    }
+
+    return <Outlet />;
 };
 
 function Layout() {
@@ -77,6 +81,7 @@ const router = createBrowserRouter([
       
 
       { 
+        
         element: <ProtectedRoute allowedRoles={[5]} />,
         children: [
           { path: "/admin-dashboard", element: <AdminDashboard /> },
@@ -108,7 +113,6 @@ const router = createBrowserRouter([
           {path:"/customer-orders",element:<CustomerOrders/>},
           {path:"/customer-cart",element:<Cart/>},
           {path:"/customer-table", element: <Table/>},
-          {path:"/customer-orders",element:<CustomerOrders/>},
           {path:"/customer-menu",element:<CustomerMenu/>},
           {path:"/customer-bill",element:<CustomerBill/>},
           

@@ -21,10 +21,17 @@ function Signup() {
         { email, password }
       );
 
-      // Fixed: changed 'response' to 'res' to match your variable declaration
       sessionStorage.setItem("token", res.data.token);
       sessionStorage.setItem("userId", res.data.userId);
-      sessionStorage.setItem("roleId", res.data.roleId);
+      if (res.data.roles) {
+        sessionStorage.setItem("roles", JSON.stringify(res.data.roles));
+        if (res.data.roles.length > 0) {
+          sessionStorage.setItem("roleId", String(res.data.roles[0]));
+        }
+      } else if (res.data.roleId) {
+        sessionStorage.setItem("roleId", String(res.data.roleId));
+        sessionStorage.setItem("roles", JSON.stringify([res.data.roleId]));
+      }
       
       showToast("success", "Account created successfully!");
       navigate("/verify-otp");

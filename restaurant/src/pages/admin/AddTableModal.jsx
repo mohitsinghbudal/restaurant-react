@@ -6,7 +6,7 @@ import { showToast } from "../../components/showToast";
 
 function AddTableModal({ open, onClose, refresh }) {
   const baseApi = api();
-  const { token } = GetCurrUser();
+  const { token } = GetCurrUser() || {};
 
   const initialForm = {
     tableNo: "",
@@ -17,6 +17,7 @@ function AddTableModal({ open, onClose, refresh }) {
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
 
+  // Reset state whenever modal opens/closes
   useEffect(() => {
     if (open) {
       setForm(initialForm);
@@ -27,22 +28,26 @@ function AddTableModal({ open, onClose, refresh }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setForm((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent full page reload on form submit
     if (loading) return;
 
-    if (!form.tableNo.trim()) {
-      showToast("error", "Please enter a table number.");
+    const parsedTableNo = Number(form.tableNo);
+    const parsedCapacity = Number(form.capacity);
+
+    // Validation
+    if (!String(form.tableNo).trim() || parsedTableNo <= 0) {
+      showToast("error", "Please enter a valid table number greater than 0.");
       return;
     }
 
-    if (!form.capacity || Number(form.capacity) <= 0) {
+    if (!form.capacity || parsedCapacity <= 0) {
       showToast("error", "Capacity must be greater than zero.");
       return;
     }
@@ -53,8 +58,8 @@ function AddTableModal({ open, onClose, refresh }) {
       await axios.post(
         `${baseApi}/Table/CreateTable`,
         {
-          tableNo: Number(form.tableNo),
-          capacity: Number(form.capacity),
+          tableNo: parsedTableNo,
+          capacity: parsedCapacity,
           status: form.status,
         },
         {
@@ -80,70 +85,78 @@ function AddTableModal({ open, onClose, refresh }) {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="table-modal">
+    <div className="modal-overlay" onClick={onClose}>
+      <div 
+        className="table-modal" 
+        onClick={(e) => e.stopPropagation()} /* Prevents closing when clicking inside content */
+      >
         <h2>Add New Table</h2>
 
-        <div className="form-group">
-          <label>Table Number</label>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="tableNo">Table Number</label>
+            <input
+              id="tableNo"
+              type="number"
+              name="tableNo"
+              placeholder="e.g. 100"
+              value={form.tableNo}
+              onChange={handleChange}
+              disabled={loading}
+              min="1"
+              autoFocus
+            />
+          </div>
 
-          <input
-            type="number"
-            name="tableNo"
-            placeholder="100"
-            value={form.tableNo}
-            onChange={handleChange}
-            disabled={loading}
-          />
-        </div>
+          <div className="form-group">
+            <label htmlFor="capacity">Capacity</label>
+            <input
+              id="capacity"
+              type="number"
+              name="capacity"
+              min="1"
+              placeholder="e.g. 4"
+              value={form.capacity}
+              onChange={handleChange}
+              disabled={loading}
+            />
+          </div>
 
-        <div className="form-group">
-          <label>Capacity</label>
+          <div className="form-group">
+            <label htmlFor="status">Status</label>
+            <select
+              id="status"
+              name="status"
+              value={form.status}
+              onChange={handleChange}
+              disabled={loading}
+            >
+              <option value="Available">Available</option>
+              <option value="Occupied">Occupied</option>
+              <option value="Booked">Booked</option>
+              <option value="Cleaning">Cleaning</option>
+            </select>
+          </div>
 
-          <input
-            type="number"
-            name="capacity"
-            min="1"
-            placeholder="4"
-            value={form.capacity}
-            onChange={handleChange}
-            disabled={loading}
-          />
-        </div>
+          <div className="modal-buttons">
+            <button
+              type="button"
+              className="cancel-btn"
+              onClick={onClose}
+              disabled={loading}
+            >
+              Cancel
+            </button>
 
-        <div className="form-group">
-          <label>Status</label>
-
-          <select
-            name="status"
-            value={form.status}
-            onChange={handleChange}
-            disabled={loading}
-          >
-            <option value="Available">Available</option>
-            <option value="Occupied">Occupied</option>
-            <option value="Booked">Booked</option>
-            <option value="Cleaning">Cleaning</option>
-          </select>
-        </div>
-
-        <div className="modal-buttons">
-          <button
-            className="cancel-btn"
-            onClick={onClose}
-            disabled={loading}
-          >
-            Cancel
-          </button>
-
-          <button
-            className="confirm-btn"
-            onClick={handleSubmit}
-            disabled={loading}
-          >
-            {loading ? "Saving..." : "Save Table"}
-          </button>
-        </div>
+            <button
+              type="submit"
+              className="confirm-btn"
+              disabled={loading}
+            >
+              {loading ? "Saving..." : "Save Table"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

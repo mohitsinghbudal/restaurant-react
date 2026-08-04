@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom"; 
 import "./Login.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";       
 import api from "../util/api";  
 import GetCurrUser from "../util/GetcurrUser";
@@ -11,29 +11,30 @@ function Login() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const { token, roleId } = GetCurrUser();
+  const { token, roles: hookRoles } = GetCurrUser();
 
-  const handleRoleRedirect = (roleId) => {
-    switch(roleId)
-    {
-      case 1: 
+  // Centralized navigation logic that accepts explicit roles array or falls back to hook state
+  const handleRoleRedirect = useCallback((rolesArray) => {
+    const activeRoles = Array.isArray(rolesArray) && rolesArray.length > 0 
+      ? rolesArray 
+      : hookRoles;
+
+    // Check numeric values directly
+    if (activeRoles.includes(5)) {
+      navigate("/admin-dashboard");
+    } else if (activeRoles.includes(1)) {
       navigate("/customer-table");
-
-      case 5:
-        navigate("/customer-table");
-
-      default:
-        navigate("/dashboard");
+    } else {
+      navigate("/dashboard");
     }
-        
-    };
+  }, [hookRoles, navigate]);
 
-
+  // Auto-redirect if the user visits /login while already authenticated
   useEffect(() => {
-    if (token) {
-      handleRoleRedirect();
+    if (token && hookRoles.length > 0) {
+      handleRoleRedirect(hookRoles);
     }
-  }, [token, roleId, navigate]);
+  }, [token, hookRoles, handleRoleRedirect]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,14 +48,20 @@ function Login() {
       const baseUrl = api();
       const res = await axios.post(`${baseUrl}/User/login`, { email, password });
       
-      sessionStorage.setItem("token", res.data.login_token);
-      sessionStorage.setItem("userId", res.data.userId);
-      sessionStorage.setItem("roleId", res.data.roleId);
+      const token = res.data.login_token;
+      const userId = res.data.userId;
+      // Convert backend roles to numbers
+      const roles = (res.data.roles || []).map(Number);
 
-      showToast("success", "Login Successful!");
+      sessionStorage.setItem("token", token);
+      sessionStorage.setItem("userId", String(userId));
+      sessionStorage.setItem("roles", JSON.stringify(roles));
+
+      showToast("success", res.data.message || "Login Successful!");
       
-      
-      handleRoleRedirect(res.data.roleId);
+      // Perform redirect using response roles directly
+      handleRoleRedirect(roles);
+
     } catch (error) {
       console.error("Login error:", error);
       const errorMessage = error.response?.data?.message || "Login Failed. Please try again.";

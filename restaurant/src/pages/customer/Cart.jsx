@@ -8,94 +8,152 @@ import "./Cart.css";
 function Cart() {
   const navigate = useNavigate();
   const baseUrl = api();
-
   const { token, userId, sessionId: initialSessionId } = GetCurrUser();
 
-  const [cart, setCart] = useState([]);
+  const [cartItems, setCartItems] = useState([]);
+  const [menuMap, setMenuMap] = useState({});
+  const [loading, setLoading] = useState(true);
   const [placingOrder, setPlacingOrder] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      
-        const storedCart = JSON.parse(sessionStorage.getItem("cart")) || [];
-        setCart(storedCart);
-      
+    const fetchCartAndMenu = async () => {
+      try {
+        setLoading(true);
+        const authHeaders = { Authorization: `Bearer ${token}` };
+
+        // 1. Fetch Menu details to resolve menuId -> { itemName, itemPrice, etc. }
+        const menuRes = await axios.get(`${baseUrl}/Menu/get-all`, {
+          headers: authHeaders,
+        });
+        const items = menuRes.data.items || menuRes.data || [];
+        const map = {};
+        items.forEach((item) => {
+          map[item.menuId] = item;
+        });
+        setMenuMap(map);
+
+        // 2. Fetch User Cart from backend API
+        if (userId) {
+          const cartRes = await axios.get(`${baseUrl}/Cart`, {
+            params: { userId },
+            headers: authHeaders,
+          });
+
+          // Standardize cart output whether API returns an array or single object
+          const rawCart = Array.isArray(cartRes.data)
+            ? cartRes.data
+            : cartRes.data
+            ? [cartRes.data]
+            : [];
+
+          setCartItems(rawCart);
+          sessionStorage.setItem("cart", JSON.stringify(rawCart));
+        } else {
+          // Fallback to local session storage if userId isn't loaded yet
+          const stored = JSON.parse(sessionStorage.getItem("cart")) || [];
+          setCartItems(stored);
+        }
+      } catch (err) {
+        console.error("Error fetching cart data:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchData();
-  }, [baseUrl, token]);
+    if (token) {
+      fetchCartAndMenu();
+    }
+  }, [baseUrl, token, userId]);
 
-  const saveCart = (updatedCart) => {
-    setCart(updatedCart);
-    sessionStorage.setItem("cart", JSON.stringify(updatedCart));
-  };
-
-  const increaseQty = (menuId) => {
-    const updated = cart.map((item) =>
-      item.menuId === menuId
-        ? {
-            ...item,
-            quantity: item.quantity + 1,
-          }
-        : item
-    );
-
-    saveCart(updated);
-  };
-
-  const decreaseQty = (menuId) => {
-    const updated = cart.map((item) => {
-      if (item.menuId === menuId) {
-        return {
-          ...item,
-          quantity: Math.max(1, item.quantity - 1),
-        };
-      }
-
-      return item;
+  // Combine backend cart item with menu metadata
+  const detailedCart = useMemo(() => {
+    return cartItems.map((item) => {
+      const menuDetail = menuMap[item.menuId] || {};
+      return {
+        ...item,
+        itemName: menuDetail.itemName || `Menu Item #${item.menuId}`,
+        itemDescription: menuDetail.itemDescription || "",
+        price: menuDetail.itemPrice || menuDetail.price || 0,
+      };
     });
+  }, [cartItems, menuMap]);
 
-    saveCart(updated);
+  const updateQuantityOnBackend = async (cartItem, newQty) => {
+    const updated = cartItems.map((i) =>
+      i.menuId === cartItem.menuId ? { ...i, quantity: newQty } : i
+    );
+    setCartItems(updated);
+    sessionStorage.setItem("cart", JSON.stringify(updated));
+
+    try {
+      await axios.put(
+        `${baseUrl}/Cart`,
+        {
+          id: cartItem.id || 0,
+          userId: Number(userId),
+          menuId: cartItem.menuId,
+          quantity: newQty,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } catch (err) {
+      console.error("Failed to update cart item quantity:", err);
+    }
   };
 
-  const removeItem = (menuId) => {
-    const updated = cart.filter((item) => item.menuId !== menuId);
-    saveCart(updated);
+  const increaseQty = (item) => {
+    updateQuantityOnBackend(item, item.quantity + 1);
+  };
+
+  const decreaseQty = (item) => {
+    if (item.quantity <= 1) return;
+    updateQuantityOnBackend(item, item.quantity - 1);
+  };
+
+  const removeItem = async (cartItem) => {
+    const updated = cartItems.filter((i) => i.menuId !== cartItem.menuId);
+    setCartItems(updated);
+    sessionStorage.setItem("cart", JSON.stringify(updated));
+
+    try {
+      await axios.delete(`${baseUrl}/Cart`, {
+        params: { cartId: cartItem.id || cartItem.menuId, userId },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (err) {
+      console.error("Error deleting item from cart:", err);
+    }
   };
 
   const clearCart = () => {
     sessionStorage.removeItem("cart");
-    setCart([]);
+    setCartItems([]);
   };
 
   const subtotal = useMemo(() => {
-    return cart.reduce(
-      (sum, item) => sum + (item.itemPrice || item.price || 0) * item.quantity,
+    return detailedCart.reduce(
+      (sum, item) => sum + item.price * item.quantity,
       0
     );
-  }, [cart]);
+  }, [detailedCart]);
 
   const totalItems = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.quantity, 0);
-  }, [cart]);
+    return detailedCart.reduce((sum, item) => sum + item.quantity, 0);
+  }, [detailedCart]);
 
   const placeOrder = async () => {
-    if (cart.length === 0) {
+    if (detailedCart.length === 0) {
       alert("Your cart is empty.");
       return;
     }
 
-    // Determine current active sessionId (from hook or cached in sessionStorage)
     let currentSessionId =
       initialSessionId || sessionStorage.getItem("sessionId");
 
-    // Fetch session on-the-fly if missing
     if (!currentSessionId) {
       try {
         const res = await axios.get(`${baseUrl}/Dinning/user`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (res.data?.sessionId) {
@@ -115,38 +173,31 @@ function Cart() {
       setPlacingOrder(true);
 
       const payload = {
-        items: cart.map((item) => ({
+        items: detailedCart.map((item) => ({
           menuId: item.menuId,
           itemName: item.itemName,
           diningSessionId: currentSessionId,
-          description: item.itemDescription || item.description || "",
+          description: item.itemDescription,
           createdAt: new Date().toISOString(),
           createdBy: Number(userId),
           isActive: true,
           quantity: item.quantity,
-          price: item.itemPrice || item.price,
+          price: item.price,
         })),
       };
-
-      const activeToken =
-        token ||
-        sessionStorage.getItem("token") ||
-        localStorage.getItem("token");
 
       await axios.post(`${baseUrl}/Order/place-order`, payload, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${activeToken}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
       alert("Order placed successfully!");
-
       clearCart();
       navigate("/orders");
     } catch (err) {
       console.error(err);
-
       alert(
         typeof err?.response?.data === "string"
           ? err.response.data
@@ -157,7 +208,15 @@ function Cart() {
     }
   };
 
-  if (cart.length === 0) {
+  if (loading) {
+    return (
+      <div className="cart-page">
+        <h2>Loading your cart...</h2>
+      </div>
+    );
+  }
+
+  if (detailedCart.length === 0) {
     return (
       <div className="cart-page">
         <div className="empty-cart">
@@ -188,26 +247,26 @@ function Cart() {
 
       <div className="cart-container">
         <div className="cart-items">
-          {cart.map((item) => (
+          {detailedCart.map((item) => (
             <div className="cart-card" key={item.menuId}>
               <div className="cart-left">
                 <h2>{item.itemName}</h2>
-                <p>{item.itemDescription || item.description}</p>
-                <span>Rs. {item.itemPrice || item.price}</span>
+                <p>{item.itemDescription}</p>
+                <span>Rs. {item.price}</span>
               </div>
 
               <div className="cart-right">
                 <div className="quantity-box">
-                  <button onClick={() => decreaseQty(item.menuId)}>-</button>
+                  <button onClick={() => decreaseQty(item)}>-</button>
                   <span>{item.quantity}</span>
-                  <button onClick={() => increaseQty(item.menuId)}>+</button>
+                  <button onClick={() => increaseQty(item)}>+</button>
                 </div>
 
-                <h3>Rs. {(item.itemPrice || item.price) * item.quantity}</h3>
+                <h3>Rs. {item.price * item.quantity}</h3>
 
                 <button
                   className="remove-btn"
-                  onClick={() => removeItem(item.menuId)}
+                  onClick={() => removeItem(item)}
                 >
                   Remove
                 </button>

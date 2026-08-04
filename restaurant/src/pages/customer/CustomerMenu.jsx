@@ -1,8 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import axios from "axios";
 import api from "../../util/api";
+import GetCurrUser from "../../util/GetCurrUser";
+import { showToast } from "../../components/showToast";
 import "./CustomerMenu.css";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function Menu() {
   const [menuData, setMenuData] = useState([]);
@@ -12,38 +14,66 @@ function Menu() {
   const [search, setSearch] = useState("");
   const [showAvailableOnly, setShowAvailableOnly] = useState(false);
 
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    const savedCart = sessionStorage.getItem("cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
   const [quantities, setQuantities] = useState({});
 
+  const { token, userId } = GetCurrUser();
   const navigate = useNavigate();
+  const baseUrl = api();
+
+  // Defined at component scope so both useEffect and addToCart can trigger it
+  const fetchMenuAndCart = useCallback(async () => {
+    try {
+      const authHeaders = { Authorization: token ? `Bearer ${token}` : "" };
+
+      // 1. Fetch Menu Items
+      const res = await axios.get(`${baseUrl}/Menu/get-all`, {
+        headers: authHeaders,
+      });
+      setMenuData(res.data.items || res.data || []);
+
+      // 2. Fetch User Cart from Server on load / re-sync
+      if (userId && token) {
+        const cartRes = await axios.get(`${baseUrl}/Cart`, {
+          params: { userId: Number(userId) },
+          headers: authHeaders,
+        });
+
+        const fetchedCart = Array.isArray(cartRes.data)
+          ? cartRes.data
+          : cartRes.data
+          ? [cartRes.data]
+          : [];
+
+        setCart(fetchedCart);
+        sessionStorage.setItem("cart", JSON.stringify(fetchedCart));
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load menu.");
+    } finally {
+      setLoading(false);
+    }
+  }, [baseUrl, token, userId]);
 
   useEffect(() => {
-    const fetchMenu = async () => {
-      try {
-        const baseUrl = api();
-        const res = await axios.get(`${baseUrl}/Menu/get-all`);
-
-        setMenuData(res.data.items || []);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load menu.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMenu();
-  }, []);
+    fetchMenuAndCart();
+  }, [fetchMenuAndCart]);
 
   const filteredMenu = useMemo(() => {
     return menuData.filter((item) => {
-      const matchesSearch =
-        item.itemName.toLowerCase().includes(search.toLowerCase()) ||
-        item.itemDescription.toLowerCase().includes(search.toLowerCase());
+      const name = item.itemName || "";
+      const description = item.itemDescription || "";
 
-      const matchesAvailability = showAvailableOnly
-        ? item.isAvailable
-        : true;
+      const matchesSearch =
+        name.toLowerCase().includes(search.toLowerCase()) ||
+        description.toLowerCase().includes(search.toLowerCase());
+
+      const matchesAvailability = showAvailableOnly ? item.isAvailable : true;
 
       return matchesSearch && matchesAvailability;
     });
@@ -63,35 +93,56 @@ function Menu() {
     }));
   };
 
-  const addToCart = (item) => {
-  const qty = quantities[item.menuId] || 1;
+  const addToCart = async (item) => {
+    const selectedQty = quantities[item.menuId] || 1; //this is not working please update functionality
+    const nowIso = new Date().toISOString();
 
-  let updatedCart = [...cart];
+    const payload = {
+      userId: Number(userId) || 0,
+      menuId: item.menuId,
+      quantity: selectedQty,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
 
-  const existingIndex = updatedCart.findIndex(
-    (c) => c.menuId === item.menuId
+    try {
+      setLoading(true);
+
+      await axios.post(`${baseUrl}/Cart`, payload, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      showToast("success", "Item added to cart successfully!");
+
+      // Reset the selected item quantity selector back to 1
+      setQuantities((prev) => ({ ...prev, [item.menuId]: 1 }));
+    } catch (err) {
+      console.error(err);
+      showToast("error", "Failed to add item to cart.");
+    } finally {
+      await fetchMenuAndCart();
+    }
+  };
+
+  const totalItems = useMemo(
+    () => cart.reduce((sum, item) => sum + item.quantity, 0),
+    [cart]
   );
 
-  if (existingIndex !== -1) {
-    updatedCart[existingIndex].quantity += qty;
-  } else {
-    updatedCart.push({
-      ...item,
-      quantity: qty,
+  const totalPrice = useMemo(() => {
+    const menuMap = {};
+    menuData.forEach((m) => {
+      menuMap[m.menuId] = m.itemPrice || m.price || 0;
     });
-  }
 
-  setCart(updatedCart);
-
-  sessionStorage.setItem("cart", JSON.stringify(updatedCart));
-};
-
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-  const totalPrice = cart.reduce(
-    (sum, item) => sum + item.itemPrice * item.quantity,
-    0
-  );
+    return cart.reduce((sum, item) => {
+      const price = menuMap[item.menuId] || item.itemPrice || item.price || 0;
+      return sum + Number(price) * item.quantity;
+    }, 0);
+  }, [cart, menuData]);
 
   if (loading) {
     return (
@@ -148,16 +199,19 @@ function Menu() {
                 !item.isAvailable ? "menu-disabled" : ""
               }`}
             >
+              {item.itemImage && (
+                <div className="menu-card-image">
+                  <img src={item.itemImage} alt={item.itemName} />
+                </div>
+              )}
+
               <div className="menu-card-top">
                 <h3>{item.itemName}</h3>
-
-                
               </div>
 
               <p className="description">{item.itemDescription}</p>
 
               <div className="menu-footer">
-                
                 <span
                   className={
                     item.isAvailable
@@ -167,9 +221,7 @@ function Menu() {
                 >
                   {item.isAvailable ? "Available" : "Not Available"}
                 </span>
-                <span className="price">
-                  Rs. {item.itemPrice}
-                </span>
+                <span className="price">Rs. {item.itemPrice || item.price}</span>
               </div>
 
               <div className="quantity-box">
@@ -214,7 +266,9 @@ function Menu() {
             <strong>Rs. {totalPrice}</strong>
           </div>
 
-          <button onClick={()=>{navigate("/customer-cart")}}>View Cart</button>
+          <button onClick={() => navigate("/customer-cart")}>
+            View Cart
+          </button>
         </div>
       )}
     </div>

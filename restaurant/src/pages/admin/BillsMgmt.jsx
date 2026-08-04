@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import axios from "axios";
 import "./BillsMgmt.css";
 import api from "../../util/api";
@@ -17,11 +17,7 @@ function BillsMgmt() {
 
   const [selectedBill, setSelectedBill] = useState(null);
 
-  useEffect(() => {
-    fetchBills();
-  }, []);
-
-  const fetchBills = async () => {
+  const fetchBills = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -31,53 +27,61 @@ function BillsMgmt() {
         },
       });
 
-      console.log(res.data);
-
-      setBills(res.data.allbills ?? []);
+      setBills(res.data?.allbills ?? []);
     } catch (err) {
       console.error(err);
       showToast("error", "Failed to load bills.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [baseApi, token]);
 
+  useEffect(() => {
+    fetchBills();
+  }, [fetchBills]);
+
+  // Derived filtered bill list
   const filteredBills = useMemo(() => {
     return bills.filter((bill) => {
-      const query = search.toLowerCase();
-
+      const query = search.trim().toLowerCase();
       const status = bill.isPaid ? "paid" : "pending";
 
       const matchesSearch =
-        String(bill.billId).includes(query) ||
-        String(bill.billNo).includes(query);
+        !query ||
+        String(bill.billId ?? "").toLowerCase().includes(query) ||
+        String(bill.billNo ?? "").toLowerCase().includes(query);
 
       const matchesFilter =
-        filter === "All" ||
-        status === filter.toLowerCase();
+        filter === "All" || status === filter.toLowerCase();
 
       return matchesSearch && matchesFilter;
     });
   }, [bills, search, filter]);
 
-  const paidBills = bills.filter((bill) => bill.isPaid);
+  // Derived statistics (Memoized for performance)
+  const paidBills = useMemo(
+    () => bills.filter((bill) => bill.isPaid),
+    [bills]
+  );
 
-  const pendingBills = bills.filter((bill) => !bill.isPaid);
+  const pendingBills = useMemo(
+    () => bills.filter((bill) => !bill.isPaid),
+    [bills]
+  );
 
-  const totalRevenue = paidBills.reduce((sum, bill) => {
-    const amount =
-      Number(
-        bill.grandTotal > 0
-          ? bill.grandTotal
-          : bill.totalAmount
-      ) || 0;
+  const totalRevenue = useMemo(() => {
+    return paidBills.reduce((sum, bill) => {
+      const amount =
+        Number(
+          bill.grandTotal > 0 ? bill.grandTotal : bill.totalAmount
+        ) || 0;
 
-    return sum + amount;
-  }, []);
+      return sum + amount;
+    }, 0); // Fixed: set initial value to 0 instead of []
+  }, [paidBills]);
 
   return (
     <div className="bill-page">
-
       <div className="bill-header">
         <div>
           <h1>Bills Management</h1>
@@ -87,13 +91,13 @@ function BillsMgmt() {
         <button
           className="create-bill-btn"
           onClick={fetchBills}
+          disabled={loading}
         >
-          Refresh
+          {loading ? "Refreshing..." : "Refresh"}
         </button>
       </div>
 
       <div className="bill-cards">
-
         <div className="bill-card">
           <h3>Total Bills</h3>
           <span>{bills.length}</span>
@@ -113,11 +117,9 @@ function BillsMgmt() {
           <h3>Total Revenue</h3>
           <span>Rs. {totalRevenue.toLocaleString()}</span>
         </div>
-
       </div>
 
       <div className="bill-toolbar">
-
         <input
           type="text"
           placeholder="Search Bill ID or Bill No..."
@@ -133,12 +135,10 @@ function BillsMgmt() {
           <option value="Paid">Paid</option>
           <option value="Pending">Pending</option>
         </select>
-
       </div>
 
       <div className="bill-table">
         <table>
-
           <thead>
             <tr>
               <th>Bill ID</th>
@@ -150,28 +150,20 @@ function BillsMgmt() {
           </thead>
 
           <tbody>
-
             {loading ? (
               <tr>
-                <td
-                  colSpan="5"
-                  className="empty"
-                >
+                <td colSpan="5" className="empty">
                   Loading Bills...
                 </td>
               </tr>
             ) : filteredBills.length === 0 ? (
               <tr>
-                <td
-                  colSpan="5"
-                  className="empty"
-                >
+                <td colSpan="5" className="empty">
                   No Bills Found
                 </td>
               </tr>
             ) : (
               filteredBills.map((bill) => {
-
                 const amount =
                   bill.grandTotal > 0
                     ? bill.grandTotal
@@ -179,60 +171,44 @@ function BillsMgmt() {
 
                 return (
                   <tr key={bill.billId}>
+                    <td>#{bill.billId}</td>
 
-                    <td>
-                      #{bill.billId}
-                    </td>
-
-                    <td>
-                      Rs. {amount}
-                    </td>
+                    <td>Rs. {amount?.toLocaleString() ?? 0}</td>
 
                     <td>
                       <span
                         className={`payment ${
-                          bill.isPaid
-                            ? "paid"
-                            : "pending"
+                          bill.isPaid ? "paid" : "pending"
                         }`}
                       >
-                        {bill.isPaid
-                          ? "Paid"
-                          : "Pending"}
+                        {bill.isPaid ? "Paid" : "Pending"}
                       </span>
                     </td>
 
                     <td>
-                      {new Date(
-                        bill.createdDate
-                      ).toLocaleDateString()}
+                      {bill.createdDate
+                        ? new Date(bill.createdDate).toLocaleDateString()
+                        : "-"}
                     </td>
 
                     <td>
-
                       <button
                         className="view-btn"
-                        onClick={() =>
-                          setSelectedBill(bill)
-                        }
+                        onClick={() => setSelectedBill(bill)}
                       >
                         View All Details
                       </button>
-
-                      
-
                     </td>
-
                   </tr>
                 );
               })
             )}
-
           </tbody>
-
         </table>
       </div>
-            {selectedBill && (
+
+      {/* Bill Detail Modal */}
+      {selectedBill && (
         <div
           className="bill-modal-overlay"
           onClick={() => setSelectedBill(null)}
@@ -253,107 +229,92 @@ function BillsMgmt() {
             </div>
 
             <div className="bill-details">
-
               <div className="detail-row">
                 <span>Bill ID</span>
-                <strong>{selectedBill.billId}</strong>
+                <strong>{selectedBill.billId ?? "-"}</strong>
               </div>
 
               <div className="detail-row">
                 <span>Bill Number</span>
-                <strong>{selectedBill.billNo}</strong>
+                <strong>{selectedBill.billNo ?? "-"}</strong>
               </div>
 
               <div className="detail-row">
                 <span>Session ID</span>
-                <strong>{selectedBill.sessionId}</strong>
+                <strong>{selectedBill.sessionId ?? "-"}</strong>
               </div>
 
               <div className="detail-row">
                 <span>Total Amount</span>
                 <strong>
-                  Rs. {selectedBill.totalAmount}
+                  Rs. {selectedBill.totalAmount?.toLocaleString() ?? 0}
                 </strong>
               </div>
 
               <div className="detail-row">
                 <span>Tax Amount</span>
                 <strong>
-                  Rs. {selectedBill.taxAmount}
+                  Rs. {selectedBill.taxAmount?.toLocaleString() ?? 0}
                 </strong>
               </div>
 
               <div className="detail-row">
                 <span>Discount</span>
                 <strong>
-                  Rs. {selectedBill.discountAmount}
+                  Rs. {selectedBill.discountAmount?.toLocaleString() ?? 0}
                 </strong>
               </div>
 
               <div className="detail-row">
                 <span>Grand Total</span>
                 <strong>
-                  Rs. {selectedBill.grandTotal}
+                  Rs. {selectedBill.grandTotal?.toLocaleString() ?? 0}
                 </strong>
               </div>
 
               <div className="detail-row">
                 <span>Payment Method</span>
                 <strong>
-                  {selectedBill.paymentMethod}
+                  {selectedBill.paymentMethod || "N/A"}
                 </strong>
               </div>
 
               <div className="detail-row">
                 <span>Status</span>
-
                 <strong
                   className={
-                    selectedBill.isPaid
-                      ? "paid-text"
-                      : "pending-text"
+                    selectedBill.isPaid ? "paid-text" : "pending-text"
                   }
                 >
-                  {selectedBill.isPaid
-                    ? "Paid"
-                    : "Pending"}
+                  {selectedBill.isPaid ? "Paid" : "Pending"}
                 </strong>
               </div>
 
               <div className="detail-row">
                 <span>Created Date</span>
-
                 <strong>
-                  {new Date(
-                    selectedBill.createdDate
-                  ).toLocaleString()}
+                  {selectedBill.createdDate
+                    ? new Date(selectedBill.createdDate).toLocaleString()
+                    : "-"}
                 </strong>
               </div>
 
               <div className="detail-row">
                 <span>Paid At</span>
-
                 <strong>
                   {selectedBill.paidAt
-                    ? new Date(
-                        selectedBill.paidAt
-                      ).toLocaleString()
+                    ? new Date(selectedBill.paidAt).toLocaleString()
                     : "-"}
                 </strong>
               </div>
 
               <div className="detail-row">
                 <span>Paid By</span>
-
-                <strong>
-                  {selectedBill.paidBy || "-"}
-                </strong>
+                <strong>{selectedBill.paidBy || "-"}</strong>
               </div>
-
             </div>
 
             <div className="modal-footer">
-
               <button
                 className="close-modal-btn"
                 onClick={() => setSelectedBill(null)}
@@ -367,13 +328,10 @@ function BillsMgmt() {
               >
                 Print Bill
               </button>
-
             </div>
-
           </div>
         </div>
       )}
-
     </div>
   );
 }

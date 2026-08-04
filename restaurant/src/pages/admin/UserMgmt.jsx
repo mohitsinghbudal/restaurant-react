@@ -2,17 +2,17 @@ import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import GetCurrUser from "../../util/GetCurrUser";
 import getApiUrl from "../../util/api";
-import { showToast } from "../../components/showToast"; // Adjust path to match your folder structure
+import { showToast } from "../../components/showToast";
 import "./UserMgmt.css";
 
-// Axios Instance with Interceptors
 const apiClient = axios.create({
   baseURL: getApiUrl(),
   headers: { "Content-Type": "application/json" },
 });
 
+// Dynamic Interceptor: Fetches fresh token per request from sessionStorage
 apiClient.interceptors.request.use((config) => {
-  const { token } = GetCurrUser() || {};
+  const { token } = GetCurrUser();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -23,7 +23,9 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("authToken");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("userId");
+      sessionStorage.removeItem("roles");
       showToast("error", "Session expired. Please log in again.");
       window.location.href = "/login";
     } else if (error.response?.status === 403) {
@@ -33,7 +35,15 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Form Default State matching backend API schema
+// Numeric IDs matching backend database Role IDs
+const AVAILABLE_ROLES = [
+  { id: 1, label: "Customer" },
+  { id: 2, label: "Waiter" },
+  { id: 3, label: "Chef" },
+  { id: 4, label: "Cashier" },
+  { id: 5, label: "Admin" },
+];
+
 const initialFormState = {
   userId: 0,
   firstName: "",
@@ -41,7 +51,6 @@ const initialFormState = {
   lastName: "",
   email: "",
   phoneNo: "",
-  roleId: 1, // Default to Customer (1)
   isActive: true,
   isEmailVerified: true,
   passwordHash: "",
@@ -61,30 +70,48 @@ function UserMgmt() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("All Roles");
 
-  // Modal State ('add' | 'view' | 'edit' | null)
+  // Modal State ('add' | 'view' | 'edit' | 'roles' | null)
   const [modalType, setModalType] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null); // Stores full item: { user: {...}, roles: [...] }
   const [formData, setFormData] = useState(initialFormState);
 
-  // Helper to format full name safely
+  // Array of numeric Role IDs selected in Role Modal (e.g. [1, 5])
+  const [selectedRoleIds, setSelectedRoleIds] = useState([]);
+
+  // Helper to format user full name
   const formatFullName = (u) => {
     if (!u) return "N/A";
     const parts = [u.firstName, u.middleName, u.lastName].filter(Boolean);
     return parts.join(" ") || "N/A";
   };
 
-  // Helper for role label mapping
-  const getRoleLabel = (roleId) => {
-    switch (Number(roleId)) {
-      case 5:
-        return "Admin (Role 5)";
-      case 2:
-        return "Waiter (Role 2)";
-      case 1:
-        return "Customer (Role 1)";
-      default:
-        return `Role ${roleId}`;
+  // Helper to format roles list for display table
+  const getRoleLabel = (rolesData) => {
+    if (!rolesData || !Array.isArray(rolesData) || rolesData.length === 0) {
+      return "N/A";
     }
+    return rolesData
+      .map((r) => {
+        const idVal = typeof r === "object" ? r.roleId || r.id : r;
+        const matched = AVAILABLE_ROLES.find((ar) => Number(ar.id) === Number(idVal));
+        if (matched) return matched.label;
+        return typeof r === "object" ? r.roleName || r.name : String(r);
+      })
+      .join(", ");
+  };
+
+  // Helper to check if item has a specific role by numeric ID or Name
+  const userHasRole = (item, roleTarget) => {
+    if (!item?.roles || !Array.isArray(item.roles)) return false;
+    return item.roles.some((r) => {
+      const roleStr = typeof r === "object" ? r.roleName || r.name || "" : String(r);
+      const roleIdStr = typeof r === "object" ? String(r.roleId || r.id || "") : String(r);
+
+      return (
+        roleStr.toLowerCase() === String(roleTarget).toLowerCase() ||
+        roleIdStr === String(roleTarget)
+      );
+    });
   };
 
   useEffect(() => {
@@ -92,17 +119,15 @@ function UserMgmt() {
     fetchUsers();
   }, []);
 
-  // Fetch Users
   const fetchUsers = async () => {
     setLoading(true);
     setError(null);
     try {
       const { data } = await apiClient.get("/User/all");
-      const rawUsers = Array.isArray(data)
+      const rawData = Array.isArray(data)
         ? data
         : data?.$values || data?.users || data?.data || [];
-
-      setUsers(rawUsers);
+      setUsers(rawData);
     } catch (err) {
       console.error("Failed to fetch users:", err);
       const msg = err.response?.data?.message || err.response?.data || "Failed to load users.";
@@ -113,56 +138,83 @@ function UserMgmt() {
     }
   };
 
-  // Modal Handlers
+  // Modal Open Handlers
   const handleOpenAdd = () => {
     setFormData({
       ...initialFormState,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
-    setSelectedUser(null);
+    setSelectedItem(null);
     setModalType("add");
   };
 
-  const handleOpenView = (user) => {
-    setSelectedUser(user);
+  const handleOpenView = (item) => {
+    setSelectedItem(item);
     setModalType("view");
   };
 
-  const handleOpenEdit = (user) => {
-    setSelectedUser(user);
+  const handleOpenEdit = (item) => {
+    setSelectedItem(item);
+    const u = item.user || {};
     setFormData({
-      userId: user.userId || 0,
-      firstName: user.firstName || "",
-      middleName: user.middleName || "",
-      lastName: user.lastName || "",
-      email: user.email || "",
-      phoneNo: user.phoneNo || "",
-      roleId: user.roleId ?? 1,
-      isActive: user.isActive ?? true,
-      isEmailVerified: user.isEmailVerified ?? true,
-      passwordHash: user.passwordHash || "",
-      emailOtp: user.emailOtp || "",
-      otpExpiry: user.otpExpiry || new Date().toISOString(),
-      createdAt: user.createdAt || new Date().toISOString(),
+      userId: u.userId || 0,
+      firstName: u.firstName || "",
+      middleName: u.middleName || "",
+      lastName: u.lastName || "",
+      email: u.email || "",
+      phoneNo: u.phoneNo || "",
+      isActive: u.isActive ?? true,
+      isEmailVerified: u.isEmailVerified ?? true,
+      passwordHash: u.passwordHash || "",
+      emailOtp: u.emailOtp || "",
+      otpExpiry: u.otpExpiry || new Date().toISOString(),
+      createdAt: u.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
     setModalType("edit");
   };
 
+  const handleOpenRoleModal = (item) => {
+    setSelectedItem(item);
+
+    // Map existing user roles to their corresponding numeric IDs
+    const userRoleIds = Array.isArray(item.roles)
+      ? item.roles
+          .map((r) => {
+            if (typeof r === "object") return Number(r.roleId || r.id);
+            const match = AVAILABLE_ROLES.find(
+              (ar) => ar.label.toLowerCase() === String(r).toLowerCase() || String(ar.id) === String(r)
+            );
+            return match ? match.id : Number(r) || null;
+          })
+          .filter(Boolean)
+      : [];
+
+    setSelectedRoleIds(userRoleIds);
+    setModalType("roles");
+  };
+
   const handleCloseModal = () => {
     setModalType(null);
-    setSelectedUser(null);
+    setSelectedItem(null);
+    setSelectedRoleIds([]);
     setFormData(initialFormState);
   };
 
-  // Form Submission Handler
-  const handleSubmit = async (e) => {
+  // Toggle role selection in Role Modal using numeric ID
+  const handleRoleToggle = (roleId) => {
+    setSelectedRoleIds((prev) =>
+      prev.includes(roleId) ? prev.filter((id) => id !== roleId) : [...prev, roleId]
+    );
+  };
+
+  // Profile Form Submit (Add / Edit Profile)
+  const handleSubmitProfile = async (e) => {
     e.preventDefault();
     try {
       const payload = {
         ...formData,
-        roleId: Number(formData.roleId),
         updatedAt: new Date().toISOString(),
       };
 
@@ -182,31 +234,37 @@ function UserMgmt() {
     }
   };
 
-  // Delete User Handler
-  const handleDeleteUser = async (userId) => {
-    if (!window.confirm(`Are you sure you want to delete user ID #${userId}?`)) return;
+  // Dedicated Roles Form Submit matching AssignRolesDto (userId, roleIds)
+  const handleSaveRoles = async (e) => {
+    e.preventDefault();
+    if (!selectedItem?.user) return;
 
     try {
-      await apiClient.delete(`/User/${userId}`);
-      setUsers((prev) => prev.filter((u) => u.userId !== userId));
-      showToast("success", `User #${userId} deleted successfully!`);
+      await apiClient.put(`/User/update-roles`, {
+        userId: selectedItem.user.userId,
+        roleIds: selectedRoleIds, 
+      });
+
+      showToast("success", `Roles updated for ${selectedItem.user.firstName || "user"}!`);
+      fetchUsers();
+      handleCloseModal();
     } catch (err) {
-      console.error("Delete failed:", err);
-      const errorMsg = err.response?.data?.message || err.response?.data || "Failed to delete user.";
-      showToast("error", typeof errorMsg === "string" ? errorMsg : "Failed to delete user.");
+      console.error("Role update failed:", err);
+      const errorMsg = err.response?.data?.message || err.response?.data || "Failed to update roles.";
+      showToast("error", typeof errorMsg === "string" ? errorMsg : "Failed to update roles.");
     }
   };
 
-  // Filtered Users List
   const filteredUsers = useMemo(() => {
-    return users.filter((u) => {
+    return users.filter((item) => {
+      const u = item.user || {};
       const fullName = formatFullName(u).toLowerCase();
       const email = (u.email || "").toLowerCase();
       const phone = (u.phoneNo || "").toLowerCase();
       const query = search.toLowerCase();
 
       const matchesSearch = fullName.includes(query) || email.includes(query) || phone.includes(query);
-      const roleMatch = roleFilter === "All Roles" || String(u.roleId) === String(roleFilter);
+      const roleMatch = roleFilter === "All Roles" || userHasRole(item, roleFilter);
 
       return matchesSearch && roleMatch;
     });
@@ -218,10 +276,10 @@ function UserMgmt() {
       <div className="page-header">
         <div>
           <h1>User Management</h1>
-          <p>Manage registered accounts and roles.</p>
-          {currentUser && (
+          <p>Manage registered accounts and assign roles.</p>
+          {currentUser && currentUser.userId && (
             <span style={{ fontSize: "13px", color: "#b08b3e" }}>
-              Logged in User ID: <strong>{currentUser.userId || currentUser.UserId}</strong> (Role ID: {currentUser.roleId || currentUser.RoleId})
+              Logged in User ID: <strong>{currentUser.userId}</strong> (Roles: {Array.isArray(currentUser.roles) ? currentUser.roles.join(", ") : "N/A"})
             </span>
           )}
         </div>
@@ -237,16 +295,16 @@ function UserMgmt() {
           <span>{users.length}</span>
         </div>
         <div className="card">
-          <h3>Admins (Role 5)</h3>
-          <span>{users.filter((x) => x.roleId === 5).length}</span>
+          <h3>Admins</h3>
+          <span>{users.filter((item) => userHasRole(item, "5") || userHasRole(item, "Admin")).length}</span>
         </div>
         <div className="card">
-          <h3>Waiters (Role 2)</h3>
-          <span>{users.filter((x) => x.roleId === 2).length}</span>
+          <h3>Waiters</h3>
+          <span>{users.filter((item) => userHasRole(item, "2") || userHasRole(item, "Waiter")).length}</span>
         </div>
         <div className="card">
-          <h3>Customers (Role 1)</h3>
-          <span>{users.filter((x) => x.roleId === 1).length}</span>
+          <h3>Customers</h3>
+          <span>{users.filter((item) => userHasRole(item, "1") || userHasRole(item, "Customer")).length}</span>
         </div>
       </div>
 
@@ -260,9 +318,11 @@ function UserMgmt() {
         />
         <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
           <option value="All Roles">All Roles</option>
-          <option value="5">Admin (Role 5)</option>
-          <option value="2">Waiter (Role 2)</option>
-          <option value="1">Customer (Role 1)</option>
+          <option value="5">Admin</option>
+          <option value="2">Waiter</option>
+          <option value="3">Chef</option>
+          <option value="4">Cashier</option>
+          <option value="1">Customer</option>
         </select>
       </div>
 
@@ -278,7 +338,7 @@ function UserMgmt() {
                 <th>Full Name</th>
                 <th>Email</th>
                 <th>Phone No</th>
-                <th>Role</th>
+                <th>Roles</th>
                 <th>Email Verification</th>
                 <th>Account Status</th>
                 <th>Actions</th>
@@ -286,30 +346,37 @@ function UserMgmt() {
             </thead>
             <tbody>
               {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
-                  <tr key={user.userId}>
-                    <td>#{user.userId}</td>
-                    <td><strong>{formatFullName(user)}</strong></td>
-                    <td>{user.email}</td>
-                    <td>{user.phoneNo || "N/A"}</td>
-                    <td>{getRoleLabel(user.roleId)}</td>
-                    <td>
-                      <span className={user.isEmailVerified ? "verified" : "notverified"}>
-                        {user.isEmailVerified ? "Verified" : "Pending"}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={user.isActive ? "active" : "inactive"}>
-                        {user.isActive ? "Active" : "Inactive"}
-                      </span>
-                    </td>
-                    <td>
-                      <button className="view" onClick={() => handleOpenView(user)}>View</button>
-                      <button className="edit" onClick={() => handleOpenEdit(user)}>Edit</button>
-                      <button className="delete" onClick={() => handleDeleteUser(user.userId)}>Delete</button>
-                    </td>
-                  </tr>
-                ))
+                filteredUsers.map((item) => {
+                  const u = item.user || {};
+                  return (
+                    <tr key={u.userId}>
+                      <td>#{u.userId}</td>
+                      <td><strong>{formatFullName(u)}</strong></td>
+                      <td>{u.email}</td>
+                      <td>{u.phoneNo || "N/A"}</td>
+                      <td>
+                        <span className="role-badge">
+                          {getRoleLabel(item.roles)}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={u.isEmailVerified ? "verified" : "notverified"}>
+                          {u.isEmailVerified ? "Verified" : "Pending"}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={u.isActive ? "active" : "inactive"}>
+                          {u.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td>
+                        <button className="view" onClick={() => handleOpenView(item)}>View</button>
+                        <button className="edit" onClick={() => handleOpenEdit(item)}>Edit</button>
+                        <button className="roles-btn" onClick={() => handleOpenRoleModal(item)}>Roles</button>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan="8" style={{ textAlign: "center", padding: "20px" }}>
@@ -322,26 +389,27 @@ function UserMgmt() {
         )}
       </div>
 
-      {/* Modal Dialog */}
+      {/* Modal Overlay */}
       {modalType && (
         <div className="modal-overlay" onClick={handleCloseModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            {/* View Details Modal */}
-            {modalType === "view" && selectedUser && (
+            
+            {/* 1. View Details Modal */}
+            {modalType === "view" && selectedItem && (
               <div>
                 <h2>User Profile Details</h2>
                 <hr />
                 <div className="user-details">
-                  <p><strong>User ID:</strong> #{selectedUser.userId}</p>
-                  <p><strong>First Name:</strong> {selectedUser.firstName || "N/A"}</p>
-                  <p><strong>Middle Name:</strong> {selectedUser.middleName || "N/A"}</p>
-                  <p><strong>Last Name:</strong> {selectedUser.lastName || "N/A"}</p>
-                  <p><strong>Email:</strong> {selectedUser.email}</p>
-                  <p><strong>Phone Number:</strong> {selectedUser.phoneNo || "N/A"}</p>
-                  <p><strong>Role:</strong> {getRoleLabel(selectedUser.roleId)}</p>
-                  <p><strong>Verified Email:</strong> {selectedUser.isEmailVerified ? "Yes" : "No"}</p>
-                  <p><strong>Account Status:</strong> {selectedUser.isActive ? "Active" : "Inactive"}</p>
-                  <p><strong>Created At:</strong> {new Date(selectedUser.createdAt).toLocaleString()}</p>
+                  <p><strong>User ID:</strong> #{selectedItem.user?.userId}</p>
+                  <p><strong>First Name:</strong> {selectedItem.user?.firstName || "N/A"}</p>
+                  <p><strong>Middle Name:</strong> {selectedItem.user?.middleName || "N/A"}</p>
+                  <p><strong>Last Name:</strong> {selectedItem.user?.lastName || "N/A"}</p>
+                  <p><strong>Email:</strong> {selectedItem.user?.email}</p>
+                  <p><strong>Phone Number:</strong> {selectedItem.user?.phoneNo || "N/A"}</p>
+                  <p><strong>Assigned Roles:</strong> {getRoleLabel(selectedItem.roles)}</p>
+                  <p><strong>Verified Email:</strong> {selectedItem.user?.isEmailVerified ? "Yes" : "No"}</p>
+                  <p><strong>Account Status:</strong> {selectedItem.user?.isActive ? "Active" : "Inactive"}</p>
+                  <p><strong>Created At:</strong> {selectedItem.user?.createdAt ? new Date(selectedItem.user.createdAt).toLocaleString() : "N/A"}</p>
                 </div>
                 <div className="modal-actions">
                   <button className="close-btn" onClick={handleCloseModal}>Close</button>
@@ -349,12 +417,12 @@ function UserMgmt() {
               </div>
             )}
 
-            {/* Add / Edit Form Modal */}
+            {/* 2. Add / Edit Profile Modal */}
             {(modalType === "add" || modalType === "edit") && (
               <div>
-                <h2>{modalType === "add" ? "Add New User" : "Edit User"}</h2>
+                <h2>{modalType === "add" ? "Add New User" : "Edit User Profile"}</h2>
                 <hr />
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmitProfile}>
                   <div className="form-group">
                     <label>First Name</label>
                     <input
@@ -403,18 +471,6 @@ function UserMgmt() {
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label>Role</label>
-                    <select
-                      value={formData.roleId}
-                      onChange={(e) => setFormData({ ...formData, roleId: Number(e.target.value) })}
-                    >
-                      <option value={1}>Customer (Role 1)</option>
-                      <option value={2}>Waiter (Role 2)</option>
-                      <option value={5}>Admin (Role 5)</option>
-                    </select>
-                  </div>
-
                   <div className="form-group checkbox-group">
                     <label>
                       <input
@@ -442,12 +498,53 @@ function UserMgmt() {
                       Cancel
                     </button>
                     <button type="submit" className="save-btn">
-                      {modalType === "add" ? "Create User" : "Save Changes"}
+                      {modalType === "add" ? "Create User" : "Save Profile"}
                     </button>
                   </div>
                 </form>
               </div>
             )}
+
+            {/* 3. Manage Roles Modal */}
+            {modalType === "roles" && selectedItem && (
+              <div>
+                <h2>Manage Roles</h2>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: "15px" }}>
+                  Select permissions/roles for <strong>{formatFullName(selectedItem.user)}</strong> (#{selectedItem.user?.userId})
+                </p>
+                <hr />
+                <form onSubmit={handleSaveRoles}>
+                  <div className="roles-selection-container" style={{ margin: "20px 0" }}>
+                    {AVAILABLE_ROLES.map((role) => {
+                      const isChecked = selectedRoleIds.includes(role.id);
+
+                      return (
+                        <div key={role.id} className="form-group checkbox-group" style={{ marginBottom: "12px" }}>
+                          <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => handleRoleToggle(role.id)}
+                            />
+                            <span>{role.label}</span>
+                          </label>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="modal-actions">
+                    <button type="button" className="close-btn" onClick={handleCloseModal}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="save-btn">
+                      Update Roles
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
           </div>
         </div>
       )}
