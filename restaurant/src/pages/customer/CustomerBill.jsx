@@ -25,7 +25,7 @@ function CustomerBill() {
     setLoading(true);
     try {
       const activeToken =
-        token || sessionStorage.getItem("token") || localStorage.getItem("token");
+        token;
 
       const response = await axios.get(
         `${baseUrl}/Order/sessionId/${activeSessionId}`,
