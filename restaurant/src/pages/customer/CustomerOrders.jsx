@@ -1,161 +1,202 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
+import getCurrUser from "../../util/GetcurrUser";
 import api from "../../util/api";
-import GetCurrUser from "../../util/GetcurrUser";
+import { showToast } from "../../components/showToast";
 import "./CustomerOrders.css";
-import { useNavigate } from "react-router-dom";
 
-function CustomerOrders() {
-  const baseUrl = api();
-  const navigate= useNavigate();
-  const { token, userId, sessionId: hookSessionId } = GetCurrUser();
-
+export default function CustomerOrders() {
+  const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  
-  // Track active session ID in state so updates trigger order fetches
-  const [activeSessionId, setActiveSessionId] = useState(
-    hookSessionId || sessionStorage.getItem("sessionId")
-  );
+  const [sessionId, setSessionId] = useState(null);
+  const [activeTab, setActiveTab] = useState("ALL");
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
-  // Sync state if hook receives a new value
-  useEffect(() => {
-    if (hookSessionId) {
-      setActiveSessionId(hookSessionId);
-    }
-  }, [hookSessionId]);
+  const { token, userId } = getCurrUser();
+  const baseUrl = api();
 
-  // Fetch session ID if not initially present
-  useEffect(() => {
-    const fetchSessionId = async () => {
-      if (activeSessionId) return;
-
-      try {
-        const res = await axios.get(`${baseUrl}/Dinning/user`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (res.data?.sessionId) {
-          sessionStorage.setItem("sessionId", res.data.sessionId);
-          setActiveSessionId(res.data.sessionId);
-        }
-      } catch (error) {
-        console.error("Failed to sync session on mount:", error);
-      }
-    };
-
-    fetchSessionId();
-  }, [baseUrl, token, activeSessionId]);
-
-  // Load orders using useCallback to maintain a stable reference
-  const loadOrders = useCallback(async () => {
-    if (!activeSessionId) return;
-
+  // 1. Fetch Session ID
+  const fetchSessionId = async () => {
     try {
-      const res = await axios.get(
-        `${baseUrl}/Order/sessionId/${activeSessionId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      setLoading(true);
+      const res = await axios.get(`${baseUrl}/Dinning/my-id`, {
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      });
 
-      setOrders(res.data || []);
-    } catch (err) {
-      console.error("Error loading orders:", err);
+      const id = typeof res.data === "object" ? res.data?.sessionId : res.data;
+
+      if (id) {
+        setSessionId(id);
+      } else {
+        showToast("error", "No active dining session found.");
+      }
+    } catch (error) {
+      console.error("Error fetching session ID:", error);
+      showToast("error", "Failed to fetch session ID.");
     } finally {
       setLoading(false);
     }
-  }, [baseUrl, activeSessionId, token]);
+  };
 
-  // Set up polling interval
-  useEffect(() => {
-    if (!activeSessionId) {
+  // 2. Fetch Orders for Session
+  const fetchOrders = async (activeSessionId) => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${baseUrl}/Orders/my-orders`, {
+        params: { sessionId: activeSessionId },
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      });
+      setOrders(Array.isArray(res.data) ? res.data : []);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      showToast("error", "Failed to fetch orders.");
+    } finally {
       setLoading(false);
-      return;
     }
+  };
 
-    loadOrders();
-    const interval = setInterval(loadOrders, 5000);
+  useEffect(() => {
+    if (token && userId) {
+      fetchSessionId();
+    }
+  }, [token, userId]);
 
-    return () => clearInterval(interval);
-  }, [activeSessionId, loadOrders]);
+  useEffect(() => {
+    if (sessionId) {
+      fetchOrders(sessionId);
+    }
+  }, [sessionId]);
 
-  const total = useMemo(() => {
-    return orders.reduce(
-      (sum, item) => sum + (item.totalAmount ?? (item.unitPrice || item.price || 0) * item.quantity),
-      0
+  // Filter orders based on status tab
+  const filteredOrders = useMemo(() => {
+    if (activeTab === "ALL") return orders;
+    return orders.filter(
+      (order) => order.status?.toUpperCase() === activeTab
     );
+  }, [orders, activeTab]);
+
+  // Compute total spending for the active session
+  const totalSessionAmount = useMemo(() => {
+    return orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
   }, [orders]);
 
-  if (loading) {
-    return (
-      <div className="orders-loading">
-        <h2>Loading Orders...</h2>
-      </div>
-    );
-  }
+  const getStatusBadge = (status) => {
+    const s = status?.toUpperCase() || "PENDING";
+    const badgeMap = {
+      COMPLETED: "badge-success",
+      PENDING: "badge-warning",
+      PREPARING: "badge-info",
+      CANCELLED: "badge-danger",
+    };
+    return `badge ${badgeMap[s] || "badge-secondary"}`;
+  };
 
   return (
-    <div className="orders-page">
-      <div className="orders-header">
-        <h1>My Orders</h1>
-        <p>Dining Session #{activeSessionId || "N/A"}</p>
+    <div className="orders-container">
+      {/* Header Area */}
+      <header className="orders-header">
+        <div>
+          <h1>My Dining Orders</h1>
+          <p className="session-info">
+            Session ID: <strong>{sessionId ? `#${sessionId}` : "N/A"}</strong>
+          </p>
+        </div>
+        <button
+          className="refresh-btn"
+          onClick={() => sessionId && fetchOrders(sessionId)}
+          disabled={loading || !sessionId}
+        >
+          {loading ? "Refreshing..." : "↻ Refresh Orders"}
+        </button>
+      </header>
+
+      {/* Overview Cards */}
+      <div className="stats-row">
+        <div className="stat-card">
+          <span className="stat-label">Total Orders</span>
+          <span className="stat-value">{orders.length}</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-label">Total Amount Spent</span>
+          <span className="stat-value">${totalSessionAmount.toFixed(2)}</span>
+        </div>
       </div>
 
-      {orders.length === 0 ? (
-        <div className="no-orders">
-          <h2>No Orders Yet</h2>
+      {/* Tabs */}
+      <div className="tabs-bar">
+        {["ALL", "PENDING", "PREPARING", "COMPLETED", "CANCELLED"].map((tab) => (
+          <button
+            key={tab}
+            className={`tab-btn ${activeTab === tab ? "active" : ""}`}
+            onClick={() => setActiveTab(tab)}
+          >
+            {tab.charAt(0) + tab.slice(1).toLowerCase()}
+          </button>
+        ))}
+      </div>
+
+      {/* Content Area */}
+      {loading && orders.length === 0 ? (
+        <div className="skeleton-loader">
+          <div className="skeleton-card"></div>
+          <div className="skeleton-card"></div>
+        </div>
+      ) : filteredOrders.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-icon">🍽️</div>
+          <h3>No Orders Found</h3>
+          <p>
+            {activeTab === "ALL"
+              ? "You haven't placed any orders in this session yet."
+              : `No orders matching status "${activeTab}".`}
+          </p>
         </div>
       ) : (
-        <>
-          <div className="orders-list">
-            {orders.map((item, index) => (
-              <div className="order-card" key={item.orderId || index}>
-                <div className="order-left">
-                  <h3>{item.itemName}</h3>
-                  <p>Qty: {item.quantity}</p>
-                  <p>Rs. {item.unitPrice || item.price}</p>
-                </div>
-
-                <div className="order-right">
-                  <span
-                    className={`status ${item.orderStatus?.toLowerCase() || "pending"}`}
-                  >
-                    {item.orderStatus || "Pending"}
+        <div className="orders-grid">
+          {filteredOrders.map((order) => (
+            <div key={order.orderId || order.id} className="order-card">
+              <div className="order-card-header">
+                <div>
+                  <span className="order-id">
+                    Order #{order.orderId || order.id}
                   </span>
-
-                  <h3>
-                    Rs. {item.totalAmount ?? (item.unitPrice || item.price) * item.quantity}
-                  </h3>
+                  <span className="order-time">
+                    {order.createdAt
+                      ? new Date(order.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "Just now"}
+                  </span>
                 </div>
+                <span className={getStatusBadge(order.status)}>
+                  {order.status || "Pending"}
+                </span>
               </div>
-            ))}
-          </div>
-            <div>
-              
-          <div className="order-summary">
 
-  <div className="summary-top">
-    <div className="bill-info">
-      <h2>Total Bill</h2>
-      <h1>Rs. {total}</h1>
-    </div>
+              {/* Items Breakdown */}
+              <div className="order-items-list">
+                {order.items?.map((item, idx) => (
+                  <div key={idx} className="order-item-row">
+                    <span className="item-qty">{item.quantity}x</span>
+                    <span className="item-name">{item.itemName || item.name}</span>
+                    <span className="item-price">
+                      ${((item.price || 0) * (item.quantity || 1)).toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
 
-    <button className="getmybill" onClick={()=>navigate("/customer-bill")}>
-      Get My Bill
-    </button>
-  </div>
-
-</div>
-          </div>
-        </>
+              <div className="order-card-footer">
+                <span className="footer-label">Order Total</span>
+                <span className="footer-total">
+                  ${(order.totalAmount || 0).toFixed(2)}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
 }
-
-export default CustomerOrders;

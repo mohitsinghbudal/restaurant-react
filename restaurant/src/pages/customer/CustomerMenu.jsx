@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 function Menu() {
   const [menuData, setMenuData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [addingToCartId, setAddingToCartId] = useState(null); // Tracks individual item submission state
   const [error, setError] = useState(null);
 
   const [search, setSearch] = useState("");
@@ -25,7 +26,6 @@ function Menu() {
   const navigate = useNavigate();
   const baseUrl = api();
 
-  // Defined at component scope so both useEffect and addToCart can trigger it
   const fetchMenuAndCart = useCallback(async () => {
     try {
       const authHeaders = { Authorization: token ? `Bearer ${token}` : "" };
@@ -94,7 +94,7 @@ function Menu() {
   };
 
   const addToCart = async (item) => {
-    const selectedQty = quantities[item.menuId] || 1; //this is not working please update functionality
+    const selectedQty = quantities[item.menuId] || 1;
     const nowIso = new Date().toISOString();
 
     const payload = {
@@ -106,7 +106,7 @@ function Menu() {
     };
 
     try {
-      setLoading(true);
+      setAddingToCartId(item.menuId); // Only mark this specific item as submitting
 
       await axios.post(`${baseUrl}/Cart`, payload, {
         headers: {
@@ -119,11 +119,14 @@ function Menu() {
 
       // Reset the selected item quantity selector back to 1
       setQuantities((prev) => ({ ...prev, [item.menuId]: 1 }));
+
+      // Fetch fresh cart state without toggling main loading state
+      await fetchMenuAndCart();
     } catch (err) {
       console.error(err);
       showToast("error", "Failed to add item to cart.");
     } finally {
-      await fetchMenuAndCart();
+      setAddingToCartId(null);
     }
   };
 
@@ -227,7 +230,7 @@ function Menu() {
               <div className="quantity-box">
                 <button
                   onClick={() => decreaseQty(item.menuId)}
-                  disabled={!item.isAvailable}
+                  disabled={!item.isAvailable || addingToCartId === item.menuId}
                 >
                   -
                 </button>
@@ -236,7 +239,7 @@ function Menu() {
 
                 <button
                   onClick={() => increaseQty(item.menuId)}
-                  disabled={!item.isAvailable}
+                  disabled={!item.isAvailable || addingToCartId === item.menuId}
                 >
                   +
                 </button>
@@ -244,10 +247,10 @@ function Menu() {
 
               <button
                 className="add-cart-btn"
-                disabled={!item.isAvailable}
+                disabled={!item.isAvailable || addingToCartId === item.menuId}
                 onClick={() => addToCart(item)}
               >
-                Add To Cart
+                {addingToCartId === item.menuId ? "Adding..." : "Add To Cart"}
               </button>
             </div>
           ))}

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import api from "../../util/api";
 import GetCurrUser from "../../util/GetcurrUser";
+import { showToast } from "../../components/showToast";
 import "./Cart.css";
 
 function Cart() {
@@ -15,6 +16,8 @@ function Cart() {
   const [loading, setLoading] = useState(false);
   const [updatingId, setUpdatingId] = useState(null); // Tracks active backend requests
 
+  const TAX_RATE = 0.13; // 13% Tax / VAT
+
   // 1. Fetch Cart Items
   const fetchCartItems = async () => {
     try {
@@ -26,7 +29,7 @@ function Cart() {
       const data = Array.isArray(res.data) ? res.data : [res.data];
       setCartItems(data);
     } catch (error) {
-      console.error("Error fetching cart items:", error);
+      showToast("error", "Failed to fetch cart items.");
     }
   };
 
@@ -60,7 +63,7 @@ function Cart() {
   const menuMap = useMemo(() => {
     const map = {};
     menuItems.forEach((item) => {
-      map[item.menuId ] = item;
+      map[item.menuId] = item;
     });
     return map;
   }, [menuItems]);
@@ -71,14 +74,14 @@ function Cart() {
       const matchedMenu = menuMap[cartItem.menuId] || {};
       return {
         ...cartItem,
-        itemName: matchedMenu.itemName  || `Item #${cartItem.menuId}`,
+        itemName: matchedMenu.itemName || `Item #${cartItem.menuId}`,
         price: matchedMenu.itemPrice || 0,
         description: matchedMenu.description || matchedMenu.itemDescription || "",
       };
     });
   }, [cartItems, menuMap]);
 
-  // Calculate Subtotal
+  // Calculate Financial Totals
   const subtotal = useMemo(() => {
     return detailedCart.reduce(
       (sum, item) => sum + item.price * item.quantity,
@@ -86,12 +89,20 @@ function Cart() {
     );
   }, [detailedCart]);
 
+  const tax = useMemo(() => {
+    return subtotal * TAX_RATE;
+  }, [subtotal]);
+
+  const grandTotal = useMemo(() => {
+    return subtotal + tax;
+  }, [subtotal, tax]);
+
   // 3. Backend Update Handler (PUT /api/Cart)
   const updateQuantityOnBackend = async (cartItem, newQty) => {
     if (newQty < 1) return;
 
     const previousState = [...cartItems];
-    const itemId = cartItem.cartId || cartItem.menuId;
+    const itemId = cartItem.cartId;
     setUpdatingId(itemId);
 
     // Optimistically update frontend state
@@ -120,11 +131,10 @@ function Cart() {
           Authorization: `Bearer ${token}`,
         },
       });
+      showToast("success", "Item quantity updated successfully.");
     } catch (err) {
-      console.error("Failed to update quantity on backend:", err);
-      // Rollback on server error
+      showToast("error", "Failed to update item quantity. Rolling back changes.");
       setCartItems(previousState);
-      alert("Failed to update item quantity. Rolling back changes.");
     } finally {
       setUpdatingId(null);
     }
@@ -140,10 +150,10 @@ function Cart() {
     }
   };
 
-  // 4. Remove Item Handler (DELETE /api/Cart)
+  // 4. Remove Single Item Handler (DELETE /api/Cart)
   const handleRemove = async (cartItem) => {
     const previousState = [...cartItems];
-    const targetCartId = cartItem.cartId || cartItem.menuId;
+    const targetCartId = cartItem.cartId;
 
     // Optimistically remove from state
     setCartItems((prevItems) =>
@@ -153,19 +163,89 @@ function Cart() {
     );
 
     try {
+      setLoading(true);
       await axios.delete(`${baseUrl}/Cart`, {
         params: { cartId: targetCartId },
         headers: { Authorization: `Bearer ${token}` },
       });
+      showToast("success", "Item removed from cart successfully.");
     } catch (err) {
-      console.error("Error removing item:", err);
+      showToast("error", "Failed to remove item from cart.");
       setCartItems(previousState);
-      alert("Could not remove item from cart.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 5. Place Order & Clear Cart Handler
+  const handlePlaceOrder = async () => {
+    if (detailedCart.length === 0) {
+      showToast("error", "Your cart is empty.");
+      return;
+    }
+
+    setLoading(true);
+
+    const payload = {
+      items: detailedCart.map((item) => ({
+        menuId: Number(item.menuId),
+        itemName: item.itemName,
+        diningSessionId: Number(item.diningSessionId || 0),
+        description: item.description || "",
+        createdAt: new Date().toISOString(),
+        createdBy: Number(userId || 0),
+        isActive: true,
+        quantity: Number(item.quantity),
+        price: Number(item.price),
+      })),
+    };
+
+    try {
+      // Step A: Submit Order
+      await axios.post(`${baseUrl}/Order/place-order`, payload, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
+
+      // Step B: Clear Cart Items from Backend DB
+      try {
+        await axios.delete(`${baseUrl}/Cart/clear`, {
+          params: { userId },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } catch {
+        // Fallback: Delete each item individually if bulk clear endpoint doesn't exist
+        const deleteRequests = detailedCart.map((item) =>
+          axios.delete(`${baseUrl}/Cart`, {
+            params: { cartId: item.cartId },
+            headers: { Authorization: `Bearer ${token}` },
+          })
+        );
+        await Promise.all(deleteRequests);
+      }
+
+      // Step C: Update Local UI State
+      showToast("success", "Order placed and cart cleared successfully!");
+      setCartItems([]);
+    } catch (error) {
+      console.error("Order placement error:", error);
+      showToast(
+        "error",
+        error.response?.data?.message || "Failed to place order. Please try again."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   if (loading) {
-    return <h1>Loading cart details...</h1>;
+    return (
+      <div className="cart-loading">
+        <h1>Processing cart details...</h1>
+      </div>
+    );
   }
 
   return (
@@ -173,7 +253,7 @@ function Cart() {
       <h2>Your Cart</h2>
 
       {detailedCart.length === 0 ? (
-        <p>Your cart is empty.</p>
+        <p className="empty-cart-msg">Your cart is empty.</p>
       ) : (
         <div className="cart-wrapper">
           <ul className="cart-list">
@@ -225,8 +305,30 @@ function Cart() {
             })}
           </ul>
 
+          {/* Cart Summary Section */}
           <div className="cart-summary">
-            <h3>Cart Total: Rs. {subtotal}</h3>
+            <h3>Order Summary</h3>
+            <div className="summary-row">
+              <span>Subtotal:</span>
+              <span>Rs. {subtotal.toFixed(2)}</span>
+            </div>
+            <div className="summary-row">
+              <span>Tax / VAT (13%):</span>
+              <span>Rs. {tax.toFixed(2)}</span>
+            </div>
+            <hr className="summary-divider" />
+            <div className="summary-row grand-total">
+              <span>Grand Total:</span>
+              <span>Rs. {grandTotal.toFixed(2)}</span>
+            </div>
+
+            <button
+              className="order-btn"
+              onClick={handlePlaceOrder}
+              disabled={loading}
+            >
+              Order Now
+            </button>
           </div>
         </div>
       )}

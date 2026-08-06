@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import axios from "axios";
@@ -21,28 +21,17 @@ function TableCard({ table, onBook }) {
     <div className="table-card">
       <h3 className="table-number">Table #{table.tableNo}</h3>
 
-      <p>
+      <div className="table-details">
         <div className="table-row">
-    <span>Status : </span>
-    <span className={`status-${statusClass}`}>
-        {table.status}
-    </span>
-</div>
+          <span>Status: </span>
+          <span className={`status-${statusClass}`}>{table.status}</span>
+        </div>
 
-<div className="table-row">
-    <span>Capacity : </span>
-    <span>{table.capacity} Persons</span>
-</div>
-
-<div className="table-row">
-    
-
-    
-</div>{" "}
-        
-      </p>
-
-      
+        <div className="table-row">
+          <span>Capacity: </span>
+          <span>{table.capacity} Persons</span>
+        </div>
+      </div>
 
       {isAvailable ? (
         <button className="book-btn" onClick={() => onBook(table)}>
@@ -61,122 +50,125 @@ function Tables() {
   const [showScanner, setShowScanner] = useState(false);
   const [tables, setTables] = useState([]);
   const [currBookings, setCurrBookings] = useState([]);
-  const [allBookings, setAllBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-  const { token, roleId, userId } = GetCurrUser();
+  const { token, roleId } = GetCurrUser();
   const baseUrl = api();
 
-
-  const fetchData = async () => {
-  const authHeader = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  };
-
-  try {
-    setLoading(true);
-
-    const [tablesRes, currentRes, historyRes] = await Promise.all([
-      axios.get(`${baseUrl}/Table/get-all-table`, authHeader),
-      axios.get(`${baseUrl}/Table/my-active-bookings`, authHeader),
-      axios.get(`${baseUrl}/Table/my-all-bookings`, authHeader),
-    ]);
-
-    setTables(tablesRes.data.alltables.result || []);
-    setCurrBookings(currentRes.data.bookings || []);
-    setAllBookings(historyRes.data.bookings || []);
-  } catch (err) {
-    console.error(err);
-    showToast("error", "Failed to load data.");
-  } finally {
-    setLoading(false);
-  }
-};
-
-useEffect(() => {
-  if (token) {
-    fetchData();
-  }
-}, [token]);
-
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
     if (!token) return;
 
-    fetchData();
+    const authHeader = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    try {
+      setLoading(true);
+
+      const [tablesRes, bookingsRes] = await Promise.all([
+        axios.get(`${baseUrl}/Table/get-all-table`, authHeader),
+        axios.get(`${baseUrl}/Table/my-all-bookings`, authHeader),
+      ]);
+
+      console.log("Tables Response:", tablesRes.data.alltables.result);
+      setTables(tablesRes.data?.alltables?.result || []);
+      
+      // Setting current bookings from backend response
+      setCurrBookings(bookingsRes.data?.bookings || bookingsRes.data?.result || []);
+    } catch (err) {
+      console.error("Data Fetching Error:", err);
+      showToast("error", "Failed to load table data.");
+    } finally {
+      setLoading(false);
+    }
   }, [token, baseUrl]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   useEffect(() => {
     if (!showScanner) return;
 
-    const scanner = new Html5QrcodeScanner(
-      "reader",
-      {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-      },
-      false
-    );
+    let scanner;
 
-    scanner.render(
-      (decodedText) => {
-        showToast("success", "QR Code Scanned");
-        scanner.clear();
-        setShowScanner(false);
+    try {
+      scanner = new Html5QrcodeScanner(
+        "reader",
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+        },
+        false
+      );
 
-        try {
-          const url = new URL(decodedText);
-          const tableId = url.pathname.split("/").pop();
-          navigate(`/table/${tableId}`);
-        } catch {
-          navigate(`/table/${decodedText}`);
-        }
-      },
-      () => {}
-    );
+      scanner.render(
+        async (decodedText) => {
+          showToast("success", "QR Code Scanned");
+          try {
+            await scanner.clear();
+          } catch (e) {
+            console.error("Failed to clear scanner on scan:", e);
+          }
+          setShowScanner(false);
+
+          try {
+            const url = new URL(decodedText);
+            const tableId = url.pathname.split("/").pop();
+            navigate(`/table/${tableId}`);
+          } catch {
+            navigate(`/table/${decodedText}`);
+          }
+        },
+        () => {}
+      );
+    } catch (err) {
+      console.error("Scanner Initialization Error:", err);
+    }
 
     return () => {
-      scanner.clear().catch(() => {});
+      if (scanner) {
+        scanner.clear().catch((error) => console.error("Failed to clear scanner on unmount:", error));
+      }
     };
   }, [showScanner, navigate]);
 
   const handleBook = async (table) => {
-  if (
-    table.status.toLowerCase() !== "available" ||
-    !table.isActive
-  ) {
-    showToast("error", "This table is not available.");
-    return;
-  }
+    if (table.status?.toLowerCase() !== "available" || !table.isActive) {
+      showToast("error", "This table is not available.");
+      return;
+    }
 
-  try {
-    const res = await axios.post(
-      `${baseUrl}/Table/book-table`,
-      table.tableNo,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+    try {
+      const res = await axios.post(
+        `${baseUrl}/Table/book-table`,
+        JSON.stringify(table.tableNo),
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      showToast("success", res.data?.message || "Table booked successfully!");
+      if (res.data?.sessionid) {
+        sessionStorage.setItem("sessionId", res.data.sessionid);
       }
-    );
 
-    showToast("success", res.data.message);
-    sessionStorage.setItem("sessionId", res.data.sessionid);
-    await fetchData();
-
-    navigate("/customer-menu");
-  } catch (err) {
-    console.error(err);
-
-    showToast(
-      "error",
-      err.response?.data?.message || "Failed to book table."
-    );
-  }
-};
+      await fetchData();
+      navigate("/customer-menu");
+    } catch (err) {
+      console.error("Booking Error:", err);
+      showToast(
+        "error",
+        err.response?.data?.message || "Failed to book table."
+      );
+    }
+  };
 
   if (!token) {
     return (
@@ -192,15 +184,13 @@ useEffect(() => {
   return (
     <div className="tables-container">
       <h1 className="tables-title">
-        Welcome {ROLE_NAMES[roleId] || "Guest"}
+        Welcome {ROLE_NAMES[Number(roleId)] || "Guest"}
       </h1>
 
       <section className="table-list-container">
         <h2 className="table-heading">Available Tables</h2>
         {loading ? (
-          <div className="loading-state">
-  Loading tables...
-</div>
+          <div className="loading-state">Loading tables...</div>
         ) : (
           <div className="table-grid">
             {tables.map((table, index) => (
@@ -232,30 +222,11 @@ useEffect(() => {
 
           {currBookings.length > 0 && (
             <div className="booking-group">
-              <h2 className="booking-heading">
-                Current Booking
-              </h2>
+              <h2 className="booking-heading">Current Booking</h2>
               <div className="table-grid">
                 {currBookings.map((table, index) => (
                   <TableCard
                     key={table.tableId || table._id || `curr-${index}`}
-                    table={table}
-                    onBook={handleBook}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {allBookings.length > 0 && (
-            <div className="booking-group">
-              <h2 className="booking-heading">
-                   Booking History
-              </h2>
-              <div className="table-grid">
-                {allBookings.map((table, index) => (
-                  <TableCard
-                    key={table.tableId || table._id || `all-${index}`}
                     table={table}
                     onBook={handleBook}
                   />
@@ -270,4 +241,3 @@ useEffect(() => {
 }
 
 export default Tables;
-
