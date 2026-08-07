@@ -27,6 +27,9 @@ import OrderMgmt from "./pages/admin/OrderMgmt";
 import PaymentMgmt from "./pages/admin/PaymentMgmt";
 import ReportMgmt from "./pages/admin/ReportMgmt";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import WaiterDashboard from "./pages/Waiter/WaiterDashboard";
+import WaiterOrder from "./pages/Waiter/WaiterOrder";
+import WaiterBill from "./pages/Waiter/WaiterBill";
 
 
 const AdminPanel = () => <h2>Admin Panel (Admins Only)</h2>;
@@ -104,6 +107,13 @@ const router = createBrowserRouter([
 { path: "/admin-reports", element: <ReportMgmt /> },
           
           
+        ]
+      },{
+        element: <ProtectedRoute allowedRoles={[2]} />,
+        children: [
+          {path:"/waiter-dashboard",element:<WaiterDashboard/>},
+          {path:"/place-order", element:<WaiterOrder />},
+          {path:"/waiter-bill",element:<WaiterBill/>},
         ]
       },
       {

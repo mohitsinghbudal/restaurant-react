@@ -15,8 +15,39 @@ function Cart() {
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [updatingId, setUpdatingId] = useState(null); // Tracks active backend requests
-
+  const[sessionId, setSessionId] = useState(null);
   const TAX_RATE = 0.13; // 13% Tax / VAT
+
+
+  // 1. Fetch Session ID
+  const fetchSessionId = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${baseUrl}/Dinning/my-id`, {
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      });
+
+      const id = typeof res.data === "object" ? res.data?.sessionId : res.data;
+
+      if (id) {
+        setSessionId(id);
+      } else {
+        showToast("error", "No active dining session found.");
+      }
+    } catch (error) {
+      console.error("Error fetching session ID:", error);
+      showToast("error", "Failed to fetch session ID.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  useEffect(() => {
+      if (token && userId) {
+        fetchSessionId();
+      }
+    }, [token, userId]);
 
   // 1. Fetch Cart Items
   const fetchCartItems = async () => {
@@ -190,7 +221,7 @@ function Cart() {
       items: detailedCart.map((item) => ({
         menuId: Number(item.menuId),
         itemName: item.itemName,
-        diningSessionId: Number(item.diningSessionId || 0),
+        diningSessionId: Number(sessionId || 0),
         description: item.description || "",
         createdAt: new Date().toISOString(),
         createdBy: Number(userId || 0),
@@ -305,7 +336,6 @@ function Cart() {
             })}
           </ul>
 
-          {/* Cart Summary Section */}
           <div className="cart-summary">
             <h3>Order Summary</h3>
             <div className="summary-row">
