@@ -64,7 +64,7 @@ function AdminDashboard() {
     {
       title: "Inventory",
       icon: <FaBoxes />,
-      route: "/edit-inventory",
+      route: "/admin-inventory",
     },
     {
       title: "Menu",

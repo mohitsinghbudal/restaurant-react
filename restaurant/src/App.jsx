@@ -117,7 +117,7 @@ const router = createBrowserRouter([
         ]
       },
       {
-        element: <ProtectedRoute allowedRoles={[1]} />,
+element: <ProtectedRoute allowedRoles={["Customer"]} />,
         children: [
           { path: "/customer-dashboard", element: <UserPanel /> },
           {path:"/customer-orders",element:<CustomerOrders/>},

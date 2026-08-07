@@ -9,8 +9,8 @@ import api from "../../util/api";
 import "./CustomerTables.css";
 
 const ROLE_NAMES = {
-  1: "Customer",
-  5: "Admin",
+  "Customer": "Customer",
+  "Admin": "Admin",
 };
 
 function TableCard({ table, onBook }) {
@@ -204,7 +204,7 @@ function Tables() {
         )}
       </section>
 
-      {Number(roleId) === 1 && (
+      {roles.includes("Customer") && (
         <section className="scanner-section">
           <p className="tables-subtitle">
             Scan the QR code placed on your table to start ordering.
