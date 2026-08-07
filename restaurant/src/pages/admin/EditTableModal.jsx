@@ -6,22 +6,23 @@ import { showToast } from "../../components/showToast";
 
 function EditTableModal({ open, table, onClose, refresh }) {
   const baseApi = api();
-  const { token } = GetCurrUser();
-console.log(table);
+  const { token } = GetCurrUser() || {};
+
   const [form, setForm] = useState({
     tableNo: "",
     capacity: "",
-    status: "",
+    status: "Available",
   });
 
   const [loading, setLoading] = useState(false);
 
+  // Populate state whenever target table changes or modal opens
   useEffect(() => {
     if (open && table) {
       setForm({
         tableNo: table.tableNo ?? "",
         capacity: table.capacity ?? "",
-        status: table.status ?? "",
+        status: table.status ?? "Available",
       });
     }
   }, [open, table]);
@@ -59,12 +60,16 @@ console.log(table);
     if (e) e.preventDefault();
     if (loading) return;
 
-    if (!String(form.tableNo).trim()) {
-      showToast("error", "Please enter a table number.");
+    const parsedTableNo = Number(form.tableNo);
+    const parsedCapacity = Number(form.capacity);
+
+    // Form Validations
+    if (!String(form.tableNo).trim() || parsedTableNo <= 0) {
+      showToast("error", "Please enter a valid table number greater than 0.");
       return;
     }
 
-    if (!form.capacity || Number(form.capacity) <= 0) {
+    if (!form.capacity || parsedCapacity <= 0) {
       showToast("error", "Capacity must be greater than zero.");
       return;
     }
@@ -72,13 +77,12 @@ console.log(table);
     setLoading(true);
 
     try {
-      // Endpoint aligned with PUT /api/Table
       await axios.put(
         `${baseApi}/Table`,
         {
           tableId: table.tableId,
-          tableNo: Number(form.tableNo),
-          capacity: Number(form.capacity),
+          tableNo: parsedTableNo,
+          capacity: parsedCapacity,
           status: form.status,
         },
         {
@@ -87,7 +91,7 @@ console.log(table);
             Accept: "application/octet-stream",
             Authorization: token ? `Bearer ${token}` : "",
           },
-          responseType: "arraybuffer", // Handles octet-stream response type from API spec
+          responseType: "arraybuffer", // For endpoints returning octet-stream byte arrays
         }
       );
 
@@ -97,7 +101,7 @@ console.log(table);
     } catch (error) {
       let errorMsg = "Failed to update table.";
 
-      // Parse error response if octet-stream response comes back as an ArrayBuffer on error
+      // Handle binary response payload on server errors
       if (error.response?.data) {
         if (error.response.data instanceof ArrayBuffer) {
           try {
@@ -118,16 +122,13 @@ console.log(table);
     }
   };
 
-  const handleOverlayClick = (e) => {
-    if (e.target.classList.contains("modal-overlay") && !loading) {
-      onClose();
-    }
-  };
-
   return (
-    <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div className="table-modal">
-        <h2>Edit Table</h2>
+    <div className="modal-overlay" onClick={onClose}>
+      <div 
+        className="table-modal"
+        onClick={(e) => e.stopPropagation()} // Stop click propagation to backdrop
+      >
+        <h2>Edit Table T-{table.tableNo}</h2>
 
         <form onSubmit={handleUpdate}>
           <div className="form-group">
@@ -136,6 +137,7 @@ console.log(table);
               id="tableNo"
               type="number"
               name="tableNo"
+              min="1"
               value={form.tableNo}
               onChange={handleChange}
               disabled={loading}

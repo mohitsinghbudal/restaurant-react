@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import api from "../../util/api";
-import GetCurrUser from "../../util/GetcurrUser";
+import GetCurrUser from "../../util/GetCurrUser";
 
 import "./AdminTable.css";
 import AddTableModal from "./AddTableModal";
@@ -11,7 +11,17 @@ import QRModal from "./QRModal";
 
 function AdminTable() {
   const baseApi = api();
-  const { token } = GetCurrUser();
+
+  // Get user session data safely
+  const { token, roles = [] } = GetCurrUser() || {};
+
+  // Flexible role check (supports both string names and numeric IDs if needed)
+  const userRoles = Array.isArray(roles) ? roles : [];
+  const isAdmin = userRoles.includes("Admin") || userRoles.includes(5);
+  const isManager = userRoles.includes("Manager") || userRoles.includes(3);
+  const isWaiter = userRoles.includes("Waiter") || userRoles.includes(2);
+
+  const canManageTables = isAdmin || isManager;
 
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,16 +42,13 @@ function AdminTable() {
     setError("");
 
     try {
-      const res = await axios.get(
-        `${baseApi}/Table/get-all-table`,
-        {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-        }
-      );
+      const res = await axios.get(`${baseApi}/Table/get-all-table`, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
 
-      setTables(res.data.alltables.result || []);
+      setTables(res.data?.alltables?.result || []);
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -57,17 +64,20 @@ function AdminTable() {
     fetchTables();
   }, [fetchTables]);
 
-  const filteredTables = tables.filter((table) => {
-    const matchesSearch = table.tableNo
-      ?.toString()
-      .includes(search);
+  // Optimized filtering logic
+  const filteredTables = useMemo(() => {
+    return tables.filter((table) => {
+      const tableNoStr = table.tableNo ? table.tableNo.toString().toLowerCase() : "";
+      const query = search.trim().toLowerCase();
+      
+      const matchesSearch = tableNoStr.includes(query);
+      const matchesStatus =
+        statusFilter === "All" ||
+        table.status?.toLowerCase() === statusFilter.toLowerCase();
 
-    const matchesStatus =
-      statusFilter === "All" ||
-      table.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
+      return matchesSearch && matchesStatus;
+    });
+  }, [tables, search, statusFilter]);
 
   return (
     <div className="admin-table-page">
@@ -78,24 +88,22 @@ function AdminTable() {
         </div>
 
         <div className="header-buttons">
-          <button
-            className="refresh-btn"
-            onClick={fetchTables}
-          >
+          <button className="refresh-btn" onClick={fetchTables}>
             Refresh
           </button>
 
-          <button
-            className="add-btn"
-            onClick={() => setShowAddModal(true)}
-          >
-            + Add Table
-          </button>
+          {canManageTables && (
+            <button
+              className="add-btn"
+              onClick={() => setShowAddModal(true)}
+            >
+              + Add Table
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Cards */}
-
+      {/* Overview Metric Cards */}
       <div className="table-cards">
         <div className="table-card">
           <h3>Total Tables</h3>
@@ -105,67 +113,53 @@ function AdminTable() {
         <div className="table-card available">
           <h3>Available</h3>
           <span>
-            {tables.filter(
-              (t) => t.status === "Available"
-            ).length}
+            {tables.filter((t) => t.status === "Available").length}
           </span>
         </div>
 
         <div className="table-card occupied">
           <h3>Occupied</h3>
           <span>
-            {tables.filter(
-              (t) => t.status === "Occupied"
-            ).length}
+            {tables.filter((t) => t.status === "Occupied").length}
           </span>
         </div>
 
         <div className="table-card reserved">
           <h3>Booked</h3>
           <span>
-            {tables.filter(
-              (t) => t.status === "Booked"
-            ).length}
+            {tables.filter((t) => t.status === "Booked").length}
           </span>
         </div>
       </div>
 
-      {/* Toolbar */}
-
+      {/* Toolbar / Search & Filter */}
       <div className="table-toolbar">
         <input
           type="text"
           placeholder="Search Table Number..."
           value={search}
-          onChange={(e) =>
-            setSearch(e.target.value)
-          }
+          onChange={(e) => setSearch(e.target.value)}
         />
 
         <select
           value={statusFilter}
-          onChange={(e) =>
-            setStatusFilter(e.target.value)
-          }
+          onChange={(e) => setStatusFilter(e.target.value)}
         >
-          <option>All</option>
-          <option>Available</option>
-          <option>Occupied</option>
-          <option>Booked</option>
-          <option>Cleaning</option>
-          <option>Deleted</option>
+          <option value="All">All</option>
+          <option value="Available">Available</option>
+          <option value="Occupied">Occupied</option>
+          <option value="Booked">Booked</option>
+          <option value="Cleaning">Cleaning</option>
+          <option value="Deleted">Deleted</option>
         </select>
       </div>
 
+      {/* Table Data View */}
       <div className="table-wrapper">
         {loading ? (
-          <div className="no-data">
-            Loading...
-          </div>
+          <div className="no-data">Loading tables...</div>
         ) : error ? (
-          <div className="no-data">
-            {error}
-          </div>
+          <div className="no-data">{error}</div>
         ) : (
           <table>
             <thead>
@@ -182,10 +176,7 @@ function AdminTable() {
             <tbody>
               {filteredTables.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan="6"
-                    className="no-data"
-                  >
+                  <td colSpan="6" className="no-data">
                     No Tables Found
                   </td>
                 </tr>
@@ -193,53 +184,54 @@ function AdminTable() {
                 filteredTables.map((table) => (
                   <tr key={table.tableId}>
                     <td>{table.tableId}</td>
-
                     <td>T-{table.tableNo}</td>
-
-                    <td>
-                      {table.capacity} Person(s)
-                    </td>
-
+                    <td>{table.capacity || 0} Person(s)</td>
                     <td>
                       <span
-                        className={`status ${table.status.toLowerCase()}`}
+                        className={`status ${(table.status || "unknown").toLowerCase()}`}
                       >
-                        {table.status}
+                        {table.status || "N/A"}
                       </span>
                     </td>
 
                     <td>
-                      <button
-                        className="qr-btn"
-                        onClick={() => {
-                          setSelectedTable(table);
-                          setShowQRModal(true);
-                        }}
-                      >
-                        QR
-                      </button>
+                      {(canManageTables || isWaiter) && (
+                        <button
+                          className="qr-btn"
+                          onClick={() => {
+                            setSelectedTable(table);
+                            setShowQRModal(true);
+                          }}
+                        >
+                          QR
+                        </button>
+                      )}
                     </td>
 
                     <td>
-                      <button
-                        className="edit-btn"
-                        onClick={() => {
-                          setSelectedTable(table);
-                          setShowEditModal(true);
-                        }}
-                      >
-                        Edit
-                      </button>
+                      {canManageTables && (
+                        <>
+                          <button
+                            className="edit-btn"
+                            onClick={() => {
+                              setSelectedTable(table);
+                              setShowEditModal(true);
+                            }}
+                          >
+                            Edit
+                          </button>
 
-                      <button
-                        className="delete-btn"
-                        onClick={() => {
-                          setSelectedTable(table);
-                          setShowDeleteModal(true);
-                        }}
-                      >
-                        Delete
-                      </button>
+                          <button
+                            className="delete-btn"
+                            onClick={() => {
+                              setSelectedTable(table);
+                              setShowDeleteModal(true);
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))
@@ -249,31 +241,38 @@ function AdminTable() {
         )}
       </div>
 
-      <AddTableModal
-        open={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        refresh={fetchTables}
-      />
+      {/* Modals */}
+      {canManageTables && (
+        <>
+          <AddTableModal
+            open={showAddModal}
+            onClose={() => setShowAddModal(false)}
+            refresh={fetchTables}
+          />
 
-      <EditTableModal
-        open={showEditModal}
-        table={selectedTable}
-        onClose={() => setShowEditModal(false)}
-        refresh={fetchTables}
-      />
+          <EditTableModal
+            open={showEditModal}
+            table={selectedTable}
+            onClose={() => setShowEditModal(false)}
+            refresh={fetchTables}
+          />
 
-      <DeleteTableModal
-        open={showDeleteModal}
-        table={selectedTable}
-        onClose={() => setShowDeleteModal(false)}
-        refresh={fetchTables}
-      />
+          <DeleteTableModal
+            open={showDeleteModal}
+            table={selectedTable}
+            onClose={() => setShowDeleteModal(false)}
+            refresh={fetchTables}
+          />
+        </>
+      )}
 
-      <QRModal
-        open={showQRModal}
-        table={selectedTable}
-        onClose={() => setShowQRModal(false)}
-      />
+      {(canManageTables || isWaiter) && (
+        <QRModal
+          open={showQRModal}
+          table={selectedTable}
+          onClose={() => setShowQRModal(false)}
+        />
+      )}
     </div>
   );
 }

@@ -1,258 +1,475 @@
-/* Orders.css - Midnight Slate & Amber Theme */
+/* ==========================================================================
+   GLOBAL DESIGN TOKENS (Matched to Menu Palette)
+   ========================================================================== */
+:root {
+  /* Warm Gold / Luxury Palette */
+  --gold-primary: #b5964b;
+  --gold-hover: #8f6d1f;
+  --gold-light: #faf8f2;
+  --gold-border: #c6ae75;
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  /* Neutrals */
+  --bg-main: #fcfbf8;
+  --bg-card: #ffffff;
+  --border-light: #e5dfd2;
+  --border-dashed: #d8cdb6;
 
-.orders-page {
-  min-height: 100vh;
-  padding: 56px 8%;
-  background-color: #f8fafc;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  color: #0f172a;
-  -webkit-font-smoothing: antialiased;
+  /* Typography Colors */
+  --text-heading: #1f1f1f;
+  --text-body: #222222;
+  --text-muted: #777777;
+  --text-sub: #555555;
+
+  /* Status Colors */
+  --status-success-bg: #eaf4eb;
+  --status-success-text: #4d7b4f;
+  
+  --status-info-bg: #eef6fc;
+  --status-info-text: #31708f;
+
+  --status-pending-bg: #fef8ec;
+  --status-pending-text: #8f6d1f;
+
+  --status-danger-bg: #fdf2f2;
+  --status-danger-text: #b45d5d;
+
+  /* Effects */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --shadow-subtle: 0 6px 18px rgba(0, 0, 0, 0.04);
+  --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.07);
+  --shadow-mobile-bar: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Header Section */
+/* Base Reset & Box Sizing */
+.orders-container,
+.orders-container *,
+.orders-container *::before,
+.orders-container *::after {
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   PAGE CONTAINER & HEADERS
+   ========================================================================== */
+.orders-container {
+  width: 100%;
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: clamp(20px, 5vw, 70px) clamp(16px, 4vw, 30px);
+  background-color: var(--bg-main);
+  font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--text-body);
+}
+
 .orders-header {
-  text-align: center;
-  margin-bottom: 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: clamp(24px, 4vw, 50px);
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-light);
 }
 
-.orders-header h1 {
-  font-size: 32px;
-  font-weight: 800;
-  color: #0f172a;
-  letter-spacing: -0.8px;
-  margin-bottom: 8px;
-}
-
-.orders-header p {
-  color: #64748b;
-  font-size: 15px;
-  font-weight: 500;
+.orders-header h2 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 400;
+  color: var(--text-heading);
+  letter-spacing: 0.5px;
   margin: 0;
+  line-height: 1.2;
 }
 
-/* Loading & Empty States */
-.orders-loading,
-.no-orders {
-  min-height: 45vh;
+.session-tag {
+  background-color: var(--gold-light);
+  border: 1px solid var(--gold-border);
+  color: var(--gold-hover);
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.empty-orders,
+.orders-loading {
+  min-height: 30vh;
   display: flex;
   justify-content: center;
   align-items: center;
+  text-align: center;
+  padding: 30px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-size: 1rem;
+  box-shadow: var(--shadow-subtle);
 }
 
-.no-orders h2,
-.orders-loading h2 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #64748b;
+/* ==========================================================================
+   GRID LAYOUT (CARDS & SUMMARY)
+   ========================================================================== */
+.orders-wrapper {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 350px;
+  gap: 30px;
+  align-items: start;
 }
 
-/* Orders List */
 .orders-list {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
-/* Order Cards */
+/* ==========================================================================
+   ORDER ITEM CARDS
+   ========================================================================== */
 .order-card {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 24px 28px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: clamp(16px, 2.5vw, 24px);
+  gap: clamp(12px, 2vw, 20px);
+  box-shadow: var(--shadow-subtle);
+  transition: var(--transition);
 }
 
 .order-card:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);
+  transform: translateY(-2px);
+  border-color: #d7c7a0;
+  box-shadow: var(--shadow-hover);
 }
 
-.order-left h3 {
-  font-size: 18px;
-  font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.4px;
-  margin: 0 0 8px 0;
-}
-
-.order-left p {
-  color: #64748b;
-  margin: 4px 0;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.order-right {
-  text-align: right;
-}
-
-.order-right h3 {
-  margin-top: 10px;
-  font-size: 22px;
-  font-weight: 800;
-  color: #d97706; /* Warm Amber */
-  letter-spacing: -0.5px;
-}
-
-/* Status Badges */
-.status {
-  display: inline-flex;
+.order-card-image-wrapper {
+  width: clamp(75px, 15vw, 100px);
+  height: clamp(75px, 15vw, 100px);
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: #f5f5f5;
+  display: flex;
   align-items: center;
-  padding: 4px 12px;
-  border-radius: 9999px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
+  justify-content: center;
+  border: 1px solid var(--border-light);
 }
 
-.pending {
-  background: #fef3c7;
-  color: #92400e;
+.order-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
 }
 
-.preparing {
-  background: #e0f2fe;
-  color: #075985;
+.order-card:hover .order-card-image {
+  transform: scale(1.05);
 }
 
-.served {
-  background: #dcfce7;
-  color: #166534;
+.order-card-placeholder {
+  font-size: 1.75rem;
 }
 
-.cancelled {
-  background: #fee2e2;
-  color: #991b1b;
+.order-card-details {
+  flex-grow: 1;
+  min-width: 0; /* Prevents text overflow breaks in grid flexbox */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-.completed {
-  background: #ccfbf1;
-  color: #115e59;
+.order-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 6px;
 }
 
-/* ===== ORDER SUMMARY ===== */
-
-.order-summary {
-  margin-top: 40px;
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 28px 32px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+.order-card-top h3 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(18px, 2vw, 22px);
+  font-weight: 400;
+  color: var(--text-heading);
+  margin: 0;
+  word-break: break-word;
 }
 
-.summary-top {
+.order-card-desc {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.order-card-bottom {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-dashed);
+  flex-wrap: wrap;
 }
 
-.bill-info {
+.order-card-pricing {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  text-align: right;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+  color: var(--text-sub);
 }
 
-.bill-info h2 {
-  color: #64748b;
-  margin: 0;
-  font-size: 12px;
-  font-weight: 700;
+.order-item-total {
+  color: var(--gold-hover);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   STATUS BADGES
+   ========================================================================== */
+.status-badge {
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9875rem;
+  font-weight: 300;
+  font: 2px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
+  white-space: nowrap;
 }
 
-.bill-info h1 {
-  color: #0f172a;
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: -0.8px;
-  margin: 2px 0 0 0;
+.status-placed {
+  background-color: var(--status-pending-bg);
+  color: var(--status-pending-text);
+  border: 1px solid var(--gold-border);
 }
 
-/* Get Bill Button */
-.getmybill {
-  background: #0f172a; /* Obsidian Dark Accent */
-  color: #ffffff;
-  border: none;
-  padding: 14px 32px;
-  border-radius: 8px;
+.status-preparing {
+  background-color: var(--status-info-bg);
+  color: var(--status-info-text);
+  border: 1px solid #bce1f3;
+}
+
+.status-served {
+  background-color: var(--status-success-bg);
+  color: var(--status-success-text);
+  border: 1px solid #c3e6cb;
+}
+
+.status-cancelled {
+  background-color: var(--status-danger-bg);
+  color: var(--status-danger-text);
+  border: 1px solid #f5c6cb;
+}
+
+/* ==========================================================================
+   BUTTONS & CANCEL ACTIONS
+   ========================================================================== */
+.cancel-order-btn {
+  background: #ffffff;
+  color: var(--status-danger-text);
+  border: 1px solid var(--status-danger-text);
+  padding: 8px 16px;
+  min-height: 38px;
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   cursor: pointer;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: -0.2px;
-  transition: all 0.2s ease;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cancel-order-btn:hover:not(:disabled) {
+  background-color: var(--status-danger-text);
+  color: #ffffff;
+}
+
+.cancel-order-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.non-cancellable-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ==========================================================================
+   FLOATING / SIDEBAR SUMMARY CARD
+   ========================================================================== */
+.orders-summary-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  position: sticky;
+  top: 20px;
+  box-shadow: var(--shadow-subtle);
+}
+
+.orders-summary-card h3 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.375rem;
+  font-weight: 400;
+  color: var(--text-heading);
+  margin-top: 0;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  color: var(--text-sub);
+  font-size: 0.875rem;
+}
+
+.summary-divider {
+  border: none;
+  border-top: 1px dashed var(--border-dashed);
+  margin: 16px 0;
+}
+
+.grand-total {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gold-hover);
+}
+
+.bill-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px;
+  min-height: 48px; /* Accessible touch target */
+  background: #ffffff;
+  border: 1px solid var(--gold-primary);
+  border-radius: var(--radius-sm);
+  color: var(--gold-hover);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: var(--transition);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.getmybill:hover {
-  background: #334155;
+.bill-btn:hover {
+  background: var(--gold-primary);
+  color: #ffffff;
 }
 
-/* Responsiveness */
-@media (max-width: 900px) {
-  .orders-page {
-    padding: 36px 20px;
+/* ==========================================================================
+   RESPONSIVE DESIGN (BREAKPOINTS)
+   ========================================================================== */
+
+/* Medium Desktops & Tablets (Stack Sidebar Below Orders) */
+@media (max-width: 1024px) {
+  .orders-wrapper {
+    grid-template-columns: 1fr;
+    gap: 24px;
   }
 
-  .order-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .order-right {
-    width: 100%;
-    text-align: left;
-  }
-
-  .order-summary {
-    padding: 24px;
+  .orders-summary-card {
+    position: static;
   }
 }
 
+/* Mobile & Small Tablets */
 @media (max-width: 768px) {
-  .summary-top {
-    flex-direction: column-reverse;
-    align-items: stretch;
-    gap: 20px;
+  .orders-header {
+    margin-bottom: 24px;
   }
 
-  .bill-info {
-    text-align: center;
+  .order-card-bottom {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  /* Mobile Sticky Bottom Checkout Bar Alternative for Summary */
+  .orders-summary-card {
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+    margin: 20px -16px -20px -16px; /* Bleed to edge of container */
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: var(--shadow-mobile-bar);
+    padding: 16px 20px;
+    background: var(--bg-card);
+  }
+
+  .orders-summary-card h3,
+  .summary-row:not(:last-of-type),
+  .summary-divider {
+    display: none; /* Hide detailed breakdown on mobile sticky view to save space */
+  }
+
+  .summary-row:last-of-type {
+    margin-bottom: 0;
     align-items: center;
   }
 
-  .getmybill {
-    width: 100%;
+  .bill-btn {
+    margin-top: 12px;
   }
 }
 
-@media (max-width: 600px) {
-  .orders-header h1 {
-    font-size: 26px;
+/* Narrow Mobile Screens */
+@media (max-width: 480px) {
+  .orders-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 
-  .order-left h3 {
-    font-size: 16px;
+  .order-card {
+    gap: 12px;
   }
 
-  .order-right h3 {
-    font-size: 18px;
+  .order-card-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
   }
 
-  .bill-info h1 {
-    font-size: 26px;
+  .order-card-bottom {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .order-card-pricing {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .cancel-order-btn {
+    width: 100%;
+  }
+
+  .non-cancellable-text {
+    text-align: center;
   }
 }

@@ -27,6 +27,9 @@ import OrderMgmt from "./pages/admin/OrderMgmt";
 import PaymentMgmt from "./pages/admin/PaymentMgmt";
 import ReportMgmt from "./pages/admin/ReportMgmt";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import WaiterDashboard from "./pages/Waiter/WaiterDashboard";
+import WaiterOrder from "./pages/Waiter/WaiterOrder";
+import WaiterBill from "./pages/Waiter/WaiterBill";
 
 
 const AdminPanel = () => <h2>Admin Panel (Admins Only)</h2>;
@@ -34,19 +37,21 @@ const Analytics = () => <h2>Analytics Page (Admins & Editors)</h2>;
 const Unauthorized = () => <h2>⚠️ Access Denied: You don't have permission.</h2>;
 const UserPanel = () => <h2>this is the user dashboard</h2>;
 const ProtectedRoute = ({ allowedRoles }) => {
-  const { token, roles } = GetCurrUser();
+    const { token, roles } = GetCurrUser();
 
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
+    if (!token) {
+        return <Navigate to="/login" replace />;
+    }
 
-  const hasPermission = roles.some(role => allowedRoles.includes(role));
+    const hasAccess = roles?.some(role =>
+        allowedRoles.includes(Number(role))
+    );
 
-  if (!hasPermission) {
-    return <Navigate to="/unauthorized" replace />;
-  }
+    if (!hasAccess) {
+        return <Navigate to="/unauthorized" replace />;
+    }
 
-  return <Outlet />;
+    return <Outlet />;
 };
 
 function Layout() {
@@ -79,7 +84,8 @@ const router = createBrowserRouter([
       
 
       { 
-        element: <ProtectedRoute allowedRoles={["Admin"]} />,
+        
+        element: <ProtectedRoute allowedRoles={[5]} />,
         children: [
           { path: "/admin-dashboard", element: <AdminDashboard /> },
           { path: "/analytics", element: <Analytics /> },
@@ -102,6 +108,13 @@ const router = createBrowserRouter([
           
           
         ]
+      },{
+        element: <ProtectedRoute allowedRoles={[2]} />,
+        children: [
+          {path:"/waiter-dashboard",element:<WaiterDashboard/>},
+          {path:"/place-order", element:<WaiterOrder />},
+          {path:"/waiter-bill",element:<WaiterBill/>},
+        ]
       },
       {
 element: <ProtectedRoute allowedRoles={["Customer"]} />,
@@ -110,7 +123,6 @@ element: <ProtectedRoute allowedRoles={["Customer"]} />,
           {path:"/customer-orders",element:<CustomerOrders/>},
           {path:"/customer-cart",element:<Cart/>},
           {path:"/customer-table", element: <Table/>},
-          {path:"/customer-orders",element:<CustomerOrders/>},
           {path:"/customer-menu",element:<CustomerMenu/>},
           {path:"/customer-bill",element:<CustomerBill/>},
           

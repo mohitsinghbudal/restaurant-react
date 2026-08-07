@@ -48,12 +48,18 @@ function Drawer({ isOpen, setIsOpen }) {
     { name: "Signup", path: "/signup", icon: "📝" }
   ];
 
-let links = guestLinks;
+  const waiterLinks = [
+    { name: "Dashboard", path: "/waiter-dashboard", icon: "🏠" },
+  ];
+
+  let links = guestLinks;
 
   if (token && roles.includes("Admin")) {
     links = adminLinks;
   } else if (token && roles.includes("Customer")) {
     links = customerLinks;
+  }else if(token && Number(roleId) === 2){
+    links = waiterLinks;
   }
   return (
     <>
