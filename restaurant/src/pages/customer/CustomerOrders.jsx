@@ -227,7 +227,7 @@ function CustomerOrders() {
   };
 
   const handleNavigateToBill = () => {
-    navigate("/bills", { state: { sessionId } });
+    navigate("/customer-bill", { state: { sessionId } });
   };
 
   if (loading) {
