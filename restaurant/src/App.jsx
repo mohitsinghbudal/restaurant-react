@@ -30,6 +30,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import WaiterDashboard from "./pages/Waiter/WaiterDashboard";
 import WaiterOrder from "./pages/Waiter/WaiterOrder";
 import WaiterBill from "./pages/Waiter/WaiterBill";
+import ManageOrder from "./pages/Cook/ManageOrder";
 
 
 const AdminPanel = () => <h2>Admin Panel (Admins Only)</h2>;
@@ -127,6 +128,12 @@ element: <ProtectedRoute allowedRoles={["Customer"]} />,
           {path:"/customer-bill",element:<CustomerBill/>},
           
         ]
+      },{
+        element :<ProtectedRoute allowedRoles = {[4]}/>,
+        children:[
+          {path:"/waiter-order",element:<ManageOrder/>},
+        ]
+
       },
     ]
   }

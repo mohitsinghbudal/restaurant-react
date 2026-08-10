@@ -24,10 +24,13 @@ function Login() {
       navigate("/admin-dashboard");
     } else if (activeRoles.includes(1)) {
       navigate("/customer-table");
-    } else {
+    } else if (activeRoles.includes(4)){
+      navigate("/waiter-order");
+     } else{
       navigate("/dashboard");
+      }
     }
-  }, [hookRoles, navigate]);
+  , [hookRoles, navigate]);
 
   // Auto-redirect if the user visits /login while already authenticated
   useEffect(() => {

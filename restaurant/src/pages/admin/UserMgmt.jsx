@@ -35,15 +35,6 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Numeric IDs matching backend database Role IDs
-const AVAILABLE_ROLES = [
-  { id: 1, label: "Customer" },
-  { id: 2, label: "Waiter" },
-  { id: 3, label: "Chef" },
-  { id: 4, label: "Cashier" },
-  { id: 5, label: "Admin" },
-];
-
 const initialFormState = {
   userId: 0,
   firstName: "",
@@ -66,6 +57,9 @@ function UserMgmt() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Dynamic Roles State fetched from backend
+  const [roles, setRoles] = useState([]);
+
   // Search & Filter State
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("All Roles");
@@ -85,7 +79,7 @@ function UserMgmt() {
     return parts.join(" ") || "N/A";
   };
 
-  // Helper to format roles list for display table
+  // Helper to format roles list for display table using fetched `roles` state
   const getRoleLabel = (rolesData) => {
     if (!rolesData || !Array.isArray(rolesData) || rolesData.length === 0) {
       return "N/A";
@@ -93,8 +87,8 @@ function UserMgmt() {
     return rolesData
       .map((r) => {
         const idVal = typeof r === "object" ? r.roleId || r.id : r;
-        const matched = AVAILABLE_ROLES.find((ar) => Number(ar.id) === Number(idVal));
-        if (matched) return matched.label;
+        const matched = roles.find((ar) => Number(ar.roleId) === Number(idVal));
+        if (matched) return matched.roleName;
         return typeof r === "object" ? r.roleName || r.name : String(r);
       })
       .join(", ");
@@ -116,8 +110,20 @@ function UserMgmt() {
 
   useEffect(() => {
     setCurrentUser(GetCurrUser());
+    fetchRoles();
     fetchUsers();
   }, []);
+
+  const fetchRoles = async () => {
+    try {
+      const res = await apiClient.get("/Roles");
+      // Extracts dynamic list handling both `{ result: [...] }` and direct array response shapes
+      const fetchedRoles = res.data?.result || res.data?.$values || (Array.isArray(res.data) ? res.data : []);
+      setRoles(fetchedRoles);
+    } catch (err) {
+      console.error("Failed to fetch roles:", err);
+    }
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -178,15 +184,17 @@ function UserMgmt() {
   const handleOpenRoleModal = (item) => {
     setSelectedItem(item);
 
-    // Map existing user roles to their corresponding numeric IDs
+    // Map existing user roles to their corresponding numeric IDs using dynamic `roles` state
     const userRoleIds = Array.isArray(item.roles)
       ? item.roles
           .map((r) => {
             if (typeof r === "object") return Number(r.roleId || r.id);
-            const match = AVAILABLE_ROLES.find(
-              (ar) => ar.label.toLowerCase() === String(r).toLowerCase() || String(ar.id) === String(r)
+            const match = roles.find(
+              (ar) =>
+                ar.roleName.toLowerCase() === String(r).toLowerCase() ||
+                String(ar.roleId) === String(r)
             );
-            return match ? match.id : Number(r) || null;
+            return match ? match.roleId : Number(r) || null;
           })
           .filter(Boolean)
       : [];
@@ -242,7 +250,7 @@ function UserMgmt() {
     try {
       await apiClient.put(`/User/update-roles`, {
         userId: selectedItem.user.userId,
-        roleIds: selectedRoleIds, 
+        roleIds: selectedRoleIds,
       });
 
       showToast("success", `Roles updated for ${selectedItem.user.firstName || "user"}!`);
@@ -288,24 +296,26 @@ function UserMgmt() {
 
       {error && <div className="error-message">{error}</div>}
 
-      {/* Dynamic Summary Cards */}
+      {/* Dynamic Summary Cards mapped dynamically from loaded roles */}
       <div className="stats">
         <div className="card">
           <h3>Total Users</h3>
           <span>{users.length}</span>
         </div>
-        <div className="card">
-          <h3>Admins</h3>
-          <span>{users.filter((item) => userHasRole(item, "5") || userHasRole(item, "Admin")).length}</span>
-        </div>
-        <div className="card">
-          <h3>Waiters</h3>
-          <span>{users.filter((item) => userHasRole(item, "2") || userHasRole(item, "Waiter")).length}</span>
-        </div>
-        <div className="card">
-          <h3>Customers</h3>
-          <span>{users.filter((item) => userHasRole(item, "1") || userHasRole(item, "Customer")).length}</span>
-        </div>
+        {roles.map((role) => (
+          <div key={role.roleId} className="card">
+            <h3>{role.roleName}s</h3>
+            <span>
+              {
+                users.filter(
+                  (item) =>
+                    userHasRole(item, role.roleId) ||
+                    userHasRole(item, role.roleName)
+                ).length
+              }
+            </span>
+          </div>
+        ))}
       </div>
 
       {/* Toolbar Filters */}
@@ -318,11 +328,11 @@ function UserMgmt() {
         />
         <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
           <option value="All Roles">All Roles</option>
-          <option value="5">Admin</option>
-          <option value="2">Waiter</option>
-          <option value="3">Chef</option>
-          <option value="4">Cashier</option>
-          <option value="1">Customer</option>
+          {roles.map((role) => (
+            <option key={role.roleId} value={role.roleId}>
+              {role.roleName}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -505,7 +515,7 @@ function UserMgmt() {
               </div>
             )}
 
-            {/* 3. Manage Roles Modal */}
+            {/* 3. Manage Roles Modal Dynamic Rendering */}
             {modalType === "roles" && selectedItem && (
               <div>
                 <h2>Manage Roles</h2>
@@ -515,18 +525,18 @@ function UserMgmt() {
                 <hr />
                 <form onSubmit={handleSaveRoles}>
                   <div className="roles-selection-container" style={{ margin: "20px 0" }}>
-                    {AVAILABLE_ROLES.map((role) => {
-                      const isChecked = selectedRoleIds.includes(role.id);
+                    {roles.map((role) => {
+                      const isChecked = selectedRoleIds.includes(role.roleId);
 
                       return (
-                        <div key={role.id} className="form-group checkbox-group" style={{ marginBottom: "12px" }}>
+                        <div key={role.roleId} className="form-group checkbox-group" style={{ marginBottom: "12px" }}>
                           <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
                             <input
                               type="checkbox"
                               checked={isChecked}
-                              onChange={() => handleRoleToggle(role.id)}
+                              onChange={() => handleRoleToggle(role.roleId)}
                             />
-                            <span>{role.label}</span>
+                            <span>{role.roleName}</span>
                           </label>
                         </div>
                       );
