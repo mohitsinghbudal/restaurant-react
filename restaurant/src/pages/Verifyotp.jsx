@@ -10,7 +10,6 @@ function Verifyotp() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
-  // Handle Input Changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -19,7 +18,6 @@ function Verifyotp() {
     }));
   };
 
-  // Submit OTP Verification
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage({ type: '', text: '' });
@@ -32,7 +30,7 @@ function Verifyotp() {
     setLoading(true);
 
     try {
-      // Matches the VerifyOTP endpoint expectations in your .NET Controller
+
       const response = await axios.post('/api/user/verify-otp', {
         email: formData.email,
         otp: formData.otp,
@@ -43,8 +41,7 @@ function Verifyotp() {
           type: 'success',
           text: 'Email verified successfully! You can now log in.',
         });
-        // Optional: Reset form or redirect user to Login page
-        // navigate('/login');
+
       }
     } catch (error) {
       const errorMsg =
@@ -142,7 +139,6 @@ const styles = {
 
   },
 
-
   card: {
 
     width: "100%",
@@ -161,7 +157,6 @@ const styles = {
 
   },
 
-
   heading: {
 
     margin: "0 0 12px 0",
@@ -178,7 +173,6 @@ const styles = {
 
   },
 
-
   subheading: {
 
     margin: "0 0 25px 0",
@@ -192,7 +186,6 @@ const styles = {
     lineHeight: "1.6"
 
   },
-
 
   alert: {
 
@@ -212,7 +205,6 @@ const styles = {
 
   },
 
-
   form: {
 
     display: "flex",
@@ -222,7 +214,6 @@ const styles = {
     gap: "18px"
 
   },
-
 
   formGroup: {
 
@@ -234,7 +225,6 @@ const styles = {
 
   },
 
-
   label: {
 
     fontSize: "14px",
@@ -244,7 +234,6 @@ const styles = {
     color: "#444"
 
   },
-
 
   input: {
 
@@ -267,7 +256,6 @@ const styles = {
     color: "#333"
 
   },
-
 
   button: {
 
@@ -296,6 +284,5 @@ const styles = {
   }
 
 };
-
 
 export default Verifyotp;

@@ -14,12 +14,10 @@ function DinningMgmt() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
-  // Modal States
   const [showEndModal, setShowEndModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  // Create Session Form State
   const [newSession, setNewSession] = useState({
     tableId: "",
     createdBy: "",
@@ -28,10 +26,6 @@ function DinningMgmt() {
   const baseApi = api();
   const currentUser = GetCurrUser() || {};
   const token = currentUser.token;
-
-  /* =============================
-          FETCH SESSIONS
-  ============================== */
 
   const fetchSessions = useCallback(async () => {
     setLoading(true);
@@ -60,10 +54,6 @@ function DinningMgmt() {
     fetchSessions();
   }, [fetchSessions]);
 
-  /* =============================
-          KEYBOARD SHORTCUTS
-  ============================== */
-
   const handleKeyDown = useCallback(
     (e) => {
       if (e.key === "Escape" && !actionLoading) {
@@ -84,10 +74,6 @@ function DinningMgmt() {
     };
   }, [showEndModal, showCreateModal, handleKeyDown]);
 
-  /* =============================
-          FILTERING LOGIC
-  ============================== */
-
   const filteredSessions = sessions.filter((session) => {
     const searchLower = search.trim().toLowerCase();
 
@@ -107,10 +93,6 @@ function DinningMgmt() {
     return matchesSearch && matchesStatus;
   });
 
-  /* =============================
-          DATE FORMATTING
-  ============================== */
-
   const formatDateTime = (date) => {
     if (!date) return "-";
 
@@ -122,10 +104,6 @@ function DinningMgmt() {
       minute: "2-digit",
     });
   };
-
-  /* =============================
-        END DINING SESSION
-  ============================== */
 
   const endSession = async () => {
     if (!selectedSession || actionLoading) return;
@@ -156,10 +134,6 @@ function DinningMgmt() {
       setActionLoading(false);
     }
   };
-
-  /* =============================
-        CREATE DINING SESSION
-  ============================== */
 
   const openCreateModal = () => {
     setNewSession({
@@ -203,7 +177,7 @@ function DinningMgmt() {
 
   return (
     <div className="dining-page">
-      {/* Header */}
+
       <div className="dining-header">
         <div>
           <h1>Dining Management</h1>
@@ -219,7 +193,6 @@ function DinningMgmt() {
         </button>
       </div>
 
-      {/* Dashboard Cards */}
       <div className="dining-cards">
         <div className="dining-card">
           <h3>Total Sessions</h3>
@@ -254,7 +227,6 @@ function DinningMgmt() {
         </div>
       </div>
 
-      {/* Toolbar */}
       <div className="dining-toolbar">
         <input
           type="text"
@@ -273,7 +245,6 @@ function DinningMgmt() {
         </select>
       </div>
 
-      {/* Table Section */}
       <div className="dining-table">
         {loading ? (
           <div className="empty">Loading dining sessions...</div>
@@ -343,7 +314,6 @@ function DinningMgmt() {
         )}
       </div>
 
-      {/* Floating Action Button */}
       <button
         className="fab"
         onClick={openCreateModal}
@@ -353,7 +323,6 @@ function DinningMgmt() {
         +
       </button>
 
-      {/* End Session Modal */}
       {showEndModal && (
         <div
           className="modal-overlay"
@@ -394,7 +363,6 @@ function DinningMgmt() {
         </div>
       )}
 
-      {/* Create Session Modal */}
       {showCreateModal && (
         <div
           className="modal-overlay"

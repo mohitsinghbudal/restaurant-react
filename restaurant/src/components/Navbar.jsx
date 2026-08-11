@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import GetCurrUser from "../util/GetcurrUser";
@@ -14,46 +15,69 @@ function Navbar() {
 
   useEffect(() => {
     const { token, roles } = GetCurrUser();
-    console.log(roles);
+
+    console.log("Roles:", roles);
+
     setIsLoggedIn(!!token);
-    setRoles(roles);
+    setRoles(roles || []);
   }, [location]);
 
   const handleLogout = () => {
     sessionStorage.clear();
     localStorage.clear();
+
     setIsLoggedIn(false);
     setRoles([]);
+
     navigate("/login");
   };
 
   const guestLinks = [
     { name: "Home", path: "/" },
-    { name: "Menu", path: "/menu" },
+    { name: "Menu", path: "/menu" }
   ];
 
   const adminLinks = [
     { name: "Dashboard", path: "/admin-dashboard" },
     { name: "Menu", path: "/admin-menu" },
     { name: "Tables", path: "/admin-table" },
-    { name: "Reports", path: "/admin-reports" },
+    { name: "Reports", path: "/admin-reports" }
   ];
 
-  // Show admin links if the user has the Admin role
-  const isAdmin = roles.includes("Admin");
+  const customerLinks = [
+    { name: "Menu", path: "/customer-menu" },
+    { name: "Orders", path: "/customer-orders" }
+  ];
 
-  const navLinks = isLoggedIn
-    ? isAdmin
-      ? adminLinks
-      : []
-    : guestLinks;
+  const waiterLinks = [
+    { name: "Dashboard", path: "/waiter-dashboard" }
+  ];
+
+  
+  const isAdmin = roles.includes(5);
+  const isWaiter = roles.includes(2);
+  const isCustomer = roles.includes(1);
+
+  
+  let navLinks = guestLinks;
+
+  if (isLoggedIn) {
+    if (isAdmin) {
+      navLinks = adminLinks;
+    } else if (isWaiter) {
+      navLinks = waiterLinks;
+    } else if (isCustomer) {
+      navLinks = customerLinks;
+    } else {
+      navLinks = [];
+    }
+  }
 
   return (
     <>
-      <Drawer isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} />
-
       <nav className="navbar">
         <div className="navbar-container">
+
           <button
             className="menu-btn"
             onClick={() => setIsDrawerOpen(true)}
@@ -61,17 +85,26 @@ function Navbar() {
             ☰
           </button>
 
-          <div className="navbar-logo" onClick={() => navigate("/")}>
+          <div
+            className="navbar-logo"
+            onClick={() => navigate("/")}
+          >
             Gourmet Haven
           </div>
 
           <ul className="navbar-list">
+
             {navLinks.map((link) => (
-              <li key={link.path} className="navbar-item navbar-desktop">
+              <li
+                key={link.path}
+                className="navbar-item navbar-desktop"
+              >
                 <NavLink
                   to={link.path}
                   className={({ isActive }) =>
-                    isActive ? "navbar-link active" : "navbar-link"
+                    isActive
+                      ? "navbar-link active"
+                      : "navbar-link"
                   }
                 >
                   {link.name}
@@ -91,16 +124,24 @@ function Navbar() {
                 <NavLink
                   to="/login"
                   className={({ isActive }) =>
-                    isActive ? "navbar-link active" : "navbar-link"
+                    isActive
+                      ? "navbar-link active"
+                      : "navbar-link"
                   }
                 >
                   Login
                 </NavLink>
               )}
             </li>
+
           </ul>
         </div>
       </nav>
+
+      <Drawer
+        isOpen={isDrawerOpen}
+        setIsOpen={setIsDrawerOpen}
+      />
     </>
   );
 }

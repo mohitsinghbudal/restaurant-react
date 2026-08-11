@@ -14,12 +14,10 @@ function Cart() {
   const [cartItems, setCartItems] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [updatingId, setUpdatingId] = useState(null); // Tracks active backend requests
+  const [updatingId, setUpdatingId] = useState(null);
   const[sessionId, setSessionId] = useState(null);
-  const TAX_RATE = 0.13; // 13% Tax / VAT
+  const TAX_RATE = 0.13;
 
-
-  // 1. Fetch Session ID
   const fetchSessionId = async () => {
     try {
       setLoading(true);
@@ -42,14 +40,12 @@ function Cart() {
     }
   };
 
-
   useEffect(() => {
       if (token && userId) {
         fetchSessionId();
       }
     }, [token, userId]);
 
-  // 1. Fetch Cart Items
   const fetchCartItems = async () => {
     try {
       const res = await axios.get(`${baseUrl}/Cart`, {
@@ -64,7 +60,6 @@ function Cart() {
     }
   };
 
-  // 2. Fetch Menu Items
   const fetchMenuItems = async () => {
     try {
       const res = await axios.get(`${baseUrl}/Menu/get-all`, {
@@ -90,7 +85,6 @@ function Cart() {
     }
   }, [token, userId]);
 
-  // Lookup map for fast menu detail resolution
   const menuMap = useMemo(() => {
     const map = {};
     menuItems.forEach((item) => {
@@ -99,7 +93,6 @@ function Cart() {
     return map;
   }, [menuItems]);
 
-  // Merge cart items with menu details
   const detailedCart = useMemo(() => {
     return cartItems.map((cartItem) => {
       const matchedMenu = menuMap[cartItem.menuId] || {};
@@ -112,7 +105,6 @@ function Cart() {
     });
   }, [cartItems, menuMap]);
 
-  // Calculate Financial Totals
   const subtotal = useMemo(() => {
     return detailedCart.reduce(
       (sum, item) => sum + item.price * item.quantity,
@@ -128,7 +120,6 @@ function Cart() {
     return subtotal + tax;
   }, [subtotal, tax]);
 
-  // 3. Backend Update Handler (PUT /api/Cart)
   const updateQuantityOnBackend = async (cartItem, newQty) => {
     if (newQty < 1) return;
 
@@ -136,7 +127,6 @@ function Cart() {
     const itemId = cartItem.cartId;
     setUpdatingId(itemId);
 
-    // Optimistically update frontend state
     setCartItems((prevItems) =>
       prevItems.map((item) =>
         (item.cartId && item.cartId === cartItem.cartId) || item.menuId === cartItem.menuId
@@ -145,7 +135,6 @@ function Cart() {
       )
     );
 
-    // Payload formatted for PUT /api/Cart endpoint schema
     const payload = {
       cartId: Number(cartItem.cartId || cartItem.id || 0),
       userId: Number(userId || cartItem.userId || 0),
@@ -181,12 +170,10 @@ function Cart() {
     }
   };
 
-  // 4. Remove Single Item Handler (DELETE /api/Cart)
   const handleRemove = async (cartItem) => {
     const previousState = [...cartItems];
     const targetCartId = cartItem.cartId;
 
-    // Optimistically remove from state
     setCartItems((prevItems) =>
       prevItems.filter(
         (item) => (item.cartId || item.menuId) !== targetCartId
@@ -208,7 +195,6 @@ function Cart() {
     }
   };
 
-  // 5. Place Order & Clear Cart Handler
   const handlePlaceOrder = async () => {
     if (detailedCart.length === 0) {
       showToast("error", "Your cart is empty.");
@@ -232,7 +218,7 @@ function Cart() {
     };
 
     try {
-      // Step A: Submit Order
+
       await axios.post(`${baseUrl}/Order/place-order`, payload, {
         headers: {
           "Content-Type": "application/json",
@@ -240,14 +226,13 @@ function Cart() {
         },
       });
 
-      // Step B: Clear Cart Items from Backend DB
       try {
         await axios.delete(`${baseUrl}/Cart/clear`, {
           params: { userId },
           headers: { Authorization: `Bearer ${token}` },
         });
       } catch {
-        // Fallback: Delete each item individually if bulk clear endpoint doesn't exist
+
         const deleteRequests = detailedCart.map((item) =>
           axios.delete(`${baseUrl}/Cart`, {
             params: { cartId: item.cartId },
@@ -257,9 +242,9 @@ function Cart() {
         await Promise.all(deleteRequests);
       }
 
-      // Step C: Update Local UI State
       showToast("success", "Order placed and cart cleared successfully!");
       setCartItems([]);
+      navigate("/customer-orders");
     } catch (error) {
       console.error("Order placement error:", error);
       showToast(

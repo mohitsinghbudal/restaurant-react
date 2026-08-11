@@ -1,21 +1,31 @@
 const GetCurrUser = () => {
   const token = sessionStorage.getItem("token");
-  
+
   const rawUserId = sessionStorage.getItem("userId");
   const userId = rawUserId ? Number(rawUserId) : null;
-  
+
   let roles = [];
+
   try {
     const storedRoles = sessionStorage.getItem("roles");
+
     if (storedRoles) {
-      const parsed = JSON.parse(storedRoles);
-      // Ensure element numbers are cleanly cast as primitive Numbers
-      roles = Array.isArray(parsed) ? parsed.map(Number) : [];
+      const parsedRoles = JSON.parse(storedRoles);
+
+      if (Array.isArray(parsedRoles)) {
+        roles = parsedRoles
+          .map(Number)
+          .filter((role) => !isNaN(role));
+      }
     }
-  } catch (e) {
-    console.error("Error parsing roles from sessionStorage", e);
+  } catch (error) {
+    console.error(
+      "Error parsing roles from sessionStorage:",
+      error
+    );
   }
 
+  // First role for components that still need a single role
   const roleId = roles.length > 0 ? roles[0] : null;
 
   return {
@@ -23,7 +33,7 @@ const GetCurrUser = () => {
     userId,
     roles,
     roleId,
-    roleIds: roles,
+    roleIds: roles
   };
 };
 

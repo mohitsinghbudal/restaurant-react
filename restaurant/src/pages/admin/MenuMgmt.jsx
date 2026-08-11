@@ -15,21 +15,17 @@ function MenuMgmt() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Current logged in user context
   const baseUrl = api();
   const { token, userId } = GetCurrUser();
 
-  // --- MODAL STATES ---
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
   const [isEditingMenu, setIsEditingMenu] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isSubCategoryModalOpen, setIsSubCategoryModalOpen] = useState(false);
 
-  // Form state for Menu (Create + Edit)
   const initialMenuForm = {
     menuId: 0,
     itemName: "",
@@ -45,7 +41,6 @@ function MenuMgmt() {
   };
   const [menuFormData, setMenuFormData] = useState(initialMenuForm);
 
-  // Category Form State (Create + Edit)
   const initialCategoryForm = {
     categoryId: 0,
     categoryName: "",
@@ -61,7 +56,6 @@ function MenuMgmt() {
   const [categoryForm, setCategoryForm] = useState(initialCategoryForm);
   const [editingCategory, setEditingCategory] = useState(false);
 
-  // SubCategory Form State (Create + Edit)
   const initialSubCategoryForm = {
     subCategoryId: 0,
     categoryId: 0,
@@ -88,7 +82,6 @@ function MenuMgmt() {
     },
   });
 
-  // --- FETCH DATA ---
   const fetchInitialData = async () => {
     try {
       setLoading(true);
@@ -124,7 +117,6 @@ function MenuMgmt() {
     }
   };
 
-  // Helpers
   const getCategoryName = (id) => {
     const cat = categories.find((c) => (c.categoryId || c.id) === parseInt(id, 10));
     return cat ? cat.categoryName || cat.name : `Cat #${id}`;
@@ -135,7 +127,6 @@ function MenuMgmt() {
     return subCat ? subCat.subCategoryName || subCat.name : `SubCat #${id}`;
   };
 
-  // --- MENU ACTIONS ---
   const handleOpenAddMenuModal = () => {
     setIsEditingMenu(false);
     setMenuFormData({ ...initialMenuForm, lastUpdatedBy: userId || 0 });
@@ -187,7 +178,7 @@ function MenuMgmt() {
       };
 
       if (isEditingMenu) {
-        // Standard Web API route format for PUT
+
         await axios.put(`${baseUrl}/Menu`, payload, getAuthHeaders());
       } else {
         await axios.post(`${baseUrl}/Menu`, payload, getAuthHeaders());
@@ -238,7 +229,6 @@ function MenuMgmt() {
     }
   };
 
-  // --- CATEGORY ACTIONS ---
   const handleCategorySubmit = async (e) => {
     e.preventDefault();
     try {
@@ -259,7 +249,7 @@ function MenuMgmt() {
       };
 
       if (editingCategory) {
-        // Direct PUT to /Category endpoint instead of /Category/Update
+
         await axios.put(`${baseUrl}/Category/Update`, payload, getAuthHeaders());
       } else {
         await axios.post(`${baseUrl}/Category/Create`, payload, getAuthHeaders());
@@ -316,7 +306,6 @@ function MenuMgmt() {
     });
   };
 
-  // --- SUB-CATEGORY ACTIONS ---
   const handleSubCategorySubmit = async (e) => {
     e.preventDefault();
     try {
@@ -338,7 +327,7 @@ function MenuMgmt() {
       };
 
       if (editingSubCategory) {
-        // Direct PUT to /SubCategory/Update endpoint
+
         await axios.put(`${baseUrl}/SubCategory/Update`, payload, getAuthHeaders());
       } else {
         await axios.post(`${baseUrl}/SubCategory/Create`, payload, getAuthHeaders());
@@ -346,7 +335,7 @@ function MenuMgmt() {
 
       resetSubCategoryForm();
       await fetchInitialData();
-      
+
     } catch (err) {
       alert(`SubCategory Operation Failed: ${err.response?.data?.message || err.message}`);
     } finally {
@@ -380,12 +369,12 @@ function MenuMgmt() {
     showToast("success", "Sub-category deleted successfully.");
     await fetchInitialData();
     setIsSubCategoryModalOpen(false);
-    
+
   } catch (err) {
     setIsSubCategoryModalOpen(false);
     showToast(
 
-      "error", 
+      "error",
       err.response?.data?.message || err.message || "Failed to delete sub-category."
     );
   } finally {
@@ -402,7 +391,6 @@ function MenuMgmt() {
     });
   };
 
-  // Filter items based on active parameters
   const filteredItems = menuItems.filter((item) => {
     const matchesSearch = item.itemName
       ? item.itemName.toLowerCase().includes(search.toLowerCase())
@@ -426,7 +414,7 @@ function MenuMgmt() {
 
   return (
     <div className="inventory-container">
-      {/* --- HEADER --- */}
+
       <div className="inventory-header">
         <div>
           <h1>Menu Management</h1>
@@ -445,7 +433,6 @@ function MenuMgmt() {
         </div>
       </div>
 
-      {/* --- METRICS CARDS --- */}
       <div className="metrics-grid">
         <div className="metric-card">
           <span className="metric-label">Total Items</span>
@@ -465,7 +452,6 @@ function MenuMgmt() {
         </div>
       </div>
 
-      {/* --- TOOLBAR & FILTERS --- */}
       <div className="inventory-toolbar">
         <input
           type="text"
@@ -497,7 +483,6 @@ function MenuMgmt() {
         </div>
       </div>
 
-      {/* --- TABLE & DATA CONTAINER --- */}
       <div className="table-wrapper">
         {error ? (
           <p style={{ padding: "24px", color: "var(--danger)", textAlign: "center" }}>
@@ -555,8 +540,8 @@ function MenuMgmt() {
                           >
                             Edit
                           </button>
-                          <button 
-                            className="btn-text-danger" 
+                          <button
+                            className="btn-text-danger"
                             onClick={() => handleDeleteMenu(item.menuId)}
                           >
                             Delete
@@ -575,7 +560,6 @@ function MenuMgmt() {
               </tbody>
             </table>
 
-            {/* --- PAGINATION CONTROLS --- */}
             <div
               style={{
                 display: "flex",
@@ -617,7 +601,6 @@ function MenuMgmt() {
         )}
       </div>
 
-      {/* --- MENU EDIT / CREATE MODAL --- */}
       {isMenuModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -687,8 +670,8 @@ function MenuMgmt() {
                   >
                     <option value={0}>Select Sub-Category</option>
                     {subCategories
-                      .filter((sc) => 
-                        !parseInt(menuFormData.categoryId, 10) || 
+                      .filter((sc) =>
+                        !parseInt(menuFormData.categoryId, 10) ||
                         parseInt(sc.categoryId, 10) === parseInt(menuFormData.categoryId, 10)
                       )
                       .map((sc) => {
@@ -778,7 +761,6 @@ function MenuMgmt() {
         </div>
       )}
 
-      {/* --- CATEGORY MANAGEMENT MODAL --- */}
       {isCategoryModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -923,7 +905,6 @@ function MenuMgmt() {
         </div>
       )}
 
-      {/* --- SUB-CATEGORY MANAGEMENT MODAL --- */}
       {isSubCategoryModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">

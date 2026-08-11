@@ -40,7 +40,6 @@ function BillsMgmt() {
     fetchBills();
   }, [fetchBills]);
 
-  // Derived filtered bill list
   const filteredBills = useMemo(() => {
     return bills.filter((bill) => {
       const query = search.trim().toLowerCase();
@@ -58,7 +57,6 @@ function BillsMgmt() {
     });
   }, [bills, search, filter]);
 
-  // Derived statistics (Memoized for performance)
   const paidBills = useMemo(
     () => bills.filter((bill) => bill.isPaid),
     [bills]
@@ -77,7 +75,7 @@ function BillsMgmt() {
         ) || 0;
 
       return sum + amount;
-    }, 0); // Fixed: set initial value to 0 instead of []
+    }, 0);
   }, [paidBills]);
 
   return (
@@ -207,7 +205,6 @@ function BillsMgmt() {
         </table>
       </div>
 
-      {/* Bill Detail Modal */}
       {selectedBill && (
         <div
           className="bill-modal-overlay"

@@ -11,16 +11,14 @@ function WaiterBill({ tableId, sessionId: initialSessionId }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [paymentStatus, setPaymentStatus] = useState("UNPAID"); 
+  const [paymentStatus, setPaymentStatus] = useState("UNPAID");
   const [sessionId, setSessionId] = useState(initialSessionId || null);
 
-  // Authorization headers
   const authHeaders = useMemo(() => {
     const activeToken = token || sessionStorage.getItem("token");
     return activeToken ? { Authorization: `Bearer ${activeToken}` } : {};
   }, [token]);
 
-  // Fetch active session ID if tableId is provided without sessionId
   const fetchSessionId = useCallback(
     async (targetTableId) => {
       if (!targetTableId) return null;
@@ -56,7 +54,6 @@ function WaiterBill({ tableId, sessionId: initialSessionId }) {
     }
   }, [tableId, initialSessionId, sessionId, fetchSessionId]);
 
-  // Load order details for active session
   const loadBillData = useCallback(async () => {
     if (!sessionId) {
       setLoading(false);
@@ -74,7 +71,6 @@ function WaiterBill({ tableId, sessionId: initialSessionId }) {
       const items = response.data || [];
       setOrders(items);
 
-      // Check if order list indicates paid status
       if (items.length > 0 && items.every((i) => i.isPaid || i.status === "PAID")) {
         setPaymentStatus("PAID");
       }
@@ -92,7 +88,6 @@ function WaiterBill({ tableId, sessionId: initialSessionId }) {
     }
   }, [sessionId, loadBillData]);
 
-  // Financial calculations
   const billCalculations = useMemo(() => {
     const subtotal = orders.reduce(
       (sum, item) =>
@@ -101,7 +96,7 @@ function WaiterBill({ tableId, sessionId: initialSessionId }) {
       0
     );
 
-    const vat = subtotal * 0.13; // 13% VAT
+    const vat = subtotal * 0.13;
     const grandTotal = subtotal + vat;
 
     return { subtotal, vat, grandTotal };
@@ -111,7 +106,6 @@ function WaiterBill({ tableId, sessionId: initialSessionId }) {
     window.print();
   };
 
-  // Waiter Cash Settlement Handler
   const handleCashPayment = async () => {
     if (!sessionId) return;
     const confirmCash = window.confirm(
@@ -131,14 +125,13 @@ function WaiterBill({ tableId, sessionId: initialSessionId }) {
       alert("Payment recorded successfully.");
     } catch (err) {
       console.error("Cash payment processing failed:", err);
-      // Fallback local update if cash endpoint varies
+
       setPaymentStatus("PAID");
     } finally {
       setLoading(false);
     }
   };
 
-  // eSewa Form submission helper
   const postToEsewa = (url, params) => {
     const form = document.createElement("form");
     form.setAttribute("method", "POST");
@@ -247,7 +240,7 @@ function WaiterBill({ tableId, sessionId: initialSessionId }) {
 
   return (
     <div className="bill-container">
-      {/* Printable Receipt Area */}
+
       <div className="bill-card" id="printable-bill">
         <div className="bill-header">
           <h1 className="restaurant-name">Gourmet Haven</h1>
@@ -269,7 +262,6 @@ function WaiterBill({ tableId, sessionId: initialSessionId }) {
 
         <hr className="divider" />
 
-        {/* Order Items Table */}
         <div className="bill-items">
           <h3>Order Summary</h3>
           {orders.length === 0 ? (
@@ -305,7 +297,6 @@ function WaiterBill({ tableId, sessionId: initialSessionId }) {
 
         <hr className="divider" />
 
-        {/* Financial Calculation Summary */}
         <div className="bill-summary">
           <div className="summary-row">
             <span>Subtotal</span>
@@ -323,7 +314,6 @@ function WaiterBill({ tableId, sessionId: initialSessionId }) {
           </div>
         </div>
 
-        {/* Status Badge */}
         <div className="bill-footer">
           <span className={`payment-status ${paymentStatus.toLowerCase()}`}>
             Status: {paymentStatus}
@@ -332,7 +322,6 @@ function WaiterBill({ tableId, sessionId: initialSessionId }) {
         </div>
       </div>
 
-      {/* Staff Actions */}
       <div className="bill-actions print-hide">
         <button className="btn-secondary" onClick={handlePrint}>
           🖨️ Print Receipt

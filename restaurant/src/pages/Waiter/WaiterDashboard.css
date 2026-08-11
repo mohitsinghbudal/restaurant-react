@@ -158,6 +158,14 @@
   cursor: not-allowed;
 }
 
+.btn-secondary {
+  border: 2px solid transparent; /* Reserve layout space */
+  transition: border-color 0.2s ease; /* Smooth hover effect */
+}
+
+.btn-secondary:hover {
+  border-color: gold;
+}
 /* ===========================
    ASSIGNED TABLE GRID
 =========================== */

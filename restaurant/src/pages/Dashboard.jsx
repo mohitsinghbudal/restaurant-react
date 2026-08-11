@@ -25,7 +25,7 @@ function Dashboard() {
 
   return (
     <div className="dashboard">
-      <HeroSection/>
+      <HeroSection />
 
       <div className="dashboard-cards">
         <div className="dashboard-card">
@@ -78,9 +78,8 @@ function Dashboard() {
           </ul>
         </div>
 
-        
       </div>
-      <Footer/>
+      <Footer />
     </div>
   );
 }

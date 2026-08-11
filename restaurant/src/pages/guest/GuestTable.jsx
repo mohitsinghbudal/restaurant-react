@@ -11,7 +11,7 @@ function GuestTable() {
           Click here to redirect to Login Page
         </p>
       </div>
-    
+
   )
 }
 

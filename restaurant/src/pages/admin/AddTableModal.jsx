@@ -17,7 +17,6 @@ function AddTableModal({ open, onClose, refresh }) {
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
 
-  // Reset state whenever modal opens/closes
   useEffect(() => {
     if (open) {
       setForm(initialForm);
@@ -35,13 +34,12 @@ function AddTableModal({ open, onClose, refresh }) {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent full page reload on form submit
+    e.preventDefault();
     if (loading) return;
 
     const parsedTableNo = Number(form.tableNo);
     const parsedCapacity = Number(form.capacity);
 
-    // Validation
     if (!String(form.tableNo).trim() || parsedTableNo <= 0) {
       showToast("error", "Please enter a valid table number greater than 0.");
       return;
@@ -86,9 +84,9 @@ function AddTableModal({ open, onClose, refresh }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div 
-        className="table-modal" 
-        onClick={(e) => e.stopPropagation()} /* Prevents closing when clicking inside content */
+      <div
+        className="table-modal"
+        onClick={(e) => e.stopPropagation()}
       >
         <h2>Add New Table</h2>
 

@@ -12,10 +12,8 @@ import QRModal from "./QRModal";
 function AdminTable() {
   const baseApi = api();
 
-  // Get user session data safely
   const { token, roles = [] } = GetCurrUser() || {};
 
-  // Flexible role check (supports both string names and numeric IDs if needed)
   const userRoles = Array.isArray(roles) ? roles : [];
   const isAdmin = userRoles.includes("Admin") || userRoles.includes(5);
   const isManager = userRoles.includes("Manager") || userRoles.includes(3);
@@ -64,12 +62,11 @@ function AdminTable() {
     fetchTables();
   }, [fetchTables]);
 
-  // Optimized filtering logic
   const filteredTables = useMemo(() => {
     return tables.filter((table) => {
       const tableNoStr = table.tableNo ? table.tableNo.toString().toLowerCase() : "";
       const query = search.trim().toLowerCase();
-      
+
       const matchesSearch = tableNoStr.includes(query);
       const matchesStatus =
         statusFilter === "All" ||
@@ -103,7 +100,6 @@ function AdminTable() {
         </div>
       </div>
 
-      {/* Overview Metric Cards */}
       <div className="table-cards">
         <div className="table-card">
           <h3>Total Tables</h3>
@@ -132,7 +128,6 @@ function AdminTable() {
         </div>
       </div>
 
-      {/* Toolbar / Search & Filter */}
       <div className="table-toolbar">
         <input
           type="text"
@@ -154,7 +149,6 @@ function AdminTable() {
         </select>
       </div>
 
-      {/* Table Data View */}
       <div className="table-wrapper">
         {loading ? (
           <div className="no-data">Loading tables...</div>
@@ -241,7 +235,6 @@ function AdminTable() {
         )}
       </div>
 
-      {/* Modals */}
       {canManageTables && (
         <>
           <AddTableModal

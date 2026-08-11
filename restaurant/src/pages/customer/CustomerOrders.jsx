@@ -16,7 +16,7 @@ function CustomerOrders() {
   const [sessionId, setSessionId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [cancellingId, setCancellingId] = useState(null);
-  const TAX_RATE = 0.13; // 13% Tax / VAT
+  const TAX_RATE = 0.13;
 
   const authHeaders = useMemo(
     () => ({
@@ -25,7 +25,6 @@ function CustomerOrders() {
     [token]
   );
 
-  // 1. Fetch Dining Session ID
   const fetchSessionId = useCallback(async () => {
     try {
       const res = await axios.get(`${baseUrl}/Dinning/my-id`, {
@@ -41,7 +40,6 @@ function CustomerOrders() {
     }
   }, [baseUrl, authHeaders]);
 
-  // 2. Fetch Customer Orders (Only triggered when sessionId is valid)
   const fetchOrders = useCallback(async () => {
     if (!sessionId) return;
 
@@ -61,7 +59,6 @@ function CustomerOrders() {
     }
   }, [baseUrl, userId, sessionId, authHeaders]);
 
-  // 3. Fetch Menu Items (fallback for images and details)
   const fetchMenuItems = useCallback(async () => {
     try {
       const res = await axios.get(`${baseUrl}/Menu/get-all`, {
@@ -83,14 +80,12 @@ function CustomerOrders() {
     }
   }, [baseUrl, authHeaders]);
 
-  // Initial load: Fetch session ID first
   useEffect(() => {
     if (token && userId) {
       fetchSessionId();
     }
   }, [token, userId, fetchSessionId]);
 
-  // Secondary load: Fetch orders & menu once sessionId is set
   useEffect(() => {
     const loadAllData = async () => {
       if (!sessionId) return;
@@ -105,7 +100,6 @@ function CustomerOrders() {
     }
   }, [token, sessionId, fetchOrders, fetchMenuItems]);
 
-  // Fast menu lookup map
   const menuMap = useMemo(() => {
     const map = {};
     menuItems.forEach((item) => {
@@ -116,7 +110,6 @@ function CustomerOrders() {
     return map;
   }, [menuItems]);
 
-  // Map and hydrate order details
   const hydratedOrders = useMemo(() => {
     return orders.map((order) => {
       const matchedMenu = menuMap[order.menuId] || {};
@@ -159,7 +152,6 @@ function CustomerOrders() {
     });
   }, [orders, menuMap]);
 
-  // Financial Calculations (excludes cancelled items)
   const activeOrders = useMemo(
     () => hydratedOrders.filter((o) => o.status.toLowerCase() !== "cancelled"),
     [hydratedOrders]
@@ -172,7 +164,6 @@ function CustomerOrders() {
   const tax = useMemo(() => subtotal * TAX_RATE, [subtotal]);
   const grandTotal = useMemo(() => subtotal + tax, [subtotal, tax]);
 
-  // Handle Order Cancellation via Query Param: PUT /api/Order/cancel?OrderId={id}
   const handleCancelOrder = async (orderItem) => {
     const targetOrderId = orderItem.orderId;
     if (!targetOrderId) return;
@@ -182,14 +173,13 @@ function CustomerOrders() {
     try {
       await axios.put(
         `${baseUrl}/Order/cancel`,
-        {}, // Empty body
+        {},
         {
-          params: { OrderId: targetOrderId }, // Passes OrderId as query param
+          params: { OrderId: targetOrderId },
           headers: authHeaders,
         }
       );
 
-      // Optimistically update status in local state
       setOrders((prevOrders) =>
         prevOrders.map((ord) =>
           (ord.orderId || ord.id) === targetOrderId
@@ -210,7 +200,6 @@ function CustomerOrders() {
     }
   };
 
-  // Status Badge Helper
   const getStatusBadgeClass = (status) => {
     switch (status?.toLowerCase()) {
       case "served":
@@ -227,7 +216,7 @@ function CustomerOrders() {
   };
 
   const handleNavigateToBill = () => {
-    navigate("/bills", { state: { sessionId } });
+    navigate("/customer-bill", { state: { sessionId } });
   };
 
   if (loading) {

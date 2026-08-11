@@ -15,7 +15,7 @@ function DeleteTableModal({ open, table, onClose, refresh }) {
     setLoading(true);
 
     try {
-      // Correct URL matching [HttpDelete] with [FromQuery] int tableId
+
       await axios.delete(`${baseApi}/Table`, {
         params: { tableId: table.tableId },
         headers: { Authorization: token ? `Bearer ${token}` : "" },

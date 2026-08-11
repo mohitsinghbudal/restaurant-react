@@ -8,11 +8,10 @@ function ReportMgmt() {
     const baseURL = api();
     const { token } = GetCurrUser();
 
-    // Default dates (e.g., start of current month to today)
     const getInitialDates = () => {
         const today = new Date();
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-        
+
         return {
             start: firstDay.toISOString().split("T")[0],
             end: today.toISOString().split("T")[0]
@@ -28,7 +27,6 @@ function ReportMgmt() {
     const [downloading, setDownloading] = useState(false);
     const [error, setError] = useState(null);
 
-    // Dynamic states matching backend models
     const [financialSummary, setFinancialSummary] = useState({
         totalRevenue: 0,
         totalOrders: 0,
@@ -38,14 +36,12 @@ function ReportMgmt() {
     const [topSellingItems, setTopSellingItems] = useState([]);
     const [topCustomers, setTopCustomers] = useState([]);
 
-    // Configure request options
     const authConfig = React.useMemo(() => ({
         headers: {
             Authorization: `Bearer ${token}`
         }
     }), [token]);
 
-    // Calculate dates based on preset selection (Daily, Weekly, Monthly, Yearly)
     const handlePresetChange = (type) => {
         setReportType(type);
         const today = new Date();
@@ -72,12 +68,10 @@ function ReportMgmt() {
         setEndDate(today.toISOString().split("T")[0]);
     };
 
-    // Fetch dashboard report data from backend
     const fetchDashboardData = useCallback(async () => {
         setLoading(true);
         setError(null);
 
-        // Prepare query parameters
         const params = { startDate, endDate };
 
         try {
@@ -86,7 +80,6 @@ function ReportMgmt() {
                 axios.get(`${baseURL}/Report/top-selling-item`, { ...authConfig, params }),
                 axios.get(`${baseURL}/Report/top-customer`, { ...authConfig, params })
             ]);
-
 
             console.log(financialRes);
             setFinancialSummary(financialRes.data?.response || {
@@ -109,7 +102,6 @@ function ReportMgmt() {
         fetchDashboardData();
     }, [fetchDashboardData]);
 
-    // Handle Excel Export download
     const handleExportExcel = async () => {
         try {
             setDownloading(true);
@@ -171,8 +163,8 @@ function ReportMgmt() {
                     <p>Restaurant business insights and performance metrics.</p>
                 </div>
 
-                <button 
-                    className="download-btn" 
+                <button
+                    className="download-btn"
                     onClick={handleExportExcel}
                     disabled={downloading}
                 >
@@ -182,7 +174,6 @@ function ReportMgmt() {
 
             {error && <div className="error-message">{error}</div>}
 
-            {/* Filter Toolbar */}
             <div className="report-toolbar">
                 <div className="filter-group">
                     <label>Period Preset:</label>
@@ -200,30 +191,30 @@ function ReportMgmt() {
 
                 <div className="filter-group">
                     <label>From:</label>
-                    <input 
-                        type="date" 
-                        value={startDate} 
+                    <input
+                        type="date"
+                        value={startDate}
                         onChange={(e) => {
                             setStartDate(e.target.value);
                             setReportType("Custom");
-                        }} 
+                        }}
                     />
                 </div>
 
                 <div className="filter-group">
                     <label>To:</label>
-                    <input 
-                        type="date" 
-                        value={endDate} 
+                    <input
+                        type="date"
+                        value={endDate}
                         onChange={(e) => {
                             setEndDate(e.target.value);
                             setReportType("Custom");
-                        }} 
+                        }}
                     />
                 </div>
 
-                <button 
-                    className="generate-btn" 
+                <button
+                    className="generate-btn"
                     onClick={fetchDashboardData}
                     disabled={loading}
                 >
@@ -231,7 +222,6 @@ function ReportMgmt() {
                 </button>
             </div>
 
-            {/* Financial Cards */}
             <div className="report-cards">
                 {cards.map((card, index) => (
                     <div className={`report-card ${card.color}`} key={index}>
@@ -241,7 +231,6 @@ function ReportMgmt() {
                 ))}
             </div>
 
-            {/* Top Selling Items Table */}
             <div className="report-table">
                 <h2>Top Selling Menu Items</h2>
                 <table>
@@ -270,7 +259,6 @@ function ReportMgmt() {
                 </table>
             </div>
 
-            {/* Top Customers Table */}
             <div className="report-table" style={{ marginTop: "2rem" }}>
                 <h2>Top Customers</h2>
                 <table>

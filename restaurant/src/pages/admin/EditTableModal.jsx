@@ -16,7 +16,6 @@ function EditTableModal({ open, table, onClose, refresh }) {
 
   const [loading, setLoading] = useState(false);
 
-  // Populate state whenever target table changes or modal opens
   useEffect(() => {
     if (open && table) {
       setForm({
@@ -27,7 +26,6 @@ function EditTableModal({ open, table, onClose, refresh }) {
     }
   }, [open, table]);
 
-  // Close modal on Escape key press
   const handleKeyDown = useCallback(
     (e) => {
       if (e.key === "Escape" && !loading) {
@@ -63,7 +61,6 @@ function EditTableModal({ open, table, onClose, refresh }) {
     const parsedTableNo = Number(form.tableNo);
     const parsedCapacity = Number(form.capacity);
 
-    // Form Validations
     if (!String(form.tableNo).trim() || parsedTableNo <= 0) {
       showToast("error", "Please enter a valid table number greater than 0.");
       return;
@@ -91,7 +88,7 @@ function EditTableModal({ open, table, onClose, refresh }) {
             Accept: "application/octet-stream",
             Authorization: token ? `Bearer ${token}` : "",
           },
-          responseType: "arraybuffer", // For endpoints returning octet-stream byte arrays
+          responseType: "arraybuffer",
         }
       );
 
@@ -101,7 +98,6 @@ function EditTableModal({ open, table, onClose, refresh }) {
     } catch (error) {
       let errorMsg = "Failed to update table.";
 
-      // Handle binary response payload on server errors
       if (error.response?.data) {
         if (error.response.data instanceof ArrayBuffer) {
           try {
@@ -124,9 +120,9 @@ function EditTableModal({ open, table, onClose, refresh }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div 
+      <div
         className="table-modal"
-        onClick={(e) => e.stopPropagation()} // Stop click propagation to backdrop
+        onClick={(e) => e.stopPropagation()}
       >
         <h2>Edit Table T-{table.tableNo}</h2>
 

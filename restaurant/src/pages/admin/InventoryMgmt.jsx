@@ -16,19 +16,15 @@ function InventoryMgmt() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Pagination State
   const [page, setPage] = useState(1);
-  const pageSize = 10; // Can be converted to state if you want a dynamic dropdown
+  const pageSize = 10;
 
-  // Search & Filter state
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState("ALL"); // ALL | LOW_STOCK | IN_STOCK | DELETED
+  const [filterType, setFilterType] = useState("ALL");
 
-  // Edit State
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
 
-  // Add Modal State
   const [showAddModal, setShowAddModal] = useState(false);
   const [newItemData, setNewItemData] = useState({
     itemName: "",
@@ -66,12 +62,12 @@ function InventoryMgmt() {
 
   const fetchInventory = useCallback(async () => {
     try {
-      // Pass the page parameter to backend
+
       const res = await axios.get(
         `${baseUrl}/Inventory/admin?page=${page}&pageSize=${pageSize}`,
         authHeaders
       );
-      
+
       if (res.data && Array.isArray(res.data.items)) {
         setInventoryItems(res.data.items);
       } else if (Array.isArray(res.data)) {
@@ -85,23 +81,12 @@ function InventoryMgmt() {
     }
   }, [baseUrl, authHeaders, page, pageSize]);
 
-  // const loadData = useCallback(async () => {
-  //   setLoading(true);
-  //   setError(null);
-  //   await Promise.all([fetchInventory(), fetchUnits()]);
-  //   setLoading(false);
-  // }, [fetchInventory, fetchUnits]);
-
-  // useEffect(() => {
-  //   loadData();
-  // }, [loadData]);
   const initialLoad = useCallback(async () => {
   setLoading(true);
   setError(null);
   await Promise.all([fetchUnits(), fetchInventory()]);
   setLoading(false);
 }, [fetchUnits, fetchInventory]);
-
 
   useEffect(()=>{
     initialLoad();
@@ -114,7 +99,7 @@ function InventoryMgmt() {
     }
     fetchInventory();
   },[page, fetchInventory]);
-  // Handlers
+
   const handleNextPage = () => {
     if (inventoryItems.length === pageSize) {
       setPage((prev) => prev + 1);
@@ -179,7 +164,6 @@ function InventoryMgmt() {
     }
   };
 
-  // Metrics
   const stats = useMemo(() => {
     const activeItems = inventoryItems.filter((i) => !i.isDeleted);
     const deletedItems = inventoryItems.filter((i) => i.isDeleted);
@@ -199,7 +183,6 @@ function InventoryMgmt() {
     return { totalCount, lowStockCount, deletedCount, totalValuation };
   }, [inventoryItems]);
 
-  // Filtered Items Logic
   const filteredItems = useMemo(() => {
     return inventoryItems.filter((item) => {
       const matchesSearch = (item.itemName || "")
@@ -233,7 +216,7 @@ function InventoryMgmt() {
 
   return (
     <div className="inventory-container">
-      {/* Header */}
+
       <div className="inventory-header">
         <div>
           <h1>Inventory Management</h1>
@@ -249,7 +232,6 @@ function InventoryMgmt() {
         </div>
       </div>
 
-      {/* Metrics */}
       <div className="metrics-grid">
         <div className="metric-card">
           <span className="metric-label">Page Active Items</span>
@@ -274,7 +256,6 @@ function InventoryMgmt() {
         </div>
       </div>
 
-      {/* Toolbar */}
       <div className="inventory-toolbar">
         <input
           type="text"
@@ -314,7 +295,6 @@ function InventoryMgmt() {
 
       {error && <div className="error-message">{error}</div>}
 
-      {/* Table */}
       <div className="table-wrapper">
         <table className="inventory-table">
           <thead>
@@ -494,7 +474,6 @@ function InventoryMgmt() {
         </table>
       </div>
 
-      {/* Pagination Bar */}
 <div className="pagination-bar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1rem" }}>
   <button
     type="button"
@@ -517,7 +496,6 @@ function InventoryMgmt() {
   </button>
 </div>
 
-      {/* Add Modal */}
       {showAddModal && (
         <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>

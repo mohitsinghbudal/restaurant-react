@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import GetCurrUser from "../../util/GetCurrUser";
-import getApiUrl from "../../util/api";
+import api from "../../util/api";
 import { showToast } from "../../components/showToast";
 import "./UserMgmt.css";
 
 const apiClient = axios.create({
-  baseURL: getApiUrl(),
+  baseURL: api(),
   headers: { "Content-Type": "application/json" },
 });
 
-// Dynamic Interceptor: Fetches fresh token per request from sessionStorage
 apiClient.interceptors.request.use((config) => {
   const { token } = GetCurrUser();
   if (token) {
@@ -35,7 +34,6 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Numeric IDs matching backend database Role IDs
 const AVAILABLE_ROLES = [
   { id: 1, label: "Customer" },
   { id: 2, label: "Waiter" },
@@ -66,26 +64,21 @@ function UserMgmt() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Search & Filter State
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("All Roles");
 
-  // Modal State ('add' | 'view' | 'edit' | 'roles' | null)
   const [modalType, setModalType] = useState(null);
-  const [selectedItem, setSelectedItem] = useState(null); // Stores full item: { user: {...}, roles: [...] }
+  const [selectedItem, setSelectedItem] = useState(null);
   const [formData, setFormData] = useState(initialFormState);
 
-  // Array of numeric Role IDs selected in Role Modal (e.g. [1, 5])
   const [selectedRoleIds, setSelectedRoleIds] = useState([]);
 
-  // Helper to format user full name
   const formatFullName = (u) => {
     if (!u) return "N/A";
     const parts = [u.firstName, u.middleName, u.lastName].filter(Boolean);
     return parts.join(" ") || "N/A";
   };
 
-  // Helper to format roles list for display table
   const getRoleLabel = (rolesData) => {
     if (!rolesData || !Array.isArray(rolesData) || rolesData.length === 0) {
       return "N/A";
@@ -100,7 +93,6 @@ function UserMgmt() {
       .join(", ");
   };
 
-  // Helper to check if item has a specific role by numeric ID or Name
   const userHasRole = (item, roleTarget) => {
     if (!item?.roles || !Array.isArray(item.roles)) return false;
     return item.roles.some((r) => {
@@ -138,7 +130,6 @@ function UserMgmt() {
     }
   };
 
-  // Modal Open Handlers
   const handleOpenAdd = () => {
     setFormData({
       ...initialFormState,
@@ -178,17 +169,16 @@ function UserMgmt() {
   const handleOpenRoleModal = (item) => {
     setSelectedItem(item);
 
-    // Map existing user roles to their corresponding numeric IDs
     const userRoleIds = Array.isArray(item.roles)
       ? item.roles
-          .map((r) => {
-            if (typeof r === "object") return Number(r.roleId || r.id);
-            const match = AVAILABLE_ROLES.find(
-              (ar) => ar.label.toLowerCase() === String(r).toLowerCase() || String(ar.id) === String(r)
-            );
-            return match ? match.id : Number(r) || null;
-          })
-          .filter(Boolean)
+        .map((r) => {
+          if (typeof r === "object") return Number(r.roleId || r.id);
+          const match = AVAILABLE_ROLES.find(
+            (ar) => ar.label.toLowerCase() === String(r).toLowerCase() || String(ar.id) === String(r)
+          );
+          return match ? match.id : Number(r) || null;
+        })
+        .filter(Boolean)
       : [];
 
     setSelectedRoleIds(userRoleIds);
@@ -202,14 +192,12 @@ function UserMgmt() {
     setFormData(initialFormState);
   };
 
-  // Toggle role selection in Role Modal using numeric ID
   const handleRoleToggle = (roleId) => {
     setSelectedRoleIds((prev) =>
       prev.includes(roleId) ? prev.filter((id) => id !== roleId) : [...prev, roleId]
     );
   };
 
-  // Profile Form Submit (Add / Edit Profile)
   const handleSubmitProfile = async (e) => {
     e.preventDefault();
     try {
@@ -234,16 +222,17 @@ function UserMgmt() {
     }
   };
 
-  // Dedicated Roles Form Submit matching AssignRolesDto (userId, roleIds)
   const handleSaveRoles = async (e) => {
     e.preventDefault();
     if (!selectedItem?.user) return;
 
     try {
-      await apiClient.put(`/User/update-roles`, {
+      const res = await apiClient.put(`/User/update-roles`, {
         userId: selectedItem.user.userId,
-        roleIds: selectedRoleIds, 
+        roleIds: selectedRoleIds,
       });
+
+      console.log(res.data);
 
       showToast("success", `Roles updated for ${selectedItem.user.firstName || "user"}!`);
       fetchUsers();
@@ -272,7 +261,7 @@ function UserMgmt() {
 
   return (
     <div className="user-page">
-      {/* Header */}
+
       <div className="page-header">
         <div>
           <h1>User Management</h1>
@@ -288,7 +277,6 @@ function UserMgmt() {
 
       {error && <div className="error-message">{error}</div>}
 
-      {/* Dynamic Summary Cards */}
       <div className="stats">
         <div className="card">
           <h3>Total Users</h3>
@@ -308,7 +296,6 @@ function UserMgmt() {
         </div>
       </div>
 
-      {/* Toolbar Filters */}
       <div className="toolbar">
         <input
           type="text"
@@ -326,7 +313,6 @@ function UserMgmt() {
         </select>
       </div>
 
-      {/* Data Table */}
       <div className="table-container">
         {loading ? (
           <div style={{ padding: "40px", textAlign: "center", color: "#777" }}>Loading users...</div>
@@ -389,12 +375,10 @@ function UserMgmt() {
         )}
       </div>
 
-      {/* Modal Overlay */}
       {modalType && (
         <div className="modal-overlay" onClick={handleCloseModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            
-            {/* 1. View Details Modal */}
+
             {modalType === "view" && selectedItem && (
               <div>
                 <h2>User Profile Details</h2>
@@ -417,7 +401,6 @@ function UserMgmt() {
               </div>
             )}
 
-            {/* 2. Add / Edit Profile Modal */}
             {(modalType === "add" || modalType === "edit") && (
               <div>
                 <h2>{modalType === "add" ? "Add New User" : "Edit User Profile"}</h2>
@@ -505,7 +488,6 @@ function UserMgmt() {
               </div>
             )}
 
-            {/* 3. Manage Roles Modal */}
             {modalType === "roles" && selectedItem && (
               <div>
                 <h2>Manage Roles</h2>
