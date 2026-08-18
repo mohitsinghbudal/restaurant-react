@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 function Menu() {
   const [menuData, setMenuData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [addingToCartId, setAddingToCartId] = useState(null); // Tracks individual item submission state
+  const [addingToCartId, setAddingToCartId] = useState(null);
   const [error, setError] = useState(null);
 
   const [search, setSearch] = useState("");
@@ -30,13 +30,11 @@ function Menu() {
     try {
       const authHeaders = { Authorization: token ? `Bearer ${token}` : "" };
 
-      // 1. Fetch Menu Items
       const res = await axios.get(`${baseUrl}/Menu/get-all`, {
         headers: authHeaders,
       });
       setMenuData(res.data.items || res.data || []);
 
-      // 2. Fetch User Cart from Server on load / re-sync
       if (userId && token) {
         const cartRes = await axios.get(`${baseUrl}/Cart`, {
           params: { userId: Number(userId) },
@@ -106,7 +104,7 @@ function Menu() {
     };
 
     try {
-      setAddingToCartId(item.menuId); // Only mark this specific item as submitting
+      setAddingToCartId(item.menuId);
 
       await axios.post(`${baseUrl}/Cart`, payload, {
         headers: {
@@ -117,10 +115,8 @@ function Menu() {
 
       showToast("success", "Item added to cart successfully!");
 
-      // Reset the selected item quantity selector back to 1
       setQuantities((prev) => ({ ...prev, [item.menuId]: 1 }));
 
-      // Fetch fresh cart state without toggling main loading state
       await fetchMenuAndCart();
     } catch (err) {
       console.error(err);

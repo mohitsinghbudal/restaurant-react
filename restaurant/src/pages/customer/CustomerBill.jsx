@@ -4,7 +4,6 @@ import api from "../../util/api";
 import GetCurrUser from "../../util/GetcurrUser";
 import "./CustomerBill.css";
 
-// Helper function to submit eSewa POST form with DOM cleanup
 const postToEsewa = (url, params) => {
   const form = document.createElement("form");
   form.setAttribute("method", "POST");
@@ -21,7 +20,6 @@ const postToEsewa = (url, params) => {
   document.body.appendChild(form);
   form.submit();
 
-  // Clean up dynamic DOM elements after redirection trigger
   setTimeout(() => {
     if (document.body.contains(form)) {
       document.body.removeChild(form);
@@ -37,12 +35,11 @@ function CustomerBill() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [paymentStatus, setPaymentStatus] = useState("UNPAID"); // UNPAID | CASH_REQUESTED | PAID
+  const [paymentStatus, setPaymentStatus] = useState("UNPAID");
   const [sessionId, setSessionId] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [bill, setBill] = useState(null);
-
-  // Retrieve Bill details (BillNo, Invoice, etc.)
+  const [paid, setPaid] = useState(false);
   const fetchBill = useCallback(
     async (sId) => {
       if (!sId) return;
@@ -68,7 +65,6 @@ function CustomerBill() {
       setError(null);
 
       try {
-        // 1. Fetch Active Dining Session
         const sessionRes = await axios.get(`${baseUrl}/Dinning/my-id`, {
           headers: { Authorization: `Bearer ${activeToken}` },
         });
@@ -83,10 +79,8 @@ function CustomerBill() {
         console.log("Fetched Session ID:", fetchedSessionId);
 
         if (fetchedSessionId) {
-          // Fetch existing bill details
           fetchBill(fetchedSessionId);
 
-          // 2. Fetch Itemized Orders for Active Session
           const billRes = await axios.get(
             `${baseUrl}/Order/sessionId/${fetchedSessionId}`,
             {
@@ -97,7 +91,6 @@ function CustomerBill() {
           if (isMounted) {
             const rawData = billRes.data;
 
-            // Safe array normalization to prevent orders.reduce / orders.filter runtime errors
             if (Array.isArray(rawData)) {
               setOrders(rawData);
             } else if (Array.isArray(rawData?.data)) {
@@ -133,7 +126,6 @@ function CustomerBill() {
     };
   }, [baseUrl, activeToken, fetchBill]);
 
-  // Safe filter for COMPLETED orders
   const completedOrders = useMemo(() => {
     const safeOrders = Array.isArray(orders) ? orders : [];
     return safeOrders.filter(
@@ -141,7 +133,6 @@ function CustomerBill() {
     );
   }, [orders]);
 
-  // Safe financial calculations based ONLY on completed items
   const billCalculations = useMemo(() => {
     const safeCompletedOrders = Array.isArray(completedOrders)
       ? completedOrders
@@ -163,7 +154,6 @@ function CustomerBill() {
     window.print();
   };
 
-  // Cash Payment Handler
   const handleCashPayment = async () => {
     if (isProcessing) return;
     setIsProcessing(true);
@@ -188,13 +178,16 @@ function CustomerBill() {
         paidBy: userId,
       };
 
-      await axios.post(`${baseUrl}/Bill/pay/cash`, cashPayload, {
+      const res = await axios.post(`${baseUrl}/Bill/pay/cash`, cashPayload, {
         headers: {
           Authorization: `Bearer ${activeToken}`,
           "Content-Type": "application/json",
         },
       });
 
+      if(!!res){
+        setBill(true);
+      }
       setPaymentStatus("CASH_REQUESTED");
     } catch (err) {
       console.error("Cash payment request error:", err);
@@ -210,7 +203,6 @@ function CustomerBill() {
     }
   };
 
-  // eSewa Payment Handler
   const payEsewa = async () => {
     if (isProcessing) return;
     setIsProcessing(true);
@@ -282,9 +274,16 @@ function CustomerBill() {
     }
   };
 
+  if(!!paid){
+    return <>
+    <div>
+      <h1>Bill is Paid </h1>
+    </div>
+    </>
+  }
   return (
     <div className="bill-container">
-      {/* Loading State */}
+
       {loading && (
         <div className="bill-card bill-state-box">
           <h2>Generating Your Bill...</h2>
@@ -292,7 +291,6 @@ function CustomerBill() {
         </div>
       )}
 
-      {/* Empty / No Session State */}
       {!loading && !sessionId && (
         <div className="bill-card bill-state-box">
           <h2>No Active Dining Session</h2>
@@ -301,7 +299,6 @@ function CustomerBill() {
         </div>
       )}
 
-      {/* Active Bill Display */}
       {!loading && sessionId && (
         <>
           <div className="bill-card" id="printable-bill">
@@ -323,7 +320,6 @@ function CustomerBill() {
 
             <hr className="divider" />
 
-            {/* Itemized Order Table */}
             <div className="bill-items">
               <h3>Order Details</h3>
               {completedOrders.length === 0 ? (
@@ -366,7 +362,6 @@ function CustomerBill() {
 
             <hr className="divider" />
 
-            {/* Financial Breakdown */}
             <div className="bill-summary">
               <div className="summary-row">
                 <span>Subtotal</span>
@@ -382,7 +377,6 @@ function CustomerBill() {
               </div>
             </div>
 
-            {/* Payment Status Badge */}
             <div className="bill-footer">
               <span className={`payment-status ${paymentStatus.toLowerCase()}`}>
                 Status: {paymentStatus.replace("_", " ")}
@@ -396,7 +390,6 @@ function CustomerBill() {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="bill-actions print-hide">
             <button
               className="btn-secondary"

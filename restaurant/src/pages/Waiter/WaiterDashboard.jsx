@@ -9,7 +9,7 @@ import "./WaiterDashboard.css";
 function WaiterDashboard() {
   const navigate = useNavigate();
   const baseUrl = api();
-  const { token } = GetCurrUser();
+  const { token, user } = GetCurrUser();
 
   const [table, setTable] = useState(null);
   const [sessionId, setSessionId] = useState(null);
@@ -18,7 +18,6 @@ function WaiterDashboard() {
   const [loading, setLoading] = useState(true);
   const [ordersLoading, setOrdersLoading] = useState(false);
 
-  // Modals & Selected Order State
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -32,7 +31,6 @@ function WaiterDashboard() {
     [token]
   );
 
-  // Fetch Session ID
   const fetchSessionId = useCallback(
     async (tableId) => {
       if (!token || !tableId) return null;
@@ -60,7 +58,6 @@ function WaiterDashboard() {
     [baseUrl, token, authHeaders]
   );
 
-  // Fetch Assigned Table
   const fetchTable = useCallback(async () => {
     if (!token) return null;
     try {
@@ -78,7 +75,6 @@ function WaiterDashboard() {
     }
   }, [baseUrl, token, authHeaders]);
 
-  // Fetch Menu Items
   const fetchMenuItems = useCallback(async () => {
     if (!token) return;
     try {
@@ -94,7 +90,6 @@ function WaiterDashboard() {
     }
   }, [baseUrl, token, authHeaders]);
 
-  // Fetch Active Orders
   const fetchOrders = useCallback(
     async (currentSessionId) => {
       const activeSession = currentSessionId || sessionId;
@@ -120,7 +115,6 @@ function WaiterDashboard() {
     [baseUrl, token, sessionId, authHeaders]
   );
 
-  // Load Data
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -140,7 +134,6 @@ function WaiterDashboard() {
     loadData();
   }, [token, fetchMenuItems, fetchTable, fetchSessionId, fetchOrders]);
 
-  // Menu Lookup Map
   const menuMap = useMemo(() => {
     const map = {};
     menuItems.forEach((item) => {
@@ -149,7 +142,6 @@ function WaiterDashboard() {
     return map;
   }, [menuItems]);
 
-  // Hydrate Orders
   const hydratedOrders = useMemo(() => {
     return orders.map((order) => {
       const matchedMenu = menuMap[order.menuId] || {};
@@ -172,7 +164,6 @@ function WaiterDashboard() {
     });
   }, [orders, menuMap]);
 
-  // Check if any order is pending/in progress
   const hasPendingOrders = useMemo(() => {
     return hydratedOrders.some((order) => {
       const status = (order.status || "").toLowerCase();
@@ -180,7 +171,6 @@ function WaiterDashboard() {
     });
   }, [hydratedOrders]);
 
-  // Bill Eligibility: Returns true ONLY IF all orders are either "completed", "served", "cancelled", or "rejected"
   const isBillEligible = useMemo(() => {
     if (hydratedOrders.length === 0) return false;
     return hydratedOrders.every((order) => {
@@ -194,7 +184,6 @@ function WaiterDashboard() {
     });
   }, [hydratedOrders]);
 
-  // Clean Table Eligibility: All orders must be completed, served, cancelled, or rejected
   const isCleanTableEligible = useMemo(() => {
     if (hydratedOrders.length === 0) return false;
     return hydratedOrders.every((order) => {
@@ -208,7 +197,58 @@ function WaiterDashboard() {
     });
   }, [hydratedOrders]);
 
-  // Handle Bill Calculation
+  const handleToggleStatus = async () => {
+    if (!table?.tableId) return;
+
+    const newStatus = table.status === "Occupied" ? "Available" : "Occupied";
+
+    try {
+      await axios.put(
+        `${baseUrl}/Table/update-status`,
+        { tableId: table.tableId, status: newStatus },
+        { headers: authHeaders }
+      );
+      showToast("success", `Table status updated to ${newStatus}`);
+      fetchTable();
+    } catch (error) {
+      console.error("Error updating table status:", error);
+      showToast(
+        "error",
+        error.response?.data?.message || "Failed to update table status."
+      );
+    }
+  };
+
+  const handleFreeTable = async () => {
+    if (!table) return;
+
+    const currentUserId = user?.id || user?.userId || table.waiterId || 0;
+
+    const payload = {
+      status: "Available",
+      tableNo: Number(table.tableNo) || 0,
+      updatedAt: new Date().toISOString(),
+      createdBy: table.createdBy || currentUserId,
+      updatedBy: currentUserId,
+      waiterId: table.waiterId || currentUserId,
+    };
+
+    try {
+      await axios.post(`${baseUrl}/Table/free-table`, payload, {
+        headers: authHeaders,
+      });
+
+      showToast("success", "Table is now marked as Free / Available!");
+      fetchTable();
+    } catch (error) {
+      console.error("Error freeing table:", error);
+      showToast(
+        "error",
+        error.response?.data?.message || "Failed to mark table as free."
+      );
+    }
+  };
+
   const handleGetBill = async () => {
     if (!sessionId || !isBillEligible) return;
 
@@ -228,12 +268,10 @@ function WaiterDashboard() {
     }
   };
 
-  // Handle Clean Table Call
   const handleCleanTable = async () => {
     if (!sessionId || !table?.tableId || !isCleanTableEligible) return;
 
     try {
-      // TODO: Replace with your actual Clean Table endpoint URL
       await axios.post(
         `${baseUrl}/Table/clean-table`,
         { tableId: table.tableId, sessionId: sessionId },
@@ -241,8 +279,7 @@ function WaiterDashboard() {
       );
 
       showToast("success", "Table cleaned and session closed successfully!");
-      
-      // Refresh board/state
+
       setSessionId(null);
       setOrders([]);
       fetchTable();
@@ -255,7 +292,6 @@ function WaiterDashboard() {
     }
   };
 
-  // Modal Handlers
   const openCancelModal = (order) => {
     setSelectedOrder(order);
     setShowCancelModal(true);
@@ -267,7 +303,6 @@ function WaiterDashboard() {
     setShowUpdateModal(true);
   };
 
-  // Confirm Order Cancellation
   const confirmCancel = async () => {
     if (!selectedOrder) return;
 
@@ -290,8 +325,7 @@ function WaiterDashboard() {
     }
   };
 
-  // Confirm Quantity Update
-  const UpdateQuantity = async () => {
+  const handleUpdateQuantity = async () => {
     if (!selectedOrder) return;
 
     try {
@@ -333,6 +367,8 @@ function WaiterDashboard() {
     );
   }
 
+  const isTableCleaning = (table?.status || "").toLowerCase() === "cleaning";
+
   return (
     <div className="dashboard-container">
       <div className="dashboard-wrapper">
@@ -348,7 +384,6 @@ function WaiterDashboard() {
           )}
         </header>
 
-        {/* Assigned Table Section */}
         <section className="dashboard-section">
           <div className="section-header">
             <h2 className="section-title">Assigned Table</h2>
@@ -371,13 +406,31 @@ function WaiterDashboard() {
                 <p className="table-card-label">Status</p>
                 <p className="table-card-value">{table.status || "N/A"}</p>
               </div>
+
+              <div className="table-card action-card">
+                <p className="table-card-label">Handle Status</p>
+                {isTableCleaning ? (
+                  <button
+                     className="btn-secondary"
+                    onClick={handleFreeTable}
+                  >
+                    Free Table
+                  </button>
+                ) : (
+                  <button
+                    className="btn-secondary"
+                    onClick={handleToggleStatus}
+                  >
+                    {table.status === "Occupied" ? "Set Available" : "Set Occupied"}
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <p className="empty-state">No table currently assigned.</p>
           )}
         </section>
 
-        {/* Active Orders Section */}
         <section className="dashboard-section">
           <div className="section-header">
             <h2 className="section-title">
@@ -439,7 +492,7 @@ function WaiterDashboard() {
                           </td>
                           <td className="order-qty-cell">{order.quantity}</td>
                           <td>Rs. {order.unitPrice}</td>
-                          
+
                           <td>
                             <span className={getStatusClass(order.status)}>
                               {order.status}
@@ -472,7 +525,6 @@ function WaiterDashboard() {
                 </table>
               </div>
 
-              {/* Action Buttons Below Table */}
               <div className="bill-action-container">
                 <button
                   onClick={handleGetBill}
@@ -513,7 +565,6 @@ function WaiterDashboard() {
         </section>
       </div>
 
-      {/* Cancel Confirmation Modal */}
       {showCancelModal && (
         <div className="modal-overlay">
           <div className="confirm-modal">
@@ -540,7 +591,6 @@ function WaiterDashboard() {
         </div>
       )}
 
-      {/* Update Quantity Modal */}
       {showUpdateModal && (
         <div className="modal-overlay">
           <div className="confirm-modal">
@@ -559,14 +609,14 @@ function WaiterDashboard() {
               <button
                 className="cancel-btn"
                 onClick={() => {
-                  setShowUpdateModal(false);
+                  setShowCancelModal(false);
                   setSelectedOrder(null);
                   setNewQuantity("");
                 }}
               >
                 Cancel
               </button>
-              <button className="confirm-btn" onClick={UpdateQuantity}>
+              <button className="confirm-btn" onClick={handleUpdateQuantity}>
                 Update
               </button>
             </div>

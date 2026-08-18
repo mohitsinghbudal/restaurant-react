@@ -10,7 +10,6 @@ function WaiterOrder() {
   const baseUrl = api();
   const navigate = useNavigate();
 
-  // Get Logged-in User
   const { token, userId } = GetCurrUser();
 
   const [menuItems, setMenuItems] = useState([]);
@@ -20,13 +19,10 @@ function WaiterOrder() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Selected Items
   const [selectedItems, setSelectedItems] = useState({});
 
-  // Order Notes
   const [orderNotes, setOrderNotes] = useState("");
 
-  // Search
   const [searchQuery, setSearchQuery] = useState("");
 
   const authHeaders = useMemo(
@@ -36,10 +32,6 @@ function WaiterOrder() {
     }),
     [token]
   );
-
-  /* ==========================================
-      FETCH ASSIGNED TABLE & ACTIVE SESSION
-  =========================================== */
 
   const fetchSessionData = useCallback(async () => {
     if (!token) return;
@@ -89,10 +81,6 @@ function WaiterOrder() {
     }
   }, [baseUrl, token]);
 
-  /* ==========================================
-      FETCH MENU
-  =========================================== */
-
   const fetchMenu = useCallback(async () => {
     if (!token) return;
 
@@ -141,10 +129,6 @@ function WaiterOrder() {
     }
   }, [baseUrl, token]);
 
-  /* ==========================================
-      INITIAL LOAD
-  =========================================== */
-
   useEffect(() => {
     const initialize = async () => {
       setLoading(true);
@@ -159,10 +143,6 @@ function WaiterOrder() {
 
     initialize();
   }, [fetchSessionData, fetchMenu]);
-
-  /* ==========================================
-      QUANTITY HANDLER
-  =========================================== */
 
   const handleQuantityChange = (item, delta) => {
     const id = item.menuId;
@@ -194,10 +174,6 @@ function WaiterOrder() {
     });
   };
 
-  /* ==========================================
-      SEARCH FILTER
-  =========================================== */
-
   const filteredMenu = useMemo(() => {
     if (!searchQuery.trim()) {
       return menuItems;
@@ -210,10 +186,6 @@ function WaiterOrder() {
     );
   }, [menuItems, searchQuery]);
 
-  /* ==========================================
-      SELECTED LIST
-  =========================================== */
-
   const selectedList = Object.values(selectedItems);
 
   const totalAmount = selectedList.reduce(
@@ -221,9 +193,6 @@ function WaiterOrder() {
       sum + item.quantity * item.unitPrice,
     0
   );
-    /* ==========================================
-      PLACE ORDER
-  =========================================== */
 
   const handlePlaceOrder = async () => {
     if (selectedList.length === 0) {
@@ -242,7 +211,6 @@ function WaiterOrder() {
       return;
     }
 
-    // Payload according to your API
     const payload = {
       items: selectedList.map((item) => ({
         menuId: Number(item.menuId),
@@ -275,7 +243,6 @@ function WaiterOrder() {
         "success"
       );
 
-      // Clear selections
       setSelectedItems({});
       setOrderNotes("");
 
@@ -294,10 +261,6 @@ function WaiterOrder() {
     }
   };
 
-  /* ==========================================
-      PAGE LOADING
-  =========================================== */
-
   if (loading) {
     return (
       <div className="page-loading">
@@ -306,15 +269,9 @@ function WaiterOrder() {
     );
   }
 
-  /* ==========================================
-      UI
-  =========================================== */
-
   return (
     <div className="place-order-container">
       <div className="place-order-wrapper">
-
-        {/* Header */}
 
         <header className="page-header">
 
@@ -342,8 +299,6 @@ function WaiterOrder() {
         </header>
 
         <div className="place-order-grid">
-
-          {/* LEFT SIDE */}
 
           <div className="menu-section">
 
@@ -464,8 +419,6 @@ function WaiterOrder() {
             )}
 
           </div>
-
-          {/* RIGHT SIDE */}
 
           <div className="summary-sidebar">
 

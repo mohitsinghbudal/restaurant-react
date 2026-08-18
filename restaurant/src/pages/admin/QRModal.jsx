@@ -20,7 +20,7 @@ function QRModal({ open, table, onClose }) {
             headers: {
               Authorization: token ? `Bearer ${token}` : "",
             },
-            responseType: "blob", // API returns image
+            responseType: "blob",
           }
         );
 

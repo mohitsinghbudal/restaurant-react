@@ -1,18 +1,12 @@
-import React ,{useEffect}from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import GetCurrUser from "../util/GetcurrUser";
 import "./Contact.css";
 
 function Contact() {
-const { token } = GetCurrUser();
-const navigate = useNavigate();
-console.log(GetCurrUser());
-
-  // useEffect(()=>{
-  //   if(token){
-  //     navigate('/dashboard');
-  //   }
-  // },[navigate])
+  const { token } = GetCurrUser();
+  const navigate = useNavigate();
+  console.log(GetCurrUser());
 
   return (
     <section className="contact">
@@ -20,8 +14,8 @@ console.log(GetCurrUser());
       <p className="contact-subtitle">
         We’d love to hear from you! Whether it’s a reservation, feedback, or just a hello.
       </p>
-<div>
-</div>
+      <div>
+      </div>
       <div className="contact-container">
         <div className="contact-form">
           <h2>Contact Form</h2>

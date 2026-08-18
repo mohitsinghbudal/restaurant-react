@@ -8,8 +8,7 @@ function Menu() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const[selected,setSelected] = useState([]);
-  
-  
+
   useEffect(() => {
     const fetchMenu = async () => {
       try {
@@ -44,7 +43,6 @@ function Menu() {
     );
   }
 
-
   return (
     <div className="menu-container">
       <div className="menu-header">
@@ -60,7 +58,6 @@ function Menu() {
               <div className="menu-card-top">
                 <h3>{item.itemName}</h3>
 
-                
               </div>
 
               <p className="description">
@@ -89,7 +86,7 @@ function Menu() {
           <h2>No Menu Items Available</h2>
         </div>
       )}
-      
+
     </div>
   );
 }

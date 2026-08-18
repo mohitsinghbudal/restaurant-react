@@ -12,54 +12,54 @@ function Home() {
       <HeroSection />
 
       <section className="home-section">
-  <div className="section-header">
-    <h2>About Gourmet Haven</h2>
-    <div className="section-divider"></div>
+        <div className="section-header">
+          <h2>About Gourmet Haven</h2>
+          <div className="section-divider"></div>
 
-    <p>
-      At <strong>Gourmet Haven</strong>, we believe that dining is more than
-      just enjoying a meal—it's about creating unforgettable memories. Every
-      dish is thoughtfully prepared using fresh ingredients, authentic recipes,
-      and a passion for culinary excellence.
-    </p>
+          <p>
+            At <strong>Gourmet Haven</strong>, we believe that dining is more than
+            just enjoying a meal—it's about creating unforgettable memories. Every
+            dish is thoughtfully prepared using fresh ingredients, authentic recipes,
+            and a passion for culinary excellence.
+          </p>
 
-    <p>
-      Whether you're planning a romantic dinner, a family celebration, a
-      business meeting, or simply looking for a relaxing evening with friends,
-      our elegant ambiance and attentive service ensure a truly exceptional
-      experience from the moment you walk through our doors.
-    </p>
+          <p>
+            Whether you're planning a romantic dinner, a family celebration, a
+            business meeting, or simply looking for a relaxing evening with friends,
+            our elegant ambiance and attentive service ensure a truly exceptional
+            experience from the moment you walk through our doors.
+          </p>
 
-    <p>
-      Our talented chefs combine traditional flavors with modern culinary
-      techniques to create dishes that delight every palate. Paired with our
-      warm hospitality and comfortable atmosphere, Gourmet Haven has become a
-      destination where guests return again and again.
-    </p>
+          <p>
+            Our talented chefs combine traditional flavors with modern culinary
+            techniques to create dishes that delight every palate. Paired with our
+            warm hospitality and comfortable atmosphere, Gourmet Haven has become a
+            destination where guests return again and again.
+          </p>
 
-    <div className="about-highlights">
-      <div className="highlight-item">
-        <h3>10+</h3>
-        <span>Years of Excellence</span>
-      </div>
+          <div className="about-highlights">
+            <div className="highlight-item">
+              <h3>10+</h3>
+              <span>Years of Excellence</span>
+            </div>
 
-      <div className="highlight-item">
-        <h3>100+</h3>
-        <span>Delicious Dishes</span>
-      </div>
+            <div className="highlight-item">
+              <h3>100+</h3>
+              <span>Delicious Dishes</span>
+            </div>
 
-      <div className="highlight-item">
-        <h3>5000+</h3>
-        <span>Happy Customers</span>
-      </div>
+            <div className="highlight-item">
+              <h3>5000+</h3>
+              <span>Happy Customers</span>
+            </div>
 
-      <div className="highlight-item">
-        <h3>★★★★★</h3>
-        <span>Premium Service</span>
-      </div>
-    </div>
-  </div>
-</section>
+            <div className="highlight-item">
+              <h3>★★★★★</h3>
+              <span>Premium Service</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section className="features-section">
         <div className="section-header">

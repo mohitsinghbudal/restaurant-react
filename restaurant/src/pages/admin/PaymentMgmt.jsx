@@ -8,19 +8,15 @@ function PaymentMgmt() {
     const  baseUrl  = api();
     const { token } = GetCurrUser();
 
-    // Data & API states
     const [payments, setPayments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Filter states
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("All");
 
-    // Modal state for viewing details
     const [selectedPayment, setSelectedPayment] = useState(null);
 
-    // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
@@ -37,7 +33,6 @@ function PaymentMgmt() {
         getPayments();
     }, []);
 
-    // Reset pagination to page 1 whenever filters change
     useEffect(() => {
         setCurrentPage(1);
     }, [search, status]);
@@ -55,9 +50,8 @@ function PaymentMgmt() {
 
         console.log("Full Response:", res.data);
 
-        // Handle both object wrapper { message: [...] } and direct array [...]
-        const paymentData = Array.isArray(res.data) 
-            ? res.data 
+        const paymentData = Array.isArray(res.data)
+            ? res.data
             : res.data?.message || [];
 
         setPayments(paymentData);
@@ -69,7 +63,6 @@ function PaymentMgmt() {
     }
 };
 
-    // Filter logic wrapped in useMemo for performance
     const filteredPayments = useMemo(() => {
         return payments.filter((payment) => {
             const searchLower = search.toLowerCase();
@@ -90,7 +83,6 @@ function PaymentMgmt() {
         });
     }, [payments, search, status]);
 
-    // Paginated subset of filtered items
     const paginatedPayments = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage;
         return filteredPayments.slice(startIndex, startIndex + itemsPerPage);
@@ -98,7 +90,6 @@ function PaymentMgmt() {
 
     const totalPages = Math.ceil(filteredPayments.length / itemsPerPage) || 1;
 
-    // Export to CSV Functionality
     const exportToCSV = () => {
         if (filteredPayments.length === 0) {
             alert("No data available to export.");
@@ -144,7 +135,7 @@ function PaymentMgmt() {
 
     return (
         <div className="payment-page">
-            {/* Header */}
+
             <div className="payment-header">
                 <div>
                     <h1>Payment Management</h1>
@@ -156,7 +147,6 @@ function PaymentMgmt() {
                 </button>
             </div>
 
-            {/* Summary Cards */}
             <div className="payment-cards">
                 <div className="payment-card">
                     <h3>Total Transactions</h3>
@@ -185,7 +175,6 @@ function PaymentMgmt() {
                 </div>
             </div>
 
-            {/* Toolbar Filters */}
             <div className="payment-toolbar">
                 <input
                     type="text"
@@ -205,10 +194,8 @@ function PaymentMgmt() {
                 </select>
             </div>
 
-            {/* Error Message Feedback */}
             {error && <div className="payment-error-msg">{error}</div>}
 
-            {/* Transactions Table */}
             <div className="payment-table">
                 <table>
                     <thead>
@@ -280,7 +267,6 @@ function PaymentMgmt() {
                 </table>
             </div>
 
-            {/* Pagination Controls */}
             {!loading && filteredPayments.length > itemsPerPage && (
                 <div className="payment-pagination">
                     <button
@@ -301,7 +287,6 @@ function PaymentMgmt() {
                 </div>
             )}
 
-            {/* Detail View Modal */}
             {selectedPayment && (
                 <div className="modal-overlay" onClick={() => setSelectedPayment(null)}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>

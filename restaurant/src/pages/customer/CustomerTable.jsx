@@ -53,7 +53,7 @@ function Tables() {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-  const { token, roleId } = GetCurrUser();
+  const { token, roles } = GetCurrUser();
   const baseUrl = api();
 
   const fetchData = useCallback(async () => {
@@ -75,8 +75,7 @@ function Tables() {
 
       console.log("Tables Response:", tablesRes.data.alltables.result);
       setTables(tablesRes.data?.alltables?.result || []);
-      
-      // Setting current bookings from backend response
+
       setCurrBookings(bookingsRes.data?.bookings || bookingsRes.data?.result || []);
     } catch (err) {
       console.error("Data Fetching Error:", err);
@@ -184,7 +183,7 @@ function Tables() {
   return (
     <div className="tables-container">
       <h1 className="tables-title">
-        Welcome {ROLE_NAMES[Number(roleId)] || "Guest"}
+        Welcome !!!
       </h1>
 
       <section className="table-list-container">
@@ -204,7 +203,7 @@ function Tables() {
         )}
       </section>
 
-      {roles.includes("Customer") && (
+      {roles.includes(1) && (
         <section className="scanner-section">
           <p className="tables-subtitle">
             Scan the QR code placed on your table to start ordering.

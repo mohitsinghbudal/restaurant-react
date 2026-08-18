@@ -1,12 +1,12 @@
-import React, { useState } from 'react'; // Added useState
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';                  // Added axios import
-import api from "../util/api";              // Added api import
-import { showToast } from "../components/showToast"; // Added toast import
+import axios from 'axios';
+import api from "../util/api";
+import { showToast } from "../components/showToast";
 import "./Signup.css"
 
 function Signup() {
-  // Added controlled state for inputs
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ function Signup() {
     try {
       const baseUrl = api();
       const res = await axios.post(
-        `${baseUrl}/User/signup`, 
+        `${baseUrl}/User/signup`,
         { email, password }
       );
 
@@ -32,7 +32,7 @@ function Signup() {
         sessionStorage.setItem("roleId", String(res.data.roleId));
         sessionStorage.setItem("roles", JSON.stringify([res.data.roleId]));
       }
-      
+
       showToast("success", "Account created successfully!");
       navigate("/verify-otp");
     } catch (error) {
@@ -47,18 +47,18 @@ function Signup() {
         <h1 className="Signup">Signup</h1>
         <form onSubmit={handleSubmit}>
           <div className="input-box">
-            {/* Added value and onChange handlers */}
-            <input 
-              type="text" 
-              placeholder="Email" 
+
+            <input
+              type="text"
+              placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div className="input-box">
-            <input 
-              type="password" 
-              placeholder="Password" 
+            <input
+              type="password"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />

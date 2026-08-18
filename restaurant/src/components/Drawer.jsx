@@ -1,3 +1,4 @@
+
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import GetCurrUser from "../util/GetcurrUser";
@@ -5,7 +6,7 @@ import "./Drawer.css";
 
 function Drawer({ isOpen, setIsOpen }) {
   const navigate = useNavigate();
-  const { token, roles } = GetCurrUser();
+  const { token, roles = [] } = GetCurrUser();
 
   const closeDrawer = () => {
     setIsOpen(false);
@@ -18,11 +19,15 @@ function Drawer({ isOpen, setIsOpen }) {
     navigate("/login");
   };
 
+  const cookLinks = [
+    { name: "Dashboard", path: "/cook-dashboard", icon: "🏠"},
+  ];
   const adminLinks = [
     { name: "Dashboard", path: "/admin-dashboard", icon: "🏠" },
     { name: "Inventory", path: "/admin-inventory", icon: "📦" },
     { name: "Menu", path: "/admin-menu", icon: "🍽️" },
     { name: "Orders", path: "/admin-orders", icon: "📋" },
+    {name:"Recepie",path:"/admin-recepie",icon:"🍽️"},
     { name: "Dining", path: "/admin-dining", icon: "🍴" },
     { name: "Tables", path: "/admin-table", icon: "🪑" },
     { name: "Bills", path: "/admin-bill", icon: "🧾" },
@@ -39,6 +44,10 @@ function Drawer({ isOpen, setIsOpen }) {
     { name: "Table", path: "/customer-table", icon: "🪑" }
   ];
 
+  const waiterLinks = [
+    { name: "Dashboard", path: "/waiter-dashboard", icon: "🏠" }
+  ];
+
   const guestLinks = [
     { name: "Home", path: "/", icon: "🏠" },
     { name: "Menu", path: "/menu", icon: "🍽️" },
@@ -48,19 +57,24 @@ function Drawer({ isOpen, setIsOpen }) {
     { name: "Signup", path: "/signup", icon: "📝" }
   ];
 
-  const waiterLinks = [
-    { name: "Dashboard", path: "/waiter-dashboard", icon: "🏠" },
-  ];
-
   let links = guestLinks;
 
-  if (token && roles.includes("Admin")) {
+  // Admin
+  if (token && roles.includes(5)) {
     links = adminLinks;
-  } else if (token && roles.includes("Customer")) {
-    links = customerLinks;
-  }else if(token && Number(roleId) === 2){
+  }
+  // Waiter
+  else if (token && roles.includes(2)) {
     links = waiterLinks;
   }
+  // Customer
+  else if (token && roles.includes(1)) {
+    links = customerLinks;
+  }
+  else if(token&& roles.includes(4)){
+    links = cookLinks;
+  }
+
   return (
     <>
       {isOpen && (
@@ -71,9 +85,7 @@ function Drawer({ isOpen, setIsOpen }) {
       )}
 
       <aside className={`drawer ${isOpen ? "open" : ""}`}>
-
         <div className="drawer-header">
-
           <h2>Gourmet Haven</h2>
 
           <button
@@ -82,13 +94,10 @@ function Drawer({ isOpen, setIsOpen }) {
           >
             ✕
           </button>
-
         </div>
 
         <nav className="drawer-nav">
-
           {links.map((link) => (
-
             <NavLink
               key={link.path}
               to={link.path}
@@ -105,41 +114,21 @@ function Drawer({ isOpen, setIsOpen }) {
 
               {link.name}
             </NavLink>
-
           ))}
 
-          <NavLink
-            to="/contact"
-            className={({ isActive }) =>
-              isActive
-                ? "drawer-link active"
-                : "drawer-link"
-            }
-            onClick={closeDrawer}
-          >
-            <span className="drawer-icon">
-              📞
-            </span>
-
-            Contact
-          </NavLink>
-
           {token && (
-
             <button
               className="drawer-logout"
               onClick={logout}
             >
               🚪 Logout
             </button>
-
           )}
-
         </nav>
-
       </aside>
     </>
   );
 }
 
 export default Drawer;
+

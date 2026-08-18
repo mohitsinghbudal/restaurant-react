@@ -5,8 +5,6 @@ import api from "../../util/api";
 import axios from "axios";
 import { showToast } from "../../components/showToast";
 
-
-
 function OrderMgmt() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,16 +12,12 @@ function OrderMgmt() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
-  // Cancel Modal
   const [showCancelModal, setShowCancelModal] = useState(false);
 
-  // Update Modal
   const [showUpdateModal, setShowUpdateModal] = useState(false);
 
-  // Selected Order
   const [selectedOrder, setSelectedOrder] = useState(null);
 
-  // Quantity
   const [newQuantity, setNewQuantity] = useState("");
 
   const baseApi = api();
@@ -121,7 +115,7 @@ function OrderMgmt() {
   "error",
   err.response?.data?.message || "Failed to cancel order."
 );
-     
+
     }
   };
 
@@ -306,7 +300,7 @@ setShowUpdateModal(false);
           </table>
         )}
       </div>
-            {/* Cancel Confirmation Modal */}
+
       {showCancelModal && (
         <div className="modal-overlay">
           <div className="confirm-modal">
@@ -339,7 +333,6 @@ setShowUpdateModal(false);
         </div>
       )}
 
-      {/* Update Quantity Modal */}
       {showUpdateModal && (
         <div className="modal-overlay">
           <div className="confirm-modal">
