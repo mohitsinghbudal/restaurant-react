@@ -27,6 +27,7 @@ function Drawer({ isOpen, setIsOpen }) {
     { name: "Inventory", path: "/admin-inventory", icon: "📦" },
     { name: "Menu", path: "/admin-menu", icon: "🍽️" },
     { name: "Orders", path: "/admin-orders", icon: "📋" },
+    {name:"Recepie",path:"/admin-recepie",icon:"🍽️"},
     { name: "Dining", path: "/admin-dining", icon: "🍴" },
     { name: "Tables", path: "/admin-table", icon: "🪑" },
     { name: "Bills", path: "/admin-bill", icon: "🧾" },

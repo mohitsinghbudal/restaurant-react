@@ -31,6 +31,7 @@ import WaiterDashboard from "./pages/Waiter/WaiterDashboard";
 import WaiterOrder from "./pages/Waiter/WaiterOrder";
 import WaiterBill from "./pages/Waiter/WaiterBill";
 import ManageOrder from "./pages/Cook/ManageOrders";
+import AdminRecepie from "./pages/admin/AdminRecepie";
 
 
 const AdminPanel = () => <h2>Admin Panel (Admins Only)</h2>;
@@ -90,7 +91,7 @@ const router = createBrowserRouter([
         children: [
           { path: "/admin-dashboard", element: <AdminDashboard /> },
           { path: "/analytics", element: <Analytics /> },
-          // {path:"/inventory",element:<Inventory/>},
+          {path:"/admin-recepie",element:<AdminRecepie/>},
 
       {path:"/admin-inventory", element:<InventoryMgmt/>},
 
