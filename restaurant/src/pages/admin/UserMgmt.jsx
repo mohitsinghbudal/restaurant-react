@@ -86,8 +86,8 @@ function UserMgmt() {
     return rolesData
       .map((r) => {
         const idVal = typeof r === "object" ? r.roleId || r.id : r;
-        const matched = AVAILABLE_ROLES.find((ar) => Number(ar.id) === Number(idVal));
-        if (matched) return matched.label;
+        const matched = roles.find((ar) => Number(ar.roleId) === Number(idVal));
+        if (matched) return matched.roleName;
         return typeof r === "object" ? r.roleName || r.name : String(r);
       })
       .join(", ");
@@ -108,8 +108,20 @@ function UserMgmt() {
 
   useEffect(() => {
     setCurrentUser(GetCurrUser());
+    fetchRoles();
     fetchUsers();
   }, []);
+
+  const fetchRoles = async () => {
+    try {
+      const res = await apiClient.get("/Roles");
+      // Extracts dynamic list handling both `{ result: [...] }` and direct array response shapes
+      const fetchedRoles = res.data?.result || res.data?.$values || (Array.isArray(res.data) ? res.data : []);
+      setRoles(fetchedRoles);
+    } catch (err) {
+      console.error("Failed to fetch roles:", err);
+    }
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -282,18 +294,20 @@ function UserMgmt() {
           <h3>Total Users</h3>
           <span>{users.length}</span>
         </div>
-        <div className="card">
-          <h3>Admins</h3>
-          <span>{users.filter((item) => userHasRole(item, "5") || userHasRole(item, "Admin")).length}</span>
-        </div>
-        <div className="card">
-          <h3>Waiters</h3>
-          <span>{users.filter((item) => userHasRole(item, "2") || userHasRole(item, "Waiter")).length}</span>
-        </div>
-        <div className="card">
-          <h3>Customers</h3>
-          <span>{users.filter((item) => userHasRole(item, "1") || userHasRole(item, "Customer")).length}</span>
-        </div>
+        {roles.map((role) => (
+          <div key={role.roleId} className="card">
+            <h3>{role.roleName}s</h3>
+            <span>
+              {
+                users.filter(
+                  (item) =>
+                    userHasRole(item, role.roleId) ||
+                    userHasRole(item, role.roleName)
+                ).length
+              }
+            </span>
+          </div>
+        ))}
       </div>
 
       <div className="toolbar">
@@ -305,11 +319,11 @@ function UserMgmt() {
         />
         <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
           <option value="All Roles">All Roles</option>
-          <option value="5">Admin</option>
-          <option value="2">Waiter</option>
-          <option value="3">Chef</option>
-          <option value="4">Cashier</option>
-          <option value="1">Customer</option>
+          {roles.map((role) => (
+            <option key={role.roleId} value={role.roleId}>
+              {role.roleName}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -497,18 +511,18 @@ function UserMgmt() {
                 <hr />
                 <form onSubmit={handleSaveRoles}>
                   <div className="roles-selection-container" style={{ margin: "20px 0" }}>
-                    {AVAILABLE_ROLES.map((role) => {
-                      const isChecked = selectedRoleIds.includes(role.id);
+                    {roles.map((role) => {
+                      const isChecked = selectedRoleIds.includes(role.roleId);
 
                       return (
-                        <div key={role.id} className="form-group checkbox-group" style={{ marginBottom: "12px" }}>
+                        <div key={role.roleId} className="form-group checkbox-group" style={{ marginBottom: "12px" }}>
                           <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
                             <input
                               type="checkbox"
                               checked={isChecked}
-                              onChange={() => handleRoleToggle(role.id)}
+                              onChange={() => handleRoleToggle(role.roleId)}
                             />
-                            <span>{role.label}</span>
+                            <span>{role.roleName}</span>
                           </label>
                         </div>
                       );

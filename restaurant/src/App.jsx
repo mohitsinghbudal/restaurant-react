@@ -129,6 +129,12 @@ element: <ProtectedRoute allowedRoles={[1]} />,
           {path:"/customer-bill",element:<CustomerBill/>},
           
         ]
+      },{
+        element :<ProtectedRoute allowedRoles = {[4]}/>,
+        children:[
+          {path:"/waiter-order",element:<ManageOrder/>},
+        ]
+
       },
       {
         element : <ProtectedRoute allowedRoles={[4]}/>,

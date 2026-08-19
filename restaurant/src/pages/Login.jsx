@@ -29,8 +29,9 @@ function Login() {
       navigate("/cook-dashboard")
     } else {
       navigate("/dashboard");
+      }
     }
-  }, [hookRoles, navigate]);
+  , [hookRoles, navigate]);
 
   useEffect(() => {
     if (token && hookRoles.length > 0) {
