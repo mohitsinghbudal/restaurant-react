@@ -4,6 +4,11 @@ import GetCurrUser from "../../util/GetcurrUser";
 import api from "../../util/api";
 import axios from "axios";
 import { showToast } from "../../components/showToast";
+import {
+  connection,
+  startSignalR,
+} from "../../util/signalrService";
+
 
 function OrderMgmt() {
   const [orders, setOrders] = useState([]);
@@ -46,9 +51,169 @@ function OrderMgmt() {
     }
   }, [baseApi, token]);
 
+  // useEffect(() => {
+  //   fetchOrders();
+  // }, [fetchOrders]);
+
   useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+      let mounted = true;
+  
+      // ----------------------------------------------
+      // SIGNALR HANDLER
+      // ----------------------------------------------
+  
+      const handleReceiveAllOrders = (
+        updatedOrders
+      ) => {
+        console.log(
+          "🔔 SignalR ReceiveAllOrders received"
+        );
+  
+        console.log(
+          "📦 SignalR data:",
+          updatedOrders
+        );
+  
+        if (!mounted) return;
+  
+      
+        fetchOrders();
+      };
+  
+      // ----------------------------------------------
+      // ALSO LISTEN TO NEW ORDER
+      // ----------------------------------------------
+  
+      const handleNewOrder = (newOrder) => {
+        console.log(
+          "🔔 SignalR NewOrder received:",
+          newOrder
+        );
+  
+        if (!mounted) return;
+  
+        fetchOrders();
+      };
+  
+      // ----------------------------------------------
+      // CANCELLED
+      // ----------------------------------------------
+  
+      const handleOrderCancelled = (
+        orderId
+      ) => {
+        console.log(
+          "🔔 SignalR OrderCancelled:",
+          orderId
+        );
+  
+        if (!mounted) return;
+  
+        fetchOrders();
+      };
+  
+      // ----------------------------------------------
+      // STATUS UPDATED
+      // ----------------------------------------------
+  
+      const handleOrderStatusUpdated = (
+        data
+      ) => {
+        console.log(
+          "🔔 SignalR OrderStatusUpdated:",
+          data
+        );
+  
+        if (!mounted) return;
+  
+        fetchOrders();
+      };
+  
+      // ==================================================
+      // IMPORTANT
+      // REGISTER LISTENERS FIRST
+      // ==================================================
+  
+      connection.on(
+        "ReceiveAllOrders",
+        handleReceiveAllOrders
+      );
+  
+      connection.on(
+        "NewOrder",
+        handleNewOrder
+      );
+  
+      connection.on(
+        "OrderCancelled",
+        handleOrderCancelled
+      );
+  
+      connection.on(
+        "OrderStatusUpdated",
+        handleOrderStatusUpdated
+      );
+  
+      // ==================================================
+      // INITIAL DATA + SIGNALR
+      // ==================================================
+  
+      const initialize = async () => {
+        try {
+          // Fetch initial data
+          await Promise.all([
+            fetchOrders(),
+          ]);
+  
+          if (!mounted) return;
+  
+          // Start SignalR AFTER handlers are registered
+          await startSignalR();
+  
+          console.log(
+            "✅ ManageOrder SignalR initialized"
+          );
+        } catch (error) {
+          console.error(
+            "❌ Initialization failed:",
+            error
+          );
+        }
+      };
+  
+      initialize();
+  
+      // ==================================================
+      // CLEANUP
+      // ==================================================
+  
+      return () => {
+        mounted = false;
+  
+        connection.off(
+          "ReceiveAllOrders",
+          handleReceiveAllOrders
+        );
+  
+        connection.off(
+          "NewOrder",
+          handleNewOrder
+        );
+  
+        connection.off(
+          "OrderCancelled",
+          handleOrderCancelled
+        );
+  
+        connection.off(
+          "OrderStatusUpdated",
+          handleOrderStatusUpdated
+        );
+      };
+    }, [
+      fetchOrders,
+    ]);
+
 
   const filteredOrders = orders.filter((order) => {
     const itemName = order.itemName?.toLowerCase() || "";
