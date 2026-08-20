@@ -183,7 +183,8 @@ function EditTableModal({ open, table, onClose, refresh }) {
               type="submit"
               className="confirm-btn"
               disabled={loading}
-            >
+            > 
+            
               {loading ? "Updating..." : "Update Table"}
             </button>
           </div>

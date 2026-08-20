@@ -116,6 +116,7 @@ function MenuMgmt() {
       setMenuItems(data);
     }
   };
+  
 
   const getCategoryName = (id) => {
     const cat = categories.find((c) => (c.categoryId || c.id) === parseInt(id, 10));

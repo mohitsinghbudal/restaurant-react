@@ -77,7 +77,7 @@ function Login() {
         <h1 className="login">Login</h1>
         <form onSubmit={handleSubmit}>
           <div className="input-box">
-            <input
+            <input className = ""
               type="email"
               placeholder="Email"
               value={email}
