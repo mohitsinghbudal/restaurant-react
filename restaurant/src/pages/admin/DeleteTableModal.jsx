@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import api from "../../util/api";
-import GetCurrUser from "../../util/GetCurrUser";
+import GetCurrUser from "../../util/GetcurrUser";
 import { showToast } from "../../components/showToast";
 
 function DeleteTableModal({ open, table, onClose, refresh }) {

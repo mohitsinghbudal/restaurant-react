@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import api from "../../util/api";
-import GetCurrUser from "../../util/GetCurrUser";
+import GetCurrUser from "../../util/GetcurrUser";
 
 import "./AdminTable.css";
 import AddTableModal from "./AddTableModal";

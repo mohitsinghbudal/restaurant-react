@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import "./PaymentMgmt.css";
 import api from "../../util/api";
-import GetCurrUser from "../../util/GetCurrUser";
+import GetCurrUser from "../../util/GetcurrUser";
 
 function PaymentMgmt() {
     const  baseUrl  = api();
