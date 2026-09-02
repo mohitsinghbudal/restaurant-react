@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
-import GetCurrUser from "../../util/GetCurrUser";
+import GetCurrUser from "../../util/GetcurrUser";
 import api from "../../util/api";
 import { showToast } from "../../components/showToast";
 import "./UserMgmt.css";
@@ -59,6 +59,7 @@ const initialFormState = {
 };
 
 function UserMgmt() {
+  const [roles, setRoles] = useState([]); // Fixed: Declared missing roles state
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -85,8 +86,8 @@ function UserMgmt() {
     }
     return rolesData
       .map((r) => {
-        const idVal = typeof r === "object" ? r.roleId || r.id : r;
-        const matched = roles.find((ar) => Number(ar.roleId) === Number(idVal));
+        const targetRoleId = typeof r === "object" ? r.roleId || r.id : r;
+        const matched = roles.find((ar) => Number(ar.roleId) === Number(targetRoleId));
         if (matched) return matched.roleName;
         return typeof r === "object" ? r.roleName || r.name : String(r);
       })
@@ -115,7 +116,6 @@ function UserMgmt() {
   const fetchRoles = async () => {
     try {
       const res = await apiClient.get("/Roles");
-      // Extracts dynamic list handling both `{ result: [...] }` and direct array response shapes
       const fetchedRoles = res.data?.result || res.data?.$values || (Array.isArray(res.data) ? res.data : []);
       setRoles(fetchedRoles);
     } catch (err) {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import api from "../../util/api";
-import GetCurrUser from "../../util/GetCurrUser";
+import GetCurrUser from "../../util/GetcurrUser";
 import { showToast } from "../../components/showToast";
 
 function AddTableModal({ open, onClose, refresh }) {
@@ -71,18 +71,6 @@ function AddTableModal({ open, onClose, refresh }) {
 
       refresh();
       setForm(initialForm);
-      onClose();
-    } catch (error) {
-      showToast(
-        "error",
-        error.response?.data?.message || "Failed to create table."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
     <div className="modal-overlay" onClick={onClose}>
       <div
         className="table-modal"

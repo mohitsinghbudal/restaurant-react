@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import "./DinningMgmt.css";
 import axios from "axios";
 import api from "../../util/api";
-import GetCurrUser from "../../util/GetCurrUser";
+import GetCurrUser from "../../util/GetcurrUser";
 import { showToast } from "../../components/showToast";
 
 function DinningMgmt() {

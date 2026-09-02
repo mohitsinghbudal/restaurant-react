@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import GetCurrUser from "../../util/GetCurrUser";
+import GetCurrUser from "../../util/GetcurrUser";
 import api from "../../util/api";
 import axios from "axios";
 import "./AdminRecepie.css"; // Import the CSS file below
