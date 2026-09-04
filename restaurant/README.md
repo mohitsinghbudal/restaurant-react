@@ -1,689 +1,641 @@
-# 📚 Library Management System
-
 <div align="center">
 
-<img src="https://img.shields.io/badge/ASP.NET%20Core-Web%20API-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" />
-<img src="https://img.shields.io/badge/C%23-Backend-239120?style=for-the-badge&logo=csharp&logoColor=white" />
-<img src="https://img.shields.io/badge/SQL%20Server-Database-CC2927?style=for-the-badge&logo=microsoftsqlserver&logoColor=white" />
-<img src="https://img.shields.io/badge/React.js-Frontend-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
-<img src="https://img.shields.io/badge/JWT-Authentication-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" />
+# 🍽️ Restaurant Management System — Backend
 
-<br/>
+### Scalable RESTful backend for restaurant operations, ordering, kitchen coordination, billing, and real-time order tracking.
 
-### 🔐 Secure • Scalable • Role-Based Library Management
+[![.NET](https://img.shields.io/badge/.NET-ASP.NET%20Core-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
+[![C#](https://img.shields.io/badge/C%23-Backend-239120?logo=csharp&logoColor=white)](https://learn.microsoft.com/dotnet/csharp/)
+[![MySQL](https://img.shields.io/badge/MySQL-Database-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Dapper](https://img.shields.io/badge/Dapper-Micro%20ORM-1F2937)](https://github.com/DapperLib/Dapper)
+[![SignalR](https://img.shields.io/badge/SignalR-Real--Time-512BD4?logo=dotnet&logoColor=white)](https://learn.microsoft.com/aspnet/core/signalr/)
+[![JWT](https://img.shields.io/badge/JWT-Authentication-000000?logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
 
-A full-stack Library Management System built with **ASP.NET Core Web API, SQL Server, JWT authentication, RBAC, and React.js**, designed to manage books, members, librarians, borrowing activities, overdue fines, and analytics.
+<a href="https://git.io/typing-svg">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=20&pause=1000&color=512BD4&center=true&vCenter=true&width=760&lines=RESTful+APIs+%7C+JWT+%7C+RBAC+%7C+SignalR;Dapper+%7C+MySQL+Stored+Procedures+%7C+Transactions;Restaurant+Operations+%7C+Order+Tracking+%7C+Billing" alt="Typing SVG" />
+</a>
 
 </div>
 
 ---
 
-## ✨ Project Overview
+## 📌 Overview
 
-The **Library Management System** is an academic project developed from **August 2025 to December 2025**.
+The **Restaurant Management System** is a backend-focused restaurant operations platform built with **ASP.NET Core Web API**.
 
-The system provides a centralized platform for managing library operations while implementing secure, role-specific access to different resources.
+The system is designed around the complete restaurant workflow — from a customer starting a dining session and placing an order to kitchen preparation, waiter coordination, billing, payment, table cleaning, and making the table available again.
 
-The application supports three primary roles:
+This repository contains the **backend/API layer only**.
 
-* 👨‍💼 **Admin**
-* 📚 **Librarian**
-* 👨‍🎓 **Member**
+### Core engineering goals
 
-Each role has specific permissions enforced through **JWT-based Role-Based Access Control (RBAC)**.
-
----
-
-## 🎯 Objectives
-
-The project was developed with the following objectives:
-
-* Implement secure JWT-based authentication.
-* Restrict API access according to user roles.
-* Design a normalized SQL Server database.
-* Develop reusable CRUD APIs.
-* Implement server-side pagination.
-* Validate incoming API requests.
-* Automate overdue fine calculation.
-* Process fine-related operations using database transactions.
-* Notify members about overdue books and fines.
-* Provide analytics dashboards using React.js.
+- Build clean and maintainable RESTful APIs
+- Secure APIs using JWT authentication and role-based authorization
+- Support API versioning and rate limiting
+- Provide real-time order and service updates using SignalR
+- Optimize database access using Dapper and MySQL stored procedures
+- Maintain data consistency using atomic database transactions
+- Follow SOLID principles and layered architecture
+- Model restaurant operations as explicit business workflows and state transitions
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ Architecture
+
+The backend follows a **layered architecture** to separate API concerns, business logic, data access, and domain models.
 
 ```text
-                    ┌─────────────────────┐
-                    │      React.js       │
-                    │    Web Dashboard    │
-                    └──────────┬──────────┘
-                               │
-                               │ HTTP / REST
-                               ▼
-                    ┌─────────────────────┐
-                    │   ASP.NET Core API  │
-                    │                     │
-                    │ Authentication      │
-                    │ Authorization       │
-                    │ Validation          │
-                    │ CRUD Operations     │
-                    │ Business Logic      │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │     SQL Server      │
-                    │                     │
-                    │ Normalized Schema   │
-                    │ Transactions        │
-                    │ Fine Calculation    │
-                    └─────────────────────┘
+┌──────────────────────────────────────────────┐
+│                  API Layer                   │
+│ Controllers • Middleware • Auth • Validation │
+└──────────────────────┬───────────────────────┘
+                       │
+                       ▼
+┌──────────────────────────────────────────────┐
+│               Service Layer                  │
+│ Business Rules • Workflows • Orchestration   │
+└──────────────────────┬───────────────────────┘
+                       │
+                       ▼
+┌──────────────────────────────────────────────┐
+│             Repository / Data Layer          │
+│ Dapper • Stored Procedures • Transactions    │
+└──────────────────────┬───────────────────────┘
+                       │
+                       ▼
+┌──────────────────────────────────────────────┐
+│                  MySQL                      │
+│ Tables • Relationships • Stored Procedures   │
+└──────────────────────────────────────────────┘
+
+                    ↕
+              SignalR Hub
+                    ↕
+       Real-Time Order Communication
 ```
+
+### Architectural principles
+
+- **Separation of concerns**
+- **SOLID principles**
+- **Dependency Injection**
+- **Thin controllers**
+- **Business logic in services**
+- **Data access isolated from application logic**
+- **Atomic operations for critical workflows**
 
 ---
 
-# 🔐 Authentication & Authorization
+## 🔄 Restaurant Workflow
 
-The application uses **JWT (JSON Web Token)** for secure authentication.
-
-### Authentication Flow
+The backend models the restaurant's operational lifecycle as a sequence of controlled business states:
 
 ```text
-User Login
-    │
-    ▼
-Credentials Validation
-    │
-    ▼
-JWT Token Generated
-    │
-    ▼
-Client Stores Token
-    │
-    ▼
-Token Sent With API Requests
-    │
-    ▼
-JWT Middleware Validates Token
-    │
-    ▼
-Role-Based Authorization
-    │
-    ├── Admin
-    ├── Librarian
-    └── Member
+Customer Arrives
+      │
+      ▼
+Scan Table QR
+      │
+      ▼
+Login / Continue as Guest
+      │
+      ▼
+Start Dining Session
+      │
+      ▼
+Notify Waiter
+      │
+      ▼
+Waiter Assigned
+      │
+      ▼
+Browse Menu
+      │
+      ▼
+Place Order
+      │
+      ▼
+Kitchen / Bar Notification
+      │
+      ▼
+Preparing
+      │
+      ▼
+Ready
+      │
+      ▼
+Waiter Picks Up
+      │
+      ▼
+Order Served
+      │
+      ▼
+Request Bill
+      │
+      ▼
+Payment
+      │
+      ▼
+Table Cleaning
+      │
+      ▼
+Table Available
 ```
 
-JWT claims are used to identify the authenticated user and determine their role.
+This workflow allows the backend to coordinate **customers, waiters, chefs, bar attendants, tables, orders, bills, and dining sessions**.
 
 ---
 
-# 👥 Role-Based Access Control
+## 👥 Roles & Access Control
 
-The system implements role-specific API authorization.
+The system uses **JWT authentication** with **Role-Based Access Control (RBAC)**.
 
-| Role         | Responsibilities                                                    |
-| ------------ | ------------------------------------------------------------------- |
-| 👨‍💼 Admin  | Manage users, roles, books, and system-level operations             |
-| 📚 Librarian | Manage books, borrowing activities, members, and fines              |
-| 👨‍🎓 Member | Browse books, borrow books, view borrowing history, and check fines |
+| Role | Responsibility |
+|---|---|
+| **Admin** | Manage restaurant-level operations and administrative resources |
+| **Waiter** | Handle table service, waiter assignments, orders, serving, and customer requests |
+| **Chef** | Receive and process kitchen orders and update preparation status |
+| **Bar Attendant** | Handle beverage/bar-related order processing |
+| **Customer / Guest** | Browse menu, start dining sessions, place orders, and request billing |
 
-Authorization is enforced at the API level so that users cannot access resources outside their assigned permissions.
-
-Example:
-
-```csharp
-[Authorize(Roles = "Admin")]
-[HttpDelete("{id}")]
-public async Task<IActionResult> DeleteBook(int id)
-{
-    // Delete operation
-}
-```
+Authorization is enforced at the API level so that users can only perform operations permitted by their role.
 
 ---
 
-# 🗄️ Database Design
+## ⚡ Real-Time Communication
 
-The system uses **Microsoft SQL Server** with a normalized relational database design.
+**SignalR** is used for real-time communication between restaurant services and connected clients.
 
-The database was designed to minimize:
+Instead of requiring clients to continuously poll the API, important operational events can be pushed in real time.
 
-* Data redundancy
-* Update anomalies
-* Inconsistent records
-* Unnecessary duplication
-
-### Major Entities
+### Example events
 
 ```text
-Users
-  │
-  └── Roles
+New Order
+   │
+   ├──► Kitchen
+   │
+   └──► Bar
 
-Books
-  │
-  └── Categories
+Order Status Changed
+   │
+   └──► Waiter / Customer
 
-Members
-  │
-  └── Borrowing Records
-          │
-          ├── Borrow Date
-          ├── Due Date
-          ├── Return Date
-          └── Fine
+Order Ready
+   │
+   └──► Waiter
 
-Fines
-  │
-  └── Fine Transactions
+Customer Request
+   │
+   └──► Waiter
 ```
 
-The schema separates entities into appropriate relational tables and uses keys and relationships to maintain data integrity.
+This is particularly useful for **order tracking, kitchen coordination, waiter notifications, and service-state updates**.
 
 ---
 
-# 🔄 CRUD API Development
+## 🔐 Security
 
-RESTful APIs were developed for core library operations.
+### JWT Authentication
 
-### Example API Structure
-
-```http
-GET    /api/books
-GET    /api/books/{id}
-POST   /api/books
-PUT    /api/books/{id}
-DELETE /api/books/{id}
-```
-
-Similar CRUD operations can be provided for:
-
-* Users
-* Members
-* Books
-* Categories
-* Borrowing records
-* Fines
-
----
-
-# 📄 Server-Side Pagination
-
-For large datasets, the application implements **server-side pagination** rather than returning every record in a single response.
-
-Example:
-
-```http
-GET /api/books?pageNumber=1&pageSize=10
-```
-
-Conceptually:
+The API uses **JSON Web Tokens (JWT)** for stateless authentication.
 
 ```text
 Client
   │
-  │ pageNumber=2
-  │ pageSize=10
+  │ Login
+  ▼
+Authentication API
+  │
+  │ JWT
+  ▼
+Client
+  │
+  │ Authorization: Bearer <token>
   ▼
 ASP.NET Core API
   │
-  ▼
-SQL Server
-  │
-  │ Return only requested records
-  ▼
-Paginated Response
+  ├── Validate JWT
+  ├── Identify User
+  ├── Check Role / Policy
+  └── Execute Request
 ```
 
-This reduces unnecessary data transfer and improves API performance as the dataset grows.
+### Security mechanisms
+
+- JWT-based authentication
+- Role-Based Access Control (RBAC)
+- Authorization policies
+- API rate limiting
+- Input/model validation
+- Controlled access to protected endpoints
 
 ---
 
-# ✅ Server-Side Validation
+## 🚦 API Versioning & Rate Limiting
 
-Incoming API requests are validated on the server before business operations are performed.
+### API Versioning
 
-Validation helps prevent:
-
-* Invalid book records
-* Missing required fields
-* Invalid user information
-* Incorrect borrowing information
-* Invalid fine-related data
-
-This ensures that API consumers cannot bypass business rules simply by modifying frontend requests.
-
----
-
-# 💰 Automated Overdue Fine Calculation
-
-The system automatically calculates fines when borrowed books become overdue.
+API versioning is implemented to allow the backend to evolve without unnecessarily breaking existing clients.
 
 Example:
 
+```http
+GET /api/v1/orders
+GET /api/v2/orders
+```
+
+This provides a controlled path for introducing future API changes.
+
+### Rate Limiting
+
+Rate limiting is applied to protect API resources from excessive requests and reduce the risk of abuse.
+
 ```text
-Book Due Date
+Client Requests
       │
       ▼
-Compare with Current Date
+Rate Limiter
       │
-      ├── Not overdue
-      │       │
-      │       └── No fine
-      │
-      └── Overdue
-              │
-              ▼
-       Calculate Overdue Days
-              │
-              ▼
-       Calculate Fine Amount
-              │
-              ▼
-       Store Fine Information
+ ┌────┴────┐
+ │         │
+Allowed   Rejected
+ │         │
+ ▼         ▼
+API      429 Too Many Requests
 ```
-
-Example calculation:
-
-```text
-Fine = Overdue Days × Fine Rate
-```
-
-This reduces manual calculation and ensures consistent fine processing.
 
 ---
 
-# 🔒 Database Transactions
+## 🗄️ Data Access
 
-Database transactions are used for operations where multiple database changes need to succeed or fail together.
+The backend uses **Dapper** as the micro-ORM for database access.
 
-Example:
+### Why Dapper?
+
+- Lightweight data-access layer
+- Explicit SQL control
+- High performance
+- Simple object mapping
+- Works well with stored procedures
+- Avoids unnecessary ORM abstraction for query-heavy operations
+
+### Database technologies
+
+- **MySQL**
+- **Dapper**
+- **Stored Procedures**
+- **Parameterized Queries**
+- **Transactions**
+- **Relational data modeling**
+
+---
+
+## 🔒 Atomic Transactions
+
+Critical multi-step operations are executed using database transactions to preserve consistency.
+
+For example, order creation may involve multiple operations:
 
 ```text
-Return Book
-     │
-     ├── Update Borrowing Record
-     │
-     ├── Update Book Availability
-     │
-     └── Create/Update Fine
+Begin Transaction
+      │
+      ├── Validate dining session
+      ├── Validate menu items
+      ├── Create / update order
+      ├── Create order items
+      ├── Update required state
+      └── Commit
              │
              ▼
-        Transaction Commit
+          Success
 ```
 
-If an operation fails:
+If a critical operation fails:
 
 ```text
-Transaction
-     │
-     ▼
 Rollback
-     │
-     ▼
-Database remains consistent
+   │
+   ▼
+No Partial Order State
 ```
 
-This helps maintain **atomicity and data consistency** during critical library operations.
+This helps prevent inconsistent states when multiple related database operations must succeed together.
 
 ---
 
-# 🔔 Overdue Notifications
+## 📦 Core Domain Areas
 
-The system supports notifications related to overdue books and outstanding fines.
+The backend is organized around the major restaurant business domains.
 
-Example workflow:
+### Table Management
+
+- Table availability
+- Table identification through QR codes
+- Table state transitions
+- Table lifecycle after dining/payment/cleaning
+
+### Dining Sessions
+
+- Start and track dining sessions
+- Associate customers with tables
+- Maintain session timestamps
+- Coordinate the active restaurant visit
+
+### Menu & Orders
+
+- Menu browsing
+- Order creation
+- Order item management
+- Quantity updates
+- Order status tracking
+
+### Kitchen & Bar
+
+- Receive new order notifications
+- Process relevant items
+- Update preparation status
+- Notify waiters when orders become ready
+
+### Waiter Operations
+
+- Waiter assignment
+- Customer service requests
+- Order pickup
+- Serving workflow
+
+### Billing & Payment
+
+- Generate/request bills
+- Track billing state
+- Coordinate payment completion
+- Trigger table cleanup workflow
+
+---
+
+## 🧩 Backend Components
+
+A typical backend structure is organized around responsibilities rather than putting all logic inside controllers.
 
 ```text
-Book Becomes Overdue
-        │
-        ▼
-Overdue Status Detected
-        │
-        ▼
-Fine Calculated
-        │
-        ▼
-Member Notification
-        │
-        ▼
-Member Can View Outstanding Fine
+RestaurantManagementSystem
+│
+├── Controllers
+│   ├── AuthController
+│   ├── TableController
+│   ├── DiningController
+│   ├── MenuController
+│   ├── OrderController
+│   ├── BillController
+│   └── ...
+│
+├── Services
+│   ├── AuthService
+│   ├── TableService
+│   ├── DiningService
+│   ├── OrderService
+│   ├── BillingService
+│   └── ...
+│
+├── Repositories
+│   ├── TableRepository
+│   ├── DiningRepository
+│   ├── OrderRepository
+│   ├── MenuRepository
+│   └── ...
+│
+├── Models / DTOs
+│
+├── Hubs
+│   └── RestaurantHub
+│
+├── Middleware
+│
+└── Database
+    └── MySQL Stored Procedures
 ```
 
+> Adjust folder names to match the exact structure of the repository.
+
 ---
 
-# 📊 Analytics Dashboard
+## 🛠️ Technology Stack
 
-A **React.js analytics dashboard** provides a visual representation of library data.
+| Category | Technology |
+|---|---|
+| Language | **C#** |
+| Framework | **ASP.NET Core Web API** |
+| API Style | **RESTful APIs** |
+| Authentication | **JWT** |
+| Authorization | **RBAC** |
+| Real-Time | **SignalR** |
+| Database | **MySQL** |
+| Data Access | **Dapper** |
+| Database Logic | **Stored Procedures** |
+| Transactions | **Atomic Database Transactions** |
+| API Management | **API Versioning, Rate Limiting** |
+| Architecture | **Layered Architecture** |
+| Design Principles | **SOLID** |
+| Dependency Management | **Dependency Injection** |
 
-Potential dashboard metrics include:
+---
 
-* 📚 Total books
-* 👥 Total members
-* 📖 Borrowed books
-* 🔄 Returned books
-* ⏰ Overdue books
-* 💰 Outstanding fines
-* 📈 Borrowing trends
+## 🧪 API Design
 
-Example:
+The backend follows REST conventions for resource-oriented endpoints.
 
-```text
-┌───────────────────────────────────────────┐
-│          LIBRARY ANALYTICS                │
-├───────────┬───────────┬───────────────────┤
-│ Books     │ Members   │ Borrowed          │
-│   1250    │    420    │    186            │
-├───────────┼───────────┼───────────────────┤
-│ Overdue   │ Fines     │ Returned          │
-│    24     │  $320     │    950            │
-└───────────┴───────────┴───────────────────┘
+Example resource structure:
+
+```http
+GET    /api/v1/tables
+GET    /api/v1/tables/{id}
+POST   /api/v1/tables
+PUT    /api/v1/tables/{id}
+DELETE /api/v1/tables/{id}
+
+GET    /api/v1/menu
+GET    /api/v1/orders/{id}
+POST   /api/v1/orders
+PUT    /api/v1/orders/{id}/status
+
+POST   /api/v1/dining-sessions
+GET    /api/v1/dining-sessions/{id}
+
+POST   /api/v1/bills
+GET    /api/v1/bills/{id}
 ```
 
----
-
-# 🧩 Core Modules
-
-### 🔐 Authentication Module
-
-* User registration/login
-* JWT token generation
-* Token validation
-* Role identification
-
-### 👨‍💼 Admin Module
-
-* User management
-* Role management
-* Book management
-* System-level operations
-
-### 📚 Librarian Module
-
-* Add/update/remove books
-* Manage borrowing records
-* Manage members
-* Monitor overdue books
-* Manage fines
-
-### 👨‍🎓 Member Module
-
-* Browse available books
-* Borrow books
-* View borrowing history
-* View due dates
-* View overdue fines
-
-### 💰 Fine Management
-
-* Overdue detection
-* Fine calculation
-* Fine records
-* Overdue notifications
-
-### 📊 Analytics
-
-* Library statistics
-* Borrowing trends
-* Overdue analysis
-* Fine statistics
+> Endpoint names should be updated to match the exact routes implemented in the repository.
 
 ---
 
-# 🛡️ Security Features
+## 🧠 Engineering Highlights
 
-The application implements several security practices:
+### 1. RESTful API Development
+Designed backend endpoints around restaurant resources and business operations using ASP.NET Core Web API.
 
-* 🔑 JWT-based authentication
-* 👥 Role-Based Access Control
-* 🔒 Protected API endpoints
-* ✅ Server-side validation
-* 🛡️ Authorization checks
-* 🔐 Secure handling of authenticated requests
-* 🗄️ Transaction-based database operations
+### 2. Secure Authentication & Authorization
+Implemented JWT authentication and RBAC to protect business-critical endpoints.
 
----
+### 3. Real-Time Restaurant Operations
+Integrated SignalR to enable real-time communication for order status and restaurant service workflows.
 
-# 🛠️ Technology Stack
+### 4. Efficient Database Access
+Used Dapper with MySQL stored procedures to maintain explicit and efficient data-access operations.
 
-## Backend
+### 5. Transactional Consistency
+Used atomic database transactions for operations involving multiple dependent database changes.
 
-| Technology           | Purpose              |
-| -------------------- | -------------------- |
-| C#                   | Programming Language |
-| ASP.NET Core Web API | Backend/API          |
-| JWT                  | Authentication       |
-| RBAC                 | Authorization        |
-| REST                 | API Architecture     |
+### 6. Maintainable Architecture
+Applied layered architecture, dependency injection, and SOLID principles to keep responsibilities separated and the codebase maintainable.
 
-## Database
-
-| Technology            | Purpose             |
-| --------------------- | ------------------- |
-| Microsoft SQL Server  | Relational Database |
-| SQL                   | Data Management     |
-| Database Transactions | Data Consistency    |
-| Normalized Schema     | Data Integrity      |
-
-## Frontend
-
-| Technology           | Purpose               |
-| -------------------- | --------------------- |
-| React.js             | User Interface        |
-| JavaScript           | Frontend Logic        |
-| REST APIs            | Backend Communication |
-| Dashboard Components | Analytics             |
+### 7. API Reliability
+Implemented API versioning and rate limiting to support API evolution and controlled resource usage.
 
 ---
 
-# 📂 Project Structure
+## 🚀 Getting Started
 
-```text
-LibraryManagementSystem/
-│
-├── Backend/
-│   ├── Controllers/
-│   ├── Services/
-│   ├── Models/
-│   ├── DTOs/
-│   ├── Repositories/
-│   ├── Middleware/
-│   └── Program.cs
-│
-├── Frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   └── dashboard/
-│   │
-│   └── package.json
-│
-├── Database/
-│   ├── Tables/
-│   ├── Procedures/
-│   └── Scripts/
-│
-└── README.md
-```
+### Prerequisites
 
-> Adjust the folder structure above to match the actual repository structure.
+Install the following:
 
----
+- .NET SDK
+- MySQL Server
+- Git
 
-# 🚀 Getting Started
-
-## Prerequisites
-
-Make sure you have installed:
-
-* .NET SDK
-* SQL Server
-* SQL Server Management Studio
-* Node.js
-* npm
-* Git
-
----
-
-## 1️⃣ Clone the Repository
+Verify the .NET installation:
 
 ```bash
-git clone <your-repository-url>
-cd LibraryManagementSystem
+dotnet --version
 ```
 
----
+Verify MySQL is available:
 
-## 2️⃣ Configure Database
+```bash
+mysql --version
+```
 
-Create the SQL Server database and execute the required database scripts.
+### Clone the repository
 
-Update the backend connection string:
+```bash
+git clone <repository-url>
+cd <backend-project-directory>
+```
+
+### Configure the database
+
+Update the connection string in your application configuration:
 
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=YOUR_SERVER;Database=LibraryManagementSystem;Trusted_Connection=True;TrustServerCertificate=True;"
+    "DefaultConnection": "Server=localhost;Database=restaurant_management;User=root;Password=YOUR_PASSWORD;"
   }
 }
 ```
 
----
+**Do not commit real credentials to source control.**
 
-## 3️⃣ Run Backend
+Use environment variables or local development configuration for secrets.
+
+### Configure JWT
+
+Set the JWT configuration required by the application:
+
+```json
+{
+  "Jwt": {
+    "Key": "YOUR_DEVELOPMENT_SECRET",
+    "Issuer": "YOUR_ISSUER",
+    "Audience": "YOUR_AUDIENCE"
+  }
+}
+```
+
+For production, store secrets securely rather than committing them to the repository.
+
+### Run the application
 
 ```bash
-cd Backend
 dotnet restore
 dotnet build
 dotnet run
 ```
 
-The API will start on the configured ASP.NET Core port.
+The API will start using the configured HTTP/HTTPS ports.
 
 ---
 
-## 4️⃣ Run Frontend
+## 📚 API Documentation
 
-```bash
-cd Frontend
-npm install
-npm run dev
-```
+If Swagger/OpenAPI is enabled in the project, run the application and open the configured Swagger endpoint.
+
+Swagger provides:
+
+- Endpoint discovery
+- Request/response schemas
+- Authentication testing
+- API exploration
 
 ---
 
-# 📡 API Design
+## 📈 Possible Future Improvements
 
-The backend follows RESTful API conventions.
+Potential extensions for the backend include:
 
-Example:
+- Automated integration testing
+- Distributed caching
+- Background job processing
+- Observability with structured logging and metrics
+- Containerization with Docker
+- CI/CD pipeline
+- Expanded policy-based authorization
+- Advanced reporting and analytics
+
+---
+
+## 👨‍💻 Development Experience
+
+This project demonstrates practical backend engineering experience with:
 
 ```text
-/api/auth
-/api/books
-/api/members
-/api/users
-/api/borrowings
-/api/fines
-/api/categories
-/api/analytics
-```
-
-Example request:
-
-```http
-GET /api/books?pageNumber=1&pageSize=10
-Authorization: Bearer <JWT_TOKEN>
-```
-
----
-
-# 🧠 Engineering Practices
-
-This project provided practical experience with:
-
-* RESTful API development
-* JWT authentication
-* Role-Based Access Control
-* ASP.NET Core Web API
-* SQL Server database design
-* Database normalization
-* CRUD operations
-* Server-side pagination
-* Server-side validation
-* Database transactions
-* Automated business logic
-* React.js frontend development
-* Analytics dashboard development
-* API security
-* Separation of application responsibilities
-
----
-
-# 📌 Key Learning Outcomes
-
-Through this project, I gained hands-on experience in designing and developing a full-stack application while focusing on **secure backend development and relational database design**.
-
-The project strengthened my understanding of:
-
-```text
-Authentication
-      ↓
-Authorization
-      ↓
-API Design
-      ↓
-Business Logic
-      ↓
-Database Design
-      ↓
-Transactions
-      ↓
-Frontend Integration
-      ↓
-Analytics
+ASP.NET Core
+     │
+     ├── RESTful API Design
+     ├── JWT Authentication
+     ├── RBAC
+     ├── API Versioning
+     ├── Rate Limiting
+     ├── SignalR
+     ├── Dependency Injection
+     ├── SOLID Principles
+     │
+     └── Data Layer
+          ├── Dapper
+          ├── MySQL
+          ├── Stored Procedures
+          └── Transactions
 ```
 
 ---
 
-# 🔮 Future Improvements
+## 📄 Project Context
 
-Potential future improvements include:
-
-* [ ] Email/SMS notification integration
-* [ ] Advanced reporting
-* [ ] Book recommendation system
-* [ ] Fine payment gateway integration
-* [ ] Audit logging
-* [ ] Automated background jobs
-* [ ] Docker containerization
-* [ ] Automated testing
-* [ ] CI/CD pipeline
-* [ ] API documentation with Swagger/OpenAPI
-
----
-
-# 👨‍💻 Project Information
-
-**Project:** Library Management System
-**Type:** Academic Project
-**Duration:** August 2025 – December 2025
-**Backend:** ASP.NET Core Web API
-**Frontend:** React.js
-**Database:** Microsoft SQL Server
-**Authentication:** JWT
-**Authorization:** RBAC
+**Project:** Restaurant Management System  
+**Repository:** Backend  
+**Role:** Backend / Full-Stack Project  
+**Primary Focus:** Backend Engineering  
+**Technology:** ASP.NET Core Web API  
+**Database:** MySQL  
+**Real-Time Communication:** SignalR  
 
 ---
 
 <div align="center">
 
-### 📚 Building secure and reliable systems, one API at a time.
+### 🍽️ Built to model real-world restaurant operations with a scalable backend architecture.
 
-⭐ If you find this project interesting, consider giving the repository a star!
+**ASP.NET Core • Dapper • MySQL • SignalR • JWT • RBAC**
 
 </div>
